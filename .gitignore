@@ -39,3 +39,22 @@
 
 # debug information files
 *.dwo
+
+/build/
+
+# local tooling state
+.codex
+
+# keep bin directory skeleton, but ignore generated binaries inside it
+/bin/*
+!/bin/.gitkeep
+!/bin/cpp/
+!/bin/cpp/.gitkeep
+!/bin/python/
+!/bin/python/.gitkeep
+/bin/cpp/*
+!/bin/cpp/.gitkeep
+/bin/python/*
+!/bin/python/.gitkeep
+
+/.vscode/
