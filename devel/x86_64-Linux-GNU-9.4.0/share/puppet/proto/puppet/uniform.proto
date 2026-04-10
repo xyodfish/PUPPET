@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package puppet.puppet_proto;
+
+import "puppet/common.proto";
+
+// 系统编排与路由使用的“身体分组”标识。
+enum BodyGroup {
+  // 未指定，默认值。一般只用于占位，不建议在运行态长期出现。
+  BODY_GROUP_UNSPECIFIED = 0;
+  BODY_GROUP_HEAD = 1; // 头部相关控制（头部朝向、颈部关节、视线对准等）。
+  BODY_GROUP_LEFT_ARM = 2; // 左臂链路（肩-肘-腕及其末端控制）。
+  BODY_GROUP_RIGHT_ARM = 3; // 右臂链路（肩-肘-腕及其末端控制）。
+  BODY_GROUP_BI_MANUAL =
+      4; // 双手协同任务组（比如双手抓取、双臂相对位姿约束），语义上不是“左+右简单相加”。
+  BODY_GROUP_TORSO = 5;      // 躯干/腰部相关控制。
+  BODY_GROUP_BASE = 6;       // 底盘平面运动控制（vx/vy/wz）。
+  BODY_GROUP_LOWER_BODY = 7; // 下肢组控制（腿、步态相关）。
+  BODY_GROUP_WHOLE_BODY = 8; // 全身控制（通常对应 whole-body backend）。
+  BODY_GROUP_LEFT_GRIPPER = 9;   // 左夹爪/左手末端执行器。
+  BODY_GROUP_RIGHT_GRIPPER = 10; // 右夹爪/右手末端执行器。
+  BODY_GROUP_CUSTOM = 100; // 自定义分组，具体语义由配置或 tags 解释。
+}
+
+// 输入来源类型，用于统计、路由和诊断。
+enum SourceType {
+  SOURCE_TYPE_UNSPECIFIED = 0; // 未指定来源。
+  SOURCE_TYPE_VR = 1;          // VR 设备来源。
+  SOURCE_TYPE_MASTER_ARM = 2;  // 主从臂/示教臂来源。
+  SOURCE_TYPE_MOCAP = 3;       // 动捕来源。
+  SOURCE_TYPE_VISION = 4;      // 视觉估计来源。
+  SOURCE_TYPE_JOYSTICK = 5;    // 手柄来源。
+  SOURCE_TYPE_EXTERNAL = 100;  // 外部自定义来源。
+}
+
+// 一个 frame 的上下文，约束为单 source / 单时间片 / 单语义上下文。
+message FrameContext {
+  string source_id = 1;       // 来源唯一标识，如 vr_left、mocap_v2。
+  SourceType source_type = 2; // 来源类型。
+  string semantic_context =
+      3;                  // 属于哪种“语义场景/任务域”，如
+                          // teleop/manual/assist/replay/handover/calibration/
+  string mode = 4;        // 当前模式名，如 direct_pose、clutch。
+  string robot_id = 5;    // 目标机器人 ID。
+  string pipeline_id = 6; // 匹配到的 retargeting pipeline ID。
+  map<string, string> tags = 20; // 扩展信息（调试/实验标签）。
+}
+
+// Primitive 级别元信息，便于缓存、路由、监控与调试。
+message PrimitiveMeta {
+  string name = 1;          // Primitive 名称，如 left_wrist_pose。
+  string entity = 2;        // 控制实体名，如 left_hand、head、base。
+  BodyGroup body_group = 3; // 归属身体分组。
+  string frame_id = 4;      // 当前数据坐标系。
+  string reference_frame_id = 5; // 参考坐标系（用于相对表达）。
+  Timestamp timestamp = 6;       // Primitive 生效时间。
+  float confidence = 7;          // 置信度，建议范围 [0, 1]。
+  bool valid = 8; // 数据是否有效（无效时可保留占位语义）。
+  map<string, string> tags = 20; // 扩展键值对。
+}

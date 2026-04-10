@@ -58,3 +58,5 @@
 !/bin/python/.gitkeep
 
 /.vscode/
+.codex
+*build/

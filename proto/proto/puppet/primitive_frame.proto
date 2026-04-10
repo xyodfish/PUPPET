@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package puppet.puppet_proto;
+
+import "puppet/common.proto";
+import "puppet/uniform.proto";
+
+// 位姿类 primitive，用于末端、头部、骨盆等控制点。
+message PosePrimitive {
+    PrimitiveMeta meta = 1;   // 通用元信息。
+    Pose pose = 2;            // 位姿值。
+    bool is_relative = 3;     // true: pose 相对 target_frame_id；false: 绝对位姿。
+    string target_frame_id = 4; // 相对位姿的目标坐标系。
+}
+
+// 速度类 primitive，用于笛卡尔速度控制。
+message TwistPrimitive {
+    PrimitiveMeta meta = 1;       // 通用元信息。
+    Twist twist = 2;              // 线速度 + 角速度。
+    string body_frame_id = 3;     // 速度作用的刚体/链路坐标系。
+    string reference_frame_id = 4; // 速度表达参考坐标系。
+}
+
+// 关节观测状态 primitive（来自设备或估计器）。
+message JointStatePrimitive {
+    PrimitiveMeta meta = 1;          // 通用元信息。
+    repeated string joint_names = 2; // 关节名列表。
+    repeated double position = 3;    // 位置数组（与 joint_names 对齐）。
+    repeated double velocity = 4;    // 速度数组（与 joint_names 对齐）。
+    repeated double effort = 5;      // 力/力矩数组（与 joint_names 对齐）。
+    repeated double current = 6;     // 电流数组（与 joint_names 对齐，可选）。
+}
+
+// 关节命令 primitive（第一版统一表示，不拆分多种命令消息）。
+message JointCommandPrimitive {
+    // 关节命令模式。
+    enum JointCommandMode {
+        JOINT_COMMAND_MODE_UNSPECIFIED = 0;      // 未指定模式。
+        JOINT_COMMAND_MODE_POSITION = 1;         // 位置控制。
+        JOINT_COMMAND_MODE_VELOCITY = 2;         // 速度控制。
+        JOINT_COMMAND_MODE_EFFORT = 3;           // 力/力矩控制。
+        JOINT_COMMAND_MODE_POSITION_VELOCITY = 4; // 位置+速度复合控制。
+        JOINT_COMMAND_MODE_POSITION_EFFORT = 5;  // 位置+力复合控制。
+    }
+
+    PrimitiveMeta meta = 1;          // 通用元信息。
+    JointCommandMode mode = 2;       // 命令模式。
+    repeated string joint_names = 3; // 关节名列表。
+    repeated double position = 4;    // 目标位置数组（按模式使用）。
+    repeated double velocity = 5;    // 目标速度数组（按模式使用）。
+    repeated double effort = 6;      // 目标力/力矩数组（按模式使用）。
+    repeated double stiffness = 7;   // 刚度数组（可选）。
+    repeated double damping = 8;     // 阻尼数组（可选）。
+}
+
+// 标量类 primitive（trigger、grip、speed_scale 等）。
+message ScalarPrimitive {
+    PrimitiveMeta meta = 1; // 通用元信息。
+    double value = 2;        // 当前值。
+    double min_value = 3;    // 建议最小值（可选）。
+    double max_value = 4;    // 建议最大值（可选）。
+}
+
+// 布尔类 primitive（enable、clutch、deadman 等）。
+message BooleanPrimitive {
+    PrimitiveMeta meta = 1; // 通用元信息。
+    bool value = 2;          // 开关值。
+}
+
+// 模式类 primitive（control mode、retargeting mode 等）。
+message ModePrimitive {
+    PrimitiveMeta meta = 1; // 通用元信息。
+    string mode_name = 2;    // 模式名。
+    int32 mode_id = 3;       // 模式数值 ID（可选）。
+    bool sticky = 4;         // 是否粘性模式（直到显式切换）。
+}
+
+// 底盘平面运动 primitive。
+message PlanarMotionPrimitive {
+    PrimitiveMeta meta = 1;       // 通用元信息。
+    double vx = 2;                // X 向线速度。
+    double vy = 3;                // Y 向线速度。
+    double wz = 4;                // Z 轴角速度。
+    string reference_frame_id = 5; // 速度参考坐标系。
+}
+
+// 骨架中的单个关节点。
+message SkeletonJoint {
+    string name = 1;         // 关节点名称。
+    int32 parent_index = 2;  // 父节点索引，根节点为 -1。
+    Pose pose = 3;           // 当前关节点位姿。
+    float confidence = 4;    // 该关节点估计置信度。
+}
+
+// 骨架 primitive（动捕/视觉人体估计常用）。
+message SkeletonPrimitive {
+    PrimitiveMeta meta = 1;            // 通用元信息。
+    string skeleton_name = 2;          // 骨架名称，如 body_25、smpl。
+    string reference_frame_id = 3;     // 骨架参考坐标系。
+    repeated SkeletonJoint joints = 4; // 关节点列表。
+}
+
+// 单个关键点。
+message Landmark {
+    string name = 1;       // 关键点名称。
+    Point position = 2;    // 三维位置。
+    float confidence = 3;  // 估计置信度。
+    float visibility = 4;  // 可见性分数（可选）。
+}
+
+// 关键点集合 primitive（手部、人脸、上半身关键点等）。
+message LandmarkSetPrimitive {
+    PrimitiveMeta meta = 1;           // 通用元信息。
+    string set_name = 2;              // 集合名称，如 hand_landmarks。
+    string reference_frame_id = 3;    // 关键点参考坐标系。
+    repeated Landmark landmarks = 4;  // 关键点列表。
+}
+
+// 一个 Source 在一个时间片上的 typed primitives 集合。
+message PrimitiveFrame {
+    Header header = 1;         // 该帧时间戳与默认 frame_id。
+    FrameContext context = 2;  // 来源和语义上下文。
+    uint64 sequence_id = 3;    // 单 source 内递增序号。
+
+    repeated PosePrimitive poses = 10;                   // 位姿 primitives。
+    repeated TwistPrimitive twists = 11;                 // 速度 primitives。
+    repeated JointStatePrimitive joint_states = 12;      // 关节状态 primitives。
+    repeated JointCommandPrimitive joint_commands = 13;  // 关节命令 primitives。
+    repeated ScalarPrimitive scalars = 14;               // 标量 primitives。
+    repeated BooleanPrimitive booleans = 15;             // 布尔 primitives。
+    repeated ModePrimitive modes = 16;                   // 模式 primitives。
+    repeated PlanarMotionPrimitive planar_motions = 17;  // 平面运动 primitives。
+    repeated SkeletonPrimitive skeletons = 18;           // 骨架 primitives。
+    repeated LandmarkSetPrimitive landmark_sets = 19;    // 关键点集合 primitives。
+
+    map<string, string> tags = 30; // 帧级扩展字段（调试/统计/实验标记）。
+}

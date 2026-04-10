@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package puppet.puppet_proto;
+
+// Unix 时间戳（与 ROS2 风格保持一致）。
+message Timestamp {
+    int64 sec = 1;       // 自 Unix epoch 起的秒数。
+    fixed32 nanosec = 2; // 当前秒内纳秒，范围 [0, 1e9)。
+}
+
+// 时间长度。
+message Duration {
+    double sec = 1;      // 便于直接参与计算的秒表示。
+    int64 nanosec = 2;   // 精确纳秒表示，可与 sec 互补。
+}
+
+// 通用头部信息，用于时间与坐标系对齐。
+message Header {
+    Timestamp timestamp = 1; // 消息采样/生效时间。
+    string frame_id = 2;     // 数据所在坐标系。
+}
+
+// 三维点坐标。
+message Point {
+    double x = 1; // X 坐标。
+    double y = 2; // Y 坐标。
+    double z = 3; // Z 坐标。
+}
+
+// 三维向量（可用于速度、角速度、力等）。
+message Vector3 {
+    double x = 1; // X 分量。
+    double y = 2; // Y 分量。
+    double z = 3; // Z 分量。
+}
+
+// 四元数姿态，约定为 (x, y, z, w)。
+message Quaternion {
+    double x = 1; // 虚部 x。
+    double y = 2; // 虚部 y。
+    double z = 3; // 虚部 z。
+    double w = 4; // 实部 w。
+}
+
+// 位姿 = 位置 + 朝向。
+message Pose {
+    Point position = 1;           // 平移分量。
+    Quaternion orientation = 2;   // 旋转分量。
+}
+
+// 速度扭量（线速度 + 角速度）。
+message Twist {
+    Vector3 linear = 1;   // 线速度。
+    Vector3 angular = 2;  // 角速度。
+}

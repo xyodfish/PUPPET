@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package puppet.puppet_proto;
+
+import "puppet/common.proto";
+import "puppet/uniform.proto";
+
+// 末端位姿控制意图（EE = End Effector）。
+message CartPoseIntent {
+  string ee_name = 1;            // 末端名称，如 left_hand、right_tool。
+  string reference_frame_id = 2; // 意图参考坐标系。
+  Pose pose = 3;                 // 目标位姿。
+  Twist twist_feedforward = 4;   // 前馈速度（可选）。
+  double position_weight = 5;    // 位置跟踪权重。
+  double orientation_weight = 6; // 姿态跟踪权重。
+  float confidence = 7;          // 意图置信度。
+}
+
+// 关节命令控制意图。
+message JointCommandIntent {
+  // 关节命令模式。
+  enum JointCommandMode {
+    JOINT_COMMAND_MODE_UNSPECIFIED = 0;       // 未指定。
+    JOINT_COMMAND_MODE_POSITION = 1;          // 位置控制。
+    JOINT_COMMAND_MODE_VELOCITY = 2;          // 速度控制。
+    JOINT_COMMAND_MODE_EFFORT = 3;            // 力/力矩控制。
+    JOINT_COMMAND_MODE_POSITION_VELOCITY = 4; // 位置+速度复合控制。
+    JOINT_COMMAND_MODE_POSITION_EFFORT = 5;   // 位置+力复合控制。
+  }
+
+  BodyGroup body_group = 1;        // 目标身体分组。
+  JointCommandMode mode = 2;       // 命令模式。
+  repeated string joint_names = 3; // 关节名列表。
+  repeated double position = 4;    // 目标位置（按模式使用）。
+  repeated double velocity = 5;    // 目标速度（按模式使用）。
+  repeated double effort = 6;      // 目标力/力矩（按模式使用）。
+  repeated double stiffness = 7;   // 刚度参数（可选）。
+  repeated double damping = 8;     // 阻尼参数（可选）。
+  double weight = 9;               // 该意图在融合中的权重。
+}
+
+// 姿态/关节正则化意图（通常用于冗余自由度约束）。
+message PostureIntent {
+  BodyGroup body_group = 1;               // 目标身体分组。
+  repeated string joint_names = 2;        // 关节名列表。
+  repeated double preferred_position = 3; // 偏好位置。
+  double weight = 4;                      // 正则化权重。
+}
+
+// 底盘运动意图。
+message BaseMotionIntent {
+  string reference_frame_id = 1; // 速度参考坐标系。
+  double vx = 2;                 // X 向线速度。
+  double vy = 3;                 // Y 向线速度。
+  double wz = 4;                 // Z 轴角速度。
+  double accel_limit = 5;        // 加速度约束建议值。
+}
+
+// 约束请求（用于 backend 构造 hard/soft constraints）。
+message ConstraintRequest {
+  // 约束类型。
+  enum ConstraintType {
+    CONSTRAINT_TYPE_UNSPECIFIED = 0;              // 未指定约束。
+    CONSTRAINT_TYPE_JOINT_POSITION_LIMIT = 1;     // 关节位置限幅。
+    CONSTRAINT_TYPE_JOINT_VELOCITY_LIMIT = 2;     // 关节速度限幅。
+    CONSTRAINT_TYPE_JOINT_ACCELERATION_LIMIT = 3; // 关节加速度限幅。
+    CONSTRAINT_TYPE_SELF_COLLISION_AVOIDANCE = 4; // 自碰撞规避。
+    CONSTRAINT_TYPE_ENVIRONMENT_COLLISION_AVOIDANCE = 5; // 环境碰撞规避。
+    CONSTRAINT_TYPE_COM_SUPPORT = 6; // 质心/支撑约束。
+    CONSTRAINT_TYPE_CUSTOM = 100;    // 自定义约束。
+  }
+
+  ConstraintType type = 1; // 约束类型。
+  bool hard = 2;           // true: 硬约束；false: 软约束。
+  double weight = 3;       // 软约束权重。
+  string target = 4;       // 约束作用目标（链路/组名等）。
+  map<string, double> scalar_params = 5; // 数值参数。
+  map<string, string> string_params = 6; // 字符串参数。
+}
+
+// 分组级控制意图（编排层最核心的融合单元）。
+message GroupControlIntent {
+  BodyGroup body_group = 1;   // 对应身体分组。
+  string owner_source_id = 2; // 当前分组 owner 来源 ID。
+  string mode = 3;            // 分组控制模式。
+  uint32 priority = 4;        // 融合/仲裁优先级。
+  string backend_hint = 5;    // 建议 backend 类型（如 ik/tsid）。
+  bool enabled = 6;           // 该分组是否启用。
+
+  repeated CartPoseIntent ee_pose_intents = 10; // 末端位姿意图集合。
+  repeated JointCommandIntent joint_command_intents = 11; // 关节命令意图集合。
+  repeated PostureIntent posture_intents = 12; // 姿态正则意图集合。
+  repeated BaseMotionIntent base_motion_intents = 13; // 底盘运动意图集合。
+  repeated ConstraintRequest constraints = 14;        // 约束请求集合。
+
+  map<string, string> tags = 30; // 扩展字段（实验标记/调试信息）。
+}
+
+// control 层顶层消息：由 orchestrator/pipeline 输出给 backend。
+message ControlIntent {
+  Header header = 1;        // 消息头（时间与 frame_id）。
+  FrameContext context = 2; // 来源与语义上下文。
+  uint64 sequence_id = 3;   // 序号（便于去重和追踪）。
+
+  repeated GroupControlIntent group_intents = 10; // 各 body-group 控制意图。
+  map<string, string> tags = 30;                  // 扩展字段。
+}

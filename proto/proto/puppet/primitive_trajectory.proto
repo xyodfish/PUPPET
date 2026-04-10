@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package puppet.puppet_proto;
+
+import "puppet/common.proto";
+import "puppet/uniform.proto";
+import "puppet/primitive_frame.proto";
+
+// 轨迹时间域定义。
+enum TimeDomain {
+  TIME_DOMAIN_UNSPECIFIED = 0; // 未指定时间域。
+  TIME_DOMAIN_MONOTONIC = 1;   // 单调时钟（推荐用于运行时采样）。
+  TIME_DOMAIN_WALL_CLOCK = 2;  // 系统墙钟时间。
+  TIME_DOMAIN_ROBOT_TIME = 3;  // 机器人控制器时间。
+}
+
+// 轨迹默认插值策略。
+enum InterpolationMode {
+  INTERPOLATION_MODE_UNSPECIFIED = 0; // 未指定插值策略。
+  INTERPOLATION_MODE_HOLD = 1;        // 阶梯保持。
+  INTERPOLATION_MODE_LINEAR = 2;      // 线性插值（标量/向量）。
+  INTERPOLATION_MODE_SLERP = 3;       // 姿态球面线性插值。
+}
+
+// 轨迹级元数据。
+message TrajectoryHeader {
+  Header header = 1;                    // 轨迹消息头。
+  FrameContext context = 2;             // 来源与语义上下文。
+  string trajectory_id = 3;             // 轨迹唯一 ID。
+  TimeDomain time_domain = 4;           // 轨迹时间域。
+  Duration total_duration = 5;          // 总时长（可选）。
+  bool looping = 6;                     // 是否循环播放。
+  InterpolationMode default_interp = 7; // 默认插值策略。
+  map<string, string> tags = 20;        // 扩展字段。
+}
+
+// 轨迹采样点：在 t_from_start 时刻对应一个 PrimitiveFrame。
+message TimedPrimitiveFrame {
+  Duration t_from_start = 1; // 相对轨迹起点时间。
+  PrimitiveFrame frame = 2;  // 该时刻的 primitive 集合。
+}
+
+// Primitive 轨迹定义：
+// 1) samples 应按 t_from_start 严格升序；
+// 2) 运行时按 time_domain + 插值策略采样为单帧 PrimitiveFrame。
+message PrimitiveFrameTrajectory {
+  TrajectoryHeader trajectory = 1;            // 轨迹头信息。
+  repeated TimedPrimitiveFrame samples = 2;   // 采样点序列。
+  map<string, string> tags = 20;              // 轨迹级扩展字段。
+}

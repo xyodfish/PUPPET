@@ -103,8 +103,8 @@ cmake --build build -j"$(nproc)"
 
 ## 🛣️ Roadmap
 
-- [ ] 定义 `primitive_frame.proto`
-- [ ] 定义 `control_intent.proto`
+- [X] 定义 `primitive_frame.proto`
+- [X] 定义 `control_intent.proto`
 - [ ] 搭建 `teleop_runtime` 主循环
 - [ ] 实现 SourceManager 与 freshness 管理
 - [ ] 实现 body-group ownership / routing
