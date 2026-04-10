@@ -45,4 +45,4 @@ struct PrimitiveFrameTrajectory {
   TagMap tags;
 };
 
-}  // namespace puppet::model
+} // namespace puppet::model

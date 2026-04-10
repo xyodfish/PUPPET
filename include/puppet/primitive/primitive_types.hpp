@@ -126,4 +126,4 @@ struct PrimitiveFrame {
   TagMap tags;
 };
 
-}  // namespace puppet::model
+} // namespace puppet::model
