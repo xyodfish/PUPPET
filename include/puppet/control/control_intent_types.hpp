@@ -11,12 +11,12 @@
 namespace puppet::model {
 
 struct CartPoseIntent {
-  std::string ee_name;
-  std::string reference_frame_id;
+  std::string eeName;
+  std::string referenceFrameId;
   Pose pose;
-  Twist twist_feedforward;
-  double position_weight = 0.0;
-  double orientation_weight = 0.0;
+  Twist twistFeedforward;
+  double positionWeight = 0.0;
+  double orientationWeight = 0.0;
   float confidence = 0.0F;
 };
 
@@ -30,9 +30,9 @@ struct JointCommandIntent {
     kPositionEffort = 5,
   };
 
-  BodyGroup body_group = BodyGroup::kUnspecified;
+  BodyGroup bodyGroup = BodyGroup::kUnspecified;
   Mode mode = Mode::kUnspecified;
-  std::vector<std::string> joint_names;
+  std::vector<std::string> jointNames;
   std::vector<double> position;
   std::vector<double> velocity;
   std::vector<double> effort;
@@ -42,18 +42,18 @@ struct JointCommandIntent {
 };
 
 struct PostureIntent {
-  BodyGroup body_group = BodyGroup::kUnspecified;
-  std::vector<std::string> joint_names;
-  std::vector<double> preferred_position;
+  BodyGroup bodyGroup = BodyGroup::kUnspecified;
+  std::vector<std::string> jointNames;
+  std::vector<double> preferredPosition;
   double weight = 0.0;
 };
 
 struct BaseMotionIntent {
-  std::string reference_frame_id;
+  std::string referenceFrameId;
   double vx = 0.0;
   double vy = 0.0;
   double wz = 0.0;
-  double accel_limit = 0.0;
+  double accelLimit = 0.0;
 };
 
 struct ConstraintRequest {
@@ -72,22 +72,22 @@ struct ConstraintRequest {
   bool hard = false;
   double weight = 0.0;
   std::string target;
-  std::unordered_map<std::string, double> scalar_params;
-  std::unordered_map<std::string, std::string> string_params;
+  std::unordered_map<std::string, double> scalarParams;
+  std::unordered_map<std::string, std::string> stringParams;
 };
 
 struct GroupControlIntent {
-  BodyGroup body_group = BodyGroup::kUnspecified;
-  std::string owner_source_id;
+  BodyGroup bodyGroup = BodyGroup::kUnspecified;
+  std::string ownerSourceId;
   std::string mode;
   uint32_t priority = 0;
-  std::string backend_hint;
+  std::string backendHint;
   bool enabled = false;
 
-  std::vector<CartPoseIntent> ee_pose_intents;
-  std::vector<JointCommandIntent> joint_command_intents;
-  std::vector<PostureIntent> posture_intents;
-  std::vector<BaseMotionIntent> base_motion_intents;
+  std::vector<CartPoseIntent> eePoseIntents;
+  std::vector<JointCommandIntent> jointCommandIntents;
+  std::vector<PostureIntent> postureIntents;
+  std::vector<BaseMotionIntent> baseMotionIntents;
   std::vector<ConstraintRequest> constraints;
 
   TagMap tags;
@@ -96,10 +96,9 @@ struct GroupControlIntent {
 struct ControlIntent {
   Header header;
   FrameContext context;
-  uint64_t sequence_id = 0;
-  std::vector<GroupControlIntent> group_intents;
+  uint64_t sequenceId = 0;
+  std::vector<GroupControlIntent> groupIntents;
   TagMap tags;
 };
 
 }  // namespace puppet::model
-

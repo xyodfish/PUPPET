@@ -36,3 +36,25 @@ Install output includes:
 - C++ headers: `include/puppet/*.pb.h`
 - Python modules: `lib/python3/site-packages/puppet/*_pb2.py`
 - Raw `.proto` files: `share/puppet/proto/puppet/*.proto`
+
+## 3. Use With `find_package`
+
+After install, `puppet_proto` exports a CMake package config at:
+
+```text
+<install_prefix>/lib/cmake/puppet_proto/puppet_proto-config.cmake
+```
+
+In downstream project:
+
+```cmake
+find_package(puppet_proto CONFIG REQUIRED)
+target_link_libraries(your_target PRIVATE puppet_proto::puppet_proto)
+```
+
+Configure downstream build with:
+
+```bash
+cmake -S . -B build \
+  -DCMAKE_PREFIX_PATH=/home/yuxia/Workspace/PUPPET/devel/x86_64-Linux-GNU-9.4.0
+```

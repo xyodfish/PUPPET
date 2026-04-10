@@ -26,16 +26,16 @@ enum class InterpolationMode {
 struct TrajectoryHeader {
   Header header;
   FrameContext context;
-  std::string trajectory_id;
-  TimeDomain time_domain = TimeDomain::kUnspecified;
-  Duration total_duration;
+  std::string trajectoryId;
+  TimeDomain timeDomain = TimeDomain::kUnspecified;
+  Duration totalDuration;
   bool looping = false;
-  InterpolationMode default_interp = InterpolationMode::kUnspecified;
+  InterpolationMode defaultInterp = InterpolationMode::kUnspecified;
   TagMap tags;
 };
 
 struct TimedPrimitiveFrame {
-  Duration t_from_start;
+  Duration tFromStart;
   PrimitiveFrame frame;
 };
 
@@ -46,4 +46,3 @@ struct PrimitiveFrameTrajectory {
 };
 
 }  // namespace puppet::model
-

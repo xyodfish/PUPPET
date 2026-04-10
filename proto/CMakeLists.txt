@@ -4,6 +4,7 @@ project(puppet_proto VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+include(CMakePackageConfigHelpers)
 
 # Default install prefix:
 # <repo_root>/devel/x86_64-Linux-GNU-9.4.0
@@ -156,15 +157,44 @@ set_target_properties(puppet_proto PROPERTIES
 )
 
 install(TARGETS puppet_proto
+    EXPORT puppet_proto-targets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
-install(DIRECTORY "${PUPPET_CPP_GEN_DIR}/"
-    DESTINATION include
+install(FILES ${PUPPET_PROTO_CPP_HDRS}
+    DESTINATION include/puppet
 )
 install(DIRECTORY "${PUPPET_PY_GEN_DIR}/"
     DESTINATION lib/python3/site-packages
 )
 install(DIRECTORY "${PUPPET_PROTO_ROOT}/"
     DESTINATION share/puppet/proto
+)
+
+set(PUPPET_PROTO_CMAKE_INSTALL_DIR
+    "lib/cmake/puppet_proto"
+    CACHE STRING "Install directory for puppet_proto CMake package files.")
+
+install(EXPORT puppet_proto-targets
+    FILE puppet_proto-targets.cmake
+    NAMESPACE puppet_proto::
+    DESTINATION "${PUPPET_PROTO_CMAKE_INSTALL_DIR}"
+)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/puppet_proto-config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/puppet_proto-config.cmake"
+    INSTALL_DESTINATION "${PUPPET_PROTO_CMAKE_INSTALL_DIR}"
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/puppet_proto-config-version.cmake"
+    VERSION "${PROJECT_VERSION}"
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/puppet_proto-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/puppet_proto-config-version.cmake"
+    DESTINATION "${PUPPET_PROTO_CMAKE_INSTALL_DIR}"
 )

@@ -17,7 +17,7 @@ struct Duration {
 
 struct Header {
   Timestamp timestamp;
-  std::string frame_id;
+  std::string frameId;
 };
 
 struct Point {
@@ -50,4 +50,3 @@ struct Twist {
 };
 
 }  // namespace puppet::model
-

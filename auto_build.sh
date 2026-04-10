@@ -12,7 +12,9 @@ help_function() {
   --proto-only     仅构建 proto
   --main-only      仅构建主工程
   --install-proto  构建 proto 后执行安装
-  --install-prefix 指定 proto 安装前缀（默认: ./devel）
+  --install-prefix 指定 proto 安装前缀（默认: ./devel/x86_64-Linux-GNU-9.4.0）
+  --cmake-install-dir 指定 proto 的 CMake package 安装相对目录
+                     （默认: lib/cmake/puppet_proto）
   -j, --jobs N     并行编译线程数（默认: nproc）
   --clean          构建前清理 build 与 proto/build
   -h, --help       显示帮助
@@ -21,6 +23,7 @@ help_function() {
   ./auto_build.sh
   ./auto_build.sh --proto-only
   ./auto_build.sh --proto-only --install-proto --install-prefix ./devel/x86_64-Linux-GNU-9.4.0
+  ./auto_build.sh --proto-only --cmake-install-dir lib/cmake/puppet_proto_v2
   ./auto_build.sh --main-only -j 12
   ./auto_build.sh --clean --proto
 EOF
@@ -32,7 +35,9 @@ CLEAN_FIRST=false
 BUILD_MAIN=true
 BUILD_PROTO=true
 INSTALL_PROTO=false
-INSTALL_PREFIX="${CURRENT_DIR}/devel"
+INSTALL_PREFIX="${CURRENT_DIR}/devel/x86_64-Linux-GNU-9.4.0"
+DEFAULT_PROTO_CMAKE_INSTALL_DIR="lib/cmake/puppet_proto"
+PROTO_CMAKE_INSTALL_DIR=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -66,6 +71,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --install-prefix=*)
       INSTALL_PREFIX="${1#--install-prefix=}"
+      shift
+      ;;
+    --cmake-install-dir)
+      PROTO_CMAKE_INSTALL_DIR="$2"
+      shift 2
+      ;;
+    --cmake-install-dir=*)
+      PROTO_CMAKE_INSTALL_DIR="${1#--cmake-install-dir=}"
       shift
       ;;
     -j|--jobs)
@@ -106,7 +119,10 @@ build_main() {
 
 build_proto() {
   echo "[auto_build] configure proto project..."
-  cmake -S "${CURRENT_DIR}/proto" -B "${CURRENT_DIR}/proto/build"
+  effectiveProtoCmakeInstallDir="${PROTO_CMAKE_INSTALL_DIR:-${DEFAULT_PROTO_CMAKE_INSTALL_DIR}}"
+  cmakeArgs=(-S "${CURRENT_DIR}/proto" -B "${CURRENT_DIR}/proto/build")
+  cmakeArgs+=("-DPUPPET_PROTO_CMAKE_INSTALL_DIR=${effectiveProtoCmakeInstallDir}")
+  cmake "${cmakeArgs[@]}"
   echo "[auto_build] build proto project (-j${JOBS})..."
   cmake --build "${CURRENT_DIR}/proto/build" -j"${JOBS}"
 
@@ -116,7 +132,7 @@ build_proto() {
   fi
 }
 
-echo "[auto_build] settings: BUILD_MAIN=${BUILD_MAIN}, BUILD_PROTO=${BUILD_PROTO}, INSTALL_PROTO=${INSTALL_PROTO}, INSTALL_PREFIX=${INSTALL_PREFIX}, JOBS=${JOBS}"
+echo "[auto_build] settings: BUILD_MAIN=${BUILD_MAIN}, BUILD_PROTO=${BUILD_PROTO}, INSTALL_PROTO=${INSTALL_PROTO}, INSTALL_PREFIX=${INSTALL_PREFIX}, PROTO_CMAKE_INSTALL_DIR=${PROTO_CMAKE_INSTALL_DIR:-${DEFAULT_PROTO_CMAKE_INSTALL_DIR}}, JOBS=${JOBS}"
 
 if [[ "${BUILD_MAIN}" == "true" ]]; then
   build_main

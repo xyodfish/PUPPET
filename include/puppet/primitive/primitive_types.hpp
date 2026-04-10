@@ -12,20 +12,20 @@ namespace puppet::model {
 struct PosePrimitive {
   PrimitiveMeta meta;
   Pose pose;
-  bool is_relative = false;
-  std::string target_frame_id;
+  bool isRelative = false;
+  std::string targetFrameId;
 };
 
 struct TwistPrimitive {
   PrimitiveMeta meta;
   Twist twist;
-  std::string body_frame_id;
-  std::string reference_frame_id;
+  std::string bodyFrameId;
+  std::string referenceFrameId;
 };
 
 struct JointStatePrimitive {
   PrimitiveMeta meta;
-  std::vector<std::string> joint_names;
+  std::vector<std::string> jointNames;
   std::vector<double> position;
   std::vector<double> velocity;
   std::vector<double> effort;
@@ -44,7 +44,7 @@ enum class JointCommandMode {
 struct JointCommandPrimitive {
   PrimitiveMeta meta;
   JointCommandMode mode = JointCommandMode::kUnspecified;
-  std::vector<std::string> joint_names;
+  std::vector<std::string> jointNames;
   std::vector<double> position;
   std::vector<double> velocity;
   std::vector<double> effort;
@@ -55,8 +55,8 @@ struct JointCommandPrimitive {
 struct ScalarPrimitive {
   PrimitiveMeta meta;
   double value = 0.0;
-  double min_value = 0.0;
-  double max_value = 0.0;
+  double minValue = 0.0;
+  double maxValue = 0.0;
 };
 
 struct BooleanPrimitive {
@@ -66,8 +66,8 @@ struct BooleanPrimitive {
 
 struct ModePrimitive {
   PrimitiveMeta meta;
-  std::string mode_name;
-  int32_t mode_id = 0;
+  std::string modeName;
+  int32_t modeId = 0;
   bool sticky = false;
 };
 
@@ -76,20 +76,20 @@ struct PlanarMotionPrimitive {
   double vx = 0.0;
   double vy = 0.0;
   double wz = 0.0;
-  std::string reference_frame_id;
+  std::string referenceFrameId;
 };
 
 struct SkeletonJoint {
   std::string name;
-  int32_t parent_index = -1;
+  int32_t parentIndex = -1;
   Pose pose;
   float confidence = 0.0F;
 };
 
 struct SkeletonPrimitive {
   PrimitiveMeta meta;
-  std::string skeleton_name;
-  std::string reference_frame_id;
+  std::string skeletonName;
+  std::string referenceFrameId;
   std::vector<SkeletonJoint> joints;
 };
 
@@ -102,29 +102,28 @@ struct Landmark {
 
 struct LandmarkSetPrimitive {
   PrimitiveMeta meta;
-  std::string set_name;
-  std::string reference_frame_id;
+  std::string setName;
+  std::string referenceFrameId;
   std::vector<Landmark> landmarks;
 };
 
 struct PrimitiveFrame {
   Header header;
   FrameContext context;
-  uint64_t sequence_id = 0;
+  uint64_t sequenceId = 0;
 
   std::vector<PosePrimitive> poses;
   std::vector<TwistPrimitive> twists;
-  std::vector<JointStatePrimitive> joint_states;
-  std::vector<JointCommandPrimitive> joint_commands;
+  std::vector<JointStatePrimitive> jointStates;
+  std::vector<JointCommandPrimitive> jointCommands;
   std::vector<ScalarPrimitive> scalars;
   std::vector<BooleanPrimitive> booleans;
   std::vector<ModePrimitive> modes;
-  std::vector<PlanarMotionPrimitive> planar_motions;
+  std::vector<PlanarMotionPrimitive> planarMotions;
   std::vector<SkeletonPrimitive> skeletons;
-  std::vector<LandmarkSetPrimitive> landmark_sets;
+  std::vector<LandmarkSetPrimitive> landmarkSets;
 
   TagMap tags;
 };
 
 }  // namespace puppet::model
-

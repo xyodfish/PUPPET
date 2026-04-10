@@ -35,21 +35,21 @@ enum class SourceType {
 };
 
 struct FrameContext {
-  std::string source_id;
-  SourceType source_type = SourceType::kUnspecified;
-  std::string semantic_context;
+  std::string sourceId;
+  SourceType sourceType = SourceType::kUnspecified;
+  std::string semanticContext;
   std::string mode;
-  std::string robot_id;
-  std::string pipeline_id;
+  std::string robotId;
+  std::string pipelineId;
   TagMap tags;
 };
 
 struct PrimitiveMeta {
   std::string name;
   std::string entity;
-  BodyGroup body_group = BodyGroup::kUnspecified;
-  std::string frame_id;
-  std::string reference_frame_id;
+  BodyGroup bodyGroup = BodyGroup::kUnspecified;
+  std::string frameId;
+  std::string referenceFrameId;
   Timestamp timestamp;
   float confidence = 0.0F;
   bool valid = false;
@@ -57,4 +57,3 @@ struct PrimitiveMeta {
 };
 
 }  // namespace puppet::model
-

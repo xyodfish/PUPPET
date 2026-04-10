@@ -1,0 +1,20 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+set(_puppetProtoProtobufPrefix "@PUPPET_PROTOBUF_PREFIX@")
+if(EXISTS "${_puppetProtoProtobufPrefix}/include/google/protobuf/port_def.inc")
+  set(Protobuf_INCLUDE_DIR "${_puppetProtoProtobufPrefix}/include")
+  if(EXISTS "${_puppetProtoProtobufPrefix}/lib/libprotobuf.so")
+    set(Protobuf_LIBRARY "${_puppetProtoProtobufPrefix}/lib/libprotobuf.so")
+  elseif(EXISTS "${_puppetProtoProtobufPrefix}/lib/libprotobuf.a")
+    set(Protobuf_LIBRARY "${_puppetProtoProtobufPrefix}/lib/libprotobuf.a")
+  endif()
+  if(EXISTS "${_puppetProtoProtobufPrefix}/bin/protoc")
+    set(Protobuf_PROTOC_EXECUTABLE "${_puppetProtoProtobufPrefix}/bin/protoc")
+  endif()
+endif()
+
+find_dependency(Protobuf REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/puppet_proto-targets.cmake")

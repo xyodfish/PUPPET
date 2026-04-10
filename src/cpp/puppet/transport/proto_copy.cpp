@@ -43,7 +43,7 @@ bool CopyFromProto(const ::puppet::puppet_proto::Duration& src, model::Duration*
 bool CopyFromProto(const ::puppet::puppet_proto::Header& src, model::Header* dst) {
   if (dst == nullptr) return false;
   CopyFromProto(src.timestamp(), &dst->timestamp);
-  dst->frame_id = src.frame_id();
+  dst->frameId = src.frame_id();
   return true;
 }
 
@@ -88,12 +88,12 @@ bool CopyFromProto(const ::puppet::puppet_proto::Twist& src, model::Twist* dst) 
 
 bool CopyFromProto(const ::puppet::puppet_proto::FrameContext& src, model::FrameContext* dst) {
   if (dst == nullptr) return false;
-  dst->source_id = src.source_id();
-  dst->source_type = static_cast<model::SourceType>(src.source_type());
-  dst->semantic_context = src.semantic_context();
+  dst->sourceId = src.source_id();
+  dst->sourceType = static_cast<model::SourceType>(src.source_type());
+  dst->semanticContext = src.semantic_context();
   dst->mode = src.mode();
-  dst->robot_id = src.robot_id();
-  dst->pipeline_id = src.pipeline_id();
+  dst->robotId = src.robot_id();
+  dst->pipelineId = src.pipeline_id();
   CopyMap(src.tags(), &dst->tags);
   return true;
 }
@@ -102,9 +102,9 @@ bool CopyFromProto(const ::puppet::puppet_proto::PrimitiveMeta& src, model::Prim
   if (dst == nullptr) return false;
   dst->name = src.name();
   dst->entity = src.entity();
-  dst->body_group = static_cast<model::BodyGroup>(src.body_group());
-  dst->frame_id = src.frame_id();
-  dst->reference_frame_id = src.reference_frame_id();
+  dst->bodyGroup = static_cast<model::BodyGroup>(src.body_group());
+  dst->frameId = src.frame_id();
+  dst->referenceFrameId = src.reference_frame_id();
   CopyFromProto(src.timestamp(), &dst->timestamp);
   dst->confidence = src.confidence();
   dst->valid = src.valid();
@@ -116,8 +116,8 @@ bool CopyFromProto(const ::puppet::puppet_proto::PosePrimitive& src, model::Pose
   if (dst == nullptr) return false;
   CopyFromProto(src.meta(), &dst->meta);
   CopyFromProto(src.pose(), &dst->pose);
-  dst->is_relative = src.is_relative();
-  dst->target_frame_id = src.target_frame_id();
+  dst->isRelative = src.is_relative();
+  dst->targetFrameId = src.target_frame_id();
   return true;
 }
 
@@ -125,8 +125,8 @@ bool CopyFromProto(const ::puppet::puppet_proto::TwistPrimitive& src, model::Twi
   if (dst == nullptr) return false;
   CopyFromProto(src.meta(), &dst->meta);
   CopyFromProto(src.twist(), &dst->twist);
-  dst->body_frame_id = src.body_frame_id();
-  dst->reference_frame_id = src.reference_frame_id();
+  dst->bodyFrameId = src.body_frame_id();
+  dst->referenceFrameId = src.reference_frame_id();
   return true;
 }
 
@@ -135,7 +135,7 @@ bool CopyFromProto(
     model::JointStatePrimitive* dst) {
   if (dst == nullptr) return false;
   CopyFromProto(src.meta(), &dst->meta);
-  CopyStringRepeated(src.joint_names(), &dst->joint_names);
+  CopyStringRepeated(src.joint_names(), &dst->jointNames);
   CopyScalarRepeated(src.position(), &dst->position);
   CopyScalarRepeated(src.velocity(), &dst->velocity);
   CopyScalarRepeated(src.effort(), &dst->effort);
@@ -149,7 +149,7 @@ bool CopyFromProto(
   if (dst == nullptr) return false;
   CopyFromProto(src.meta(), &dst->meta);
   dst->mode = static_cast<model::JointCommandMode>(src.mode());
-  CopyStringRepeated(src.joint_names(), &dst->joint_names);
+  CopyStringRepeated(src.joint_names(), &dst->jointNames);
   CopyScalarRepeated(src.position(), &dst->position);
   CopyScalarRepeated(src.velocity(), &dst->velocity);
   CopyScalarRepeated(src.effort(), &dst->effort);
@@ -162,8 +162,8 @@ bool CopyFromProto(const ::puppet::puppet_proto::ScalarPrimitive& src, model::Sc
   if (dst == nullptr) return false;
   CopyFromProto(src.meta(), &dst->meta);
   dst->value = src.value();
-  dst->min_value = src.min_value();
-  dst->max_value = src.max_value();
+  dst->minValue = src.min_value();
+  dst->maxValue = src.max_value();
   return true;
 }
 
@@ -177,8 +177,8 @@ bool CopyFromProto(const ::puppet::puppet_proto::BooleanPrimitive& src, model::B
 bool CopyFromProto(const ::puppet::puppet_proto::ModePrimitive& src, model::ModePrimitive* dst) {
   if (dst == nullptr) return false;
   CopyFromProto(src.meta(), &dst->meta);
-  dst->mode_name = src.mode_name();
-  dst->mode_id = src.mode_id();
+  dst->modeName = src.mode_name();
+  dst->modeId = src.mode_id();
   dst->sticky = src.sticky();
   return true;
 }
@@ -191,14 +191,14 @@ bool CopyFromProto(
   dst->vx = src.vx();
   dst->vy = src.vy();
   dst->wz = src.wz();
-  dst->reference_frame_id = src.reference_frame_id();
+  dst->referenceFrameId = src.reference_frame_id();
   return true;
 }
 
 bool CopyFromProto(const ::puppet::puppet_proto::SkeletonJoint& src, model::SkeletonJoint* dst) {
   if (dst == nullptr) return false;
   dst->name = src.name();
-  dst->parent_index = src.parent_index();
+  dst->parentIndex = src.parent_index();
   CopyFromProto(src.pose(), &dst->pose);
   dst->confidence = src.confidence();
   return true;
@@ -209,8 +209,8 @@ bool CopyFromProto(
     model::SkeletonPrimitive* dst) {
   if (dst == nullptr) return false;
   CopyFromProto(src.meta(), &dst->meta);
-  dst->skeleton_name = src.skeleton_name();
-  dst->reference_frame_id = src.reference_frame_id();
+  dst->skeletonName = src.skeleton_name();
+  dst->referenceFrameId = src.reference_frame_id();
   dst->joints.clear();
   dst->joints.reserve(src.joints_size());
   for (const auto& joint : src.joints()) {
@@ -235,8 +235,8 @@ bool CopyFromProto(
     model::LandmarkSetPrimitive* dst) {
   if (dst == nullptr) return false;
   CopyFromProto(src.meta(), &dst->meta);
-  dst->set_name = src.set_name();
-  dst->reference_frame_id = src.reference_frame_id();
+  dst->setName = src.set_name();
+  dst->referenceFrameId = src.reference_frame_id();
   dst->landmarks.clear();
   dst->landmarks.reserve(src.landmarks_size());
   for (const auto& landmark : src.landmarks()) {
@@ -251,7 +251,7 @@ bool CopyFromProto(const ::puppet::puppet_proto::PrimitiveFrame& src, model::Pri
   if (dst == nullptr) return false;
   CopyFromProto(src.header(), &dst->header);
   CopyFromProto(src.context(), &dst->context);
-  dst->sequence_id = src.sequence_id();
+  dst->sequenceId = src.sequence_id();
 
   dst->poses.clear();
   dst->poses.reserve(src.poses_size());
@@ -269,20 +269,20 @@ bool CopyFromProto(const ::puppet::puppet_proto::PrimitiveFrame& src, model::Pri
     dst->twists.push_back(std::move(copied));
   }
 
-  dst->joint_states.clear();
-  dst->joint_states.reserve(src.joint_states_size());
+  dst->jointStates.clear();
+  dst->jointStates.reserve(src.joint_states_size());
   for (const auto& v : src.joint_states()) {
     model::JointStatePrimitive copied;
     CopyFromProto(v, &copied);
-    dst->joint_states.push_back(std::move(copied));
+    dst->jointStates.push_back(std::move(copied));
   }
 
-  dst->joint_commands.clear();
-  dst->joint_commands.reserve(src.joint_commands_size());
+  dst->jointCommands.clear();
+  dst->jointCommands.reserve(src.joint_commands_size());
   for (const auto& v : src.joint_commands()) {
     model::JointCommandPrimitive copied;
     CopyFromProto(v, &copied);
-    dst->joint_commands.push_back(std::move(copied));
+    dst->jointCommands.push_back(std::move(copied));
   }
 
   dst->scalars.clear();
@@ -309,12 +309,12 @@ bool CopyFromProto(const ::puppet::puppet_proto::PrimitiveFrame& src, model::Pri
     dst->modes.push_back(std::move(copied));
   }
 
-  dst->planar_motions.clear();
-  dst->planar_motions.reserve(src.planar_motions_size());
+  dst->planarMotions.clear();
+  dst->planarMotions.reserve(src.planar_motions_size());
   for (const auto& v : src.planar_motions()) {
     model::PlanarMotionPrimitive copied;
     CopyFromProto(v, &copied);
-    dst->planar_motions.push_back(std::move(copied));
+    dst->planarMotions.push_back(std::move(copied));
   }
 
   dst->skeletons.clear();
@@ -325,12 +325,12 @@ bool CopyFromProto(const ::puppet::puppet_proto::PrimitiveFrame& src, model::Pri
     dst->skeletons.push_back(std::move(copied));
   }
 
-  dst->landmark_sets.clear();
-  dst->landmark_sets.reserve(src.landmark_sets_size());
+  dst->landmarkSets.clear();
+  dst->landmarkSets.reserve(src.landmark_sets_size());
   for (const auto& v : src.landmark_sets()) {
     model::LandmarkSetPrimitive copied;
     CopyFromProto(v, &copied);
-    dst->landmark_sets.push_back(std::move(copied));
+    dst->landmarkSets.push_back(std::move(copied));
   }
 
   CopyMap(src.tags(), &dst->tags);
@@ -339,23 +339,23 @@ bool CopyFromProto(const ::puppet::puppet_proto::PrimitiveFrame& src, model::Pri
 
 bool CopyFromProto(const ::puppet::puppet_proto::CartPoseIntent& src, model::CartPoseIntent* dst) {
   if (dst == nullptr) return false;
-  dst->ee_name = src.ee_name();
-  dst->reference_frame_id = src.reference_frame_id();
+  dst->eeName = src.ee_name();
+  dst->referenceFrameId = src.reference_frame_id();
   CopyFromProto(src.pose(), &dst->pose);
-  CopyFromProto(src.twist_feedforward(), &dst->twist_feedforward);
-  dst->position_weight = src.position_weight();
-  dst->orientation_weight = src.orientation_weight();
+  CopyFromProto(src.twist_feedforward(), &dst->twistFeedforward);
+  dst->positionWeight = src.position_weight();
+  dst->orientationWeight = src.orientation_weight();
   dst->confidence = src.confidence();
   return true;
 }
 
 bool CopyFromProto(
-    const ::puppet::puppet_proto::JointCommandIntent& src,
-    model::JointCommandIntent* dst) {
+  const ::puppet::puppet_proto::JointCommandIntent& src,
+  model::JointCommandIntent* dst) {
   if (dst == nullptr) return false;
-  dst->body_group = static_cast<model::BodyGroup>(src.body_group());
+  dst->bodyGroup = static_cast<model::BodyGroup>(src.body_group());
   dst->mode = static_cast<model::JointCommandIntent::Mode>(src.mode());
-  CopyStringRepeated(src.joint_names(), &dst->joint_names);
+  CopyStringRepeated(src.joint_names(), &dst->jointNames);
   CopyScalarRepeated(src.position(), &dst->position);
   CopyScalarRepeated(src.velocity(), &dst->velocity);
   CopyScalarRepeated(src.effort(), &dst->effort);
@@ -367,22 +367,22 @@ bool CopyFromProto(
 
 bool CopyFromProto(const ::puppet::puppet_proto::PostureIntent& src, model::PostureIntent* dst) {
   if (dst == nullptr) return false;
-  dst->body_group = static_cast<model::BodyGroup>(src.body_group());
-  CopyStringRepeated(src.joint_names(), &dst->joint_names);
-  CopyScalarRepeated(src.preferred_position(), &dst->preferred_position);
+  dst->bodyGroup = static_cast<model::BodyGroup>(src.body_group());
+  CopyStringRepeated(src.joint_names(), &dst->jointNames);
+  CopyScalarRepeated(src.preferred_position(), &dst->preferredPosition);
   dst->weight = src.weight();
   return true;
 }
 
 bool CopyFromProto(
-    const ::puppet::puppet_proto::BaseMotionIntent& src,
-    model::BaseMotionIntent* dst) {
+  const ::puppet::puppet_proto::BaseMotionIntent& src,
+  model::BaseMotionIntent* dst) {
   if (dst == nullptr) return false;
-  dst->reference_frame_id = src.reference_frame_id();
+  dst->referenceFrameId = src.reference_frame_id();
   dst->vx = src.vx();
   dst->vy = src.vy();
   dst->wz = src.wz();
-  dst->accel_limit = src.accel_limit();
+  dst->accelLimit = src.accel_limit();
   return true;
 }
 
@@ -394,52 +394,52 @@ bool CopyFromProto(
   dst->hard = src.hard();
   dst->weight = src.weight();
   dst->target = src.target();
-  CopyMap(src.scalar_params(), &dst->scalar_params);
-  CopyMap(src.string_params(), &dst->string_params);
+  CopyMap(src.scalar_params(), &dst->scalarParams);
+  CopyMap(src.string_params(), &dst->stringParams);
   return true;
 }
 
 bool CopyFromProto(
-    const ::puppet::puppet_proto::GroupControlIntent& src,
-    model::GroupControlIntent* dst) {
+  const ::puppet::puppet_proto::GroupControlIntent& src,
+  model::GroupControlIntent* dst) {
   if (dst == nullptr) return false;
-  dst->body_group = static_cast<model::BodyGroup>(src.body_group());
-  dst->owner_source_id = src.owner_source_id();
+  dst->bodyGroup = static_cast<model::BodyGroup>(src.body_group());
+  dst->ownerSourceId = src.owner_source_id();
   dst->mode = src.mode();
   dst->priority = src.priority();
-  dst->backend_hint = src.backend_hint();
+  dst->backendHint = src.backend_hint();
   dst->enabled = src.enabled();
 
-  dst->ee_pose_intents.clear();
-  dst->ee_pose_intents.reserve(src.ee_pose_intents_size());
+  dst->eePoseIntents.clear();
+  dst->eePoseIntents.reserve(src.ee_pose_intents_size());
   for (const auto& v : src.ee_pose_intents()) {
     model::CartPoseIntent copied;
     CopyFromProto(v, &copied);
-    dst->ee_pose_intents.push_back(std::move(copied));
+    dst->eePoseIntents.push_back(std::move(copied));
   }
 
-  dst->joint_command_intents.clear();
-  dst->joint_command_intents.reserve(src.joint_command_intents_size());
+  dst->jointCommandIntents.clear();
+  dst->jointCommandIntents.reserve(src.joint_command_intents_size());
   for (const auto& v : src.joint_command_intents()) {
     model::JointCommandIntent copied;
     CopyFromProto(v, &copied);
-    dst->joint_command_intents.push_back(std::move(copied));
+    dst->jointCommandIntents.push_back(std::move(copied));
   }
 
-  dst->posture_intents.clear();
-  dst->posture_intents.reserve(src.posture_intents_size());
+  dst->postureIntents.clear();
+  dst->postureIntents.reserve(src.posture_intents_size());
   for (const auto& v : src.posture_intents()) {
     model::PostureIntent copied;
     CopyFromProto(v, &copied);
-    dst->posture_intents.push_back(std::move(copied));
+    dst->postureIntents.push_back(std::move(copied));
   }
 
-  dst->base_motion_intents.clear();
-  dst->base_motion_intents.reserve(src.base_motion_intents_size());
+  dst->baseMotionIntents.clear();
+  dst->baseMotionIntents.reserve(src.base_motion_intents_size());
   for (const auto& v : src.base_motion_intents()) {
     model::BaseMotionIntent copied;
     CopyFromProto(v, &copied);
-    dst->base_motion_intents.push_back(std::move(copied));
+    dst->baseMotionIntents.push_back(std::move(copied));
   }
 
   dst->constraints.clear();
@@ -458,14 +458,14 @@ bool CopyFromProto(const ::puppet::puppet_proto::ControlIntent& src, model::Cont
   if (dst == nullptr) return false;
   CopyFromProto(src.header(), &dst->header);
   CopyFromProto(src.context(), &dst->context);
-  dst->sequence_id = src.sequence_id();
+  dst->sequenceId = src.sequence_id();
 
-  dst->group_intents.clear();
-  dst->group_intents.reserve(src.group_intents_size());
+  dst->groupIntents.clear();
+  dst->groupIntents.reserve(src.group_intents_size());
   for (const auto& v : src.group_intents()) {
     model::GroupControlIntent copied;
     CopyFromProto(v, &copied);
-    dst->group_intents.push_back(std::move(copied));
+    dst->groupIntents.push_back(std::move(copied));
   }
 
   CopyMap(src.tags(), &dst->tags);
@@ -478,20 +478,20 @@ bool CopyFromProto(
   if (dst == nullptr) return false;
   CopyFromProto(src.header(), &dst->header);
   CopyFromProto(src.context(), &dst->context);
-  dst->trajectory_id = src.trajectory_id();
-  dst->time_domain = static_cast<model::TimeDomain>(src.time_domain());
-  CopyFromProto(src.total_duration(), &dst->total_duration);
+  dst->trajectoryId = src.trajectory_id();
+  dst->timeDomain = static_cast<model::TimeDomain>(src.time_domain());
+  CopyFromProto(src.total_duration(), &dst->totalDuration);
   dst->looping = src.looping();
-  dst->default_interp = static_cast<model::InterpolationMode>(src.default_interp());
+  dst->defaultInterp = static_cast<model::InterpolationMode>(src.default_interp());
   CopyMap(src.tags(), &dst->tags);
   return true;
 }
 
 bool CopyFromProto(
-    const ::puppet::puppet_proto::TimedPrimitiveFrame& src,
-    model::TimedPrimitiveFrame* dst) {
+  const ::puppet::puppet_proto::TimedPrimitiveFrame& src,
+  model::TimedPrimitiveFrame* dst) {
   if (dst == nullptr) return false;
-  CopyFromProto(src.t_from_start(), &dst->t_from_start);
+  CopyFromProto(src.t_from_start(), &dst->tFromStart);
   CopyFromProto(src.frame(), &dst->frame);
   return true;
 }
@@ -515,4 +515,3 @@ bool CopyFromProto(
 }
 
 }  // namespace puppet::transport
-
