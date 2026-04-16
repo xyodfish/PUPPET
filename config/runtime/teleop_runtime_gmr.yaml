@@ -1,0 +1,58 @@
+loop_hz: 100
+enable_mock_source: false
+
+mock_human_bodies:
+  - pelvis
+  - spine3
+  - left_hip
+  - right_hip
+  - left_knee
+  - right_knee
+  - left_foot
+  - right_foot
+  - left_shoulder
+  - right_shoulder
+  - left_elbow
+  - right_elbow
+  - left_wrist
+  - right_wrist
+
+sources:
+  - source_id: static_file_device
+    source_type: external
+    topic: static_file_device
+    freshness_timeout_ms: 200
+    history_size: 8
+
+group_routing:
+  - body_group: whole_body
+    owner_source: static_file_device
+    mode: gmr
+    pipeline: gmr_pipeline
+    backend: direct_backend
+
+pipelines:
+  - pipeline_id: gmr_pipeline
+    plugin: gmr
+
+backends:
+  - backend_id: direct_backend
+    type: direct_mapping
+
+gmr_plugin:
+  enabled: true
+  backend: pin_ik
+  robot_model_path: "assets/unitree_g1/g1_custom_collision_29dof.urdf"
+  ik_config_path: /data/open_src_code/GMR_custom/general_motion_retargeting/ik_configs/bvh_lafan1_to_g1.json
+  actual_human_height: 1.75
+  damping: 0.5
+  max_iterations: 20
+  use_velocity_limit: false
+  integration_timestep: 0.01
+  progress_threshold: 0.001
+
+embosa_runtime:
+  node_name: puppet_teleop_runtime
+  input_topic_name: puppet_demo/primitive_frame
+  output_control_intent_topic: puppet_demo/control_intent
+  idle_sleep_ms: 2

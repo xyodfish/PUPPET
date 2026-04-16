@@ -1,0 +1,20 @@
+gmr_root: /data/open_src_code/GMR_custom
+robot: unitree_g1
+src_human: bvh_lafan1
+# human_frame_json: /data/open_src_code/GMR_custom/tmp/pushAndStumble1_subject2_retarget_frames.json
+human_frame_json: /data2/Documents/lafan1/fight1_subject5_retarget_frame.json
+actual_human_height: 1.75
+
+damping: 0.5
+max_iter: 10
+use_velocity_limit: false
+
+offset_to_ground: false
+loop: true
+realtime: true
+backend: mujoco_se3 # pin_ik / pin_ik_jacobian_legacy / mujoco_se3 / mujoco_jacobian_legacy
+
+transparent_robot: 0
+show_human_overlay: true
+window_width: 1280
+window_height: 720

@@ -1,0 +1,6 @@
+node_name: puppet_static_file_replay_device
+topic_name: puppet_demo/primitive_frame
+source_id: static_file_device
+human_frame_json: /data2/Documents/lafan1/fight1_subject5_retarget_frame.json
+loop_hz: 30
+loop_playback: true

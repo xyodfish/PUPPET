@@ -1,0 +1,20 @@
+{
+  "pelvis": {"position": [0.0, 0.0, 1.0], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "spine3": {"position": [0.0, 0.0, 1.25], "orientation": [1.0, 0.0, 0.0, 0.0]},
+
+  "left_hip": {"position": [0.0, 0.09, 0.9], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "left_knee": {"position": [0.0, 0.09, 0.52], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "left_foot": {"position": [0.08, 0.09, 0.08], "orientation": [1.0, 0.0, 0.0, 0.0]},
+
+  "right_hip": {"position": [0.0, -0.09, 0.9], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "right_knee": {"position": [0.0, -0.09, 0.52], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "right_foot": {"position": [0.08, -0.09, 0.08], "orientation": [1.0, 0.0, 0.0, 0.0]},
+
+  "left_shoulder": {"position": [0.0, 0.20, 1.30], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "left_elbow": {"position": [0.15, 0.35, 1.22], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "left_wrist": {"position": [0.35, 0.45, 1.15], "orientation": [1.0, 0.0, 0.0, 0.0]},
+
+  "right_shoulder": {"position": [0.0, -0.20, 1.30], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "right_elbow": {"position": [0.15, -0.35, 1.22], "orientation": [1.0, 0.0, 0.0, 0.0]},
+  "right_wrist": {"position": [0.35, -0.45, 1.15], "orientation": [1.0, 0.0, 0.0, 0.0]}
+}

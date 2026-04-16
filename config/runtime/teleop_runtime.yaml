@@ -1,0 +1,36 @@
+loop_hz: 100
+enable_mock_source: true
+
+sources:
+  - source_id: mock_source
+    source_type: external
+    topic: mock_source
+    freshness_timeout_ms: 200
+    history_size: 8
+
+group_routing:
+  - body_group: right_arm
+    owner_source: mock_source
+    mode: direct
+    pipeline: direct_pipeline
+    backend: direct_backend
+
+pipelines:
+  - pipeline_id: direct_pipeline
+    plugin: direct_pass
+
+backends:
+  - backend_id: direct_backend
+    type: direct_mapping
+
+gmr_plugin:
+  enabled: false
+  backend: pin_ik
+  robot_model_path: ""
+  ik_config_path: ""
+  actual_human_height: 1.75
+  damping: 0.5
+  max_iterations: 20
+  use_velocity_limit: false
+  integration_timestep: 0.01
+  progress_threshold: 0.001
