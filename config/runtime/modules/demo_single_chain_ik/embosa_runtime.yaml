@@ -7,6 +7,9 @@ endpoints:
     - key: primitive_frame
       topic: puppet_demo/primitive_frame
       enabled: true
+    - key: robot_state_frame
+      topic: puppet_demo/robot_state
+      enabled: true
   outputs:
     - key: control_intent
       topic: puppet_demo/control_intent

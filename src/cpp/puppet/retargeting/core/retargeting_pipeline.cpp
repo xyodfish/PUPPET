@@ -7,6 +7,33 @@
 
 namespace puppet::retargeting {
     namespace {
+        bool supportsGroup(const std::string& pluginType, const std::string& bodyGroup) {
+            if (pluginType == "direct_pass") {
+                return true;
+            }
+            if (pluginType == "gmr") {
+                return bodyGroup == "whole_body";
+            }
+            if (pluginType == "single_chain_ik" || pluginType == "single_chain_ik_velocity") {
+                return bodyGroup != "whole_body";
+            }
+            return false;
+        }
+
+        bool supportsSemantics(const std::string& pluginType, const std::string& controlSemantics) {
+            if (pluginType == "direct_pass") {
+                return controlSemantics == "joint_absolute" || controlSemantics == "joint_delta";
+            }
+            if (pluginType == "gmr") {
+                return controlSemantics == "cartesian_absolute" || controlSemantics == "cartesian_delta";
+            }
+            if (pluginType == "single_chain_ik" || pluginType == "single_chain_ik_velocity") {
+                return controlSemantics == "cartesian_absolute" || controlSemantics == "cartesian_delta" ||
+                       controlSemantics == "cartesian_velocity";
+            }
+            return false;
+        }
+
         bool isPluginEnabled(const runtime::RuntimeConfig& config, const std::string& pluginType) {
             if (pluginType == "direct_pass") {
                 return true;
@@ -17,12 +44,16 @@ namespace puppet::retargeting {
             if (pluginType == "single_chain_ik") {
                 return config.singleChainIk.enabled;
             }
+            if (pluginType == "single_chain_ik_velocity") {
+                return config.singleChainIk.enabled;
+            }
             return false;
         }
     }  // namespace
 
     bool RetargetingPipeline::configure(const runtime::RuntimeConfig& config, std::string* error) {
         plugins_.clear();
+        pipelineTypes_.clear();
 
         for (const auto& route : config.groupRouting) {
             const auto pipelineIt = config.pipelineMap.find(route.pipelineId);
@@ -59,6 +90,10 @@ namespace puppet::retargeting {
                 plugin = std::make_shared<DirectPassThroughPlugin>();
             } else if (pipelineConfig.pluginType == "gmr") {
                 plugin = std::make_shared<GmrRetargetingPlugin>();
+            } else if (pipelineConfig.pluginType == "single_chain_ik_velocity") {
+                LOG(WARNING) << "pipeline_id=" << pipelineConfig.pipelineId
+                             << " uses deprecated plugin type single_chain_ik_velocity, fallback to single_chain_ik";
+                plugin = std::make_shared<SingleChainIkRetargetingPlugin>();
             } else if (pipelineConfig.pluginType == "single_chain_ik") {
                 plugin = std::make_shared<SingleChainIkRetargetingPlugin>();
             } else {
@@ -75,7 +110,8 @@ namespace puppet::retargeting {
                 }
                 return false;
             }
-            plugins_[pipelineConfig.pipelineId] = std::move(plugin);
+            plugins_[pipelineConfig.pipelineId]       = std::move(plugin);
+            pipelineTypes_[pipelineConfig.pipelineId] = pipelineConfig.pluginType;
             LOG(INFO) << "RetargetingPipeline configured pipeline_id=" << pipelineConfig.pipelineId
                       << " plugin_type=" << pipelineConfig.pluginType;
         }
@@ -86,12 +122,54 @@ namespace puppet::retargeting {
         return true;
     }
 
+    bool RetargetingPipeline::requiresRobotState(const std::string& pipelineId, const std::string& controlSemantics) const {
+        const auto it = pipelineTypes_.find(pipelineId);
+        if (it == pipelineTypes_.end()) {
+            return false;
+        }
+        const std::string& pluginType = it->second;
+        if (pluginType == "single_chain_ik" && controlSemantics == "cartesian_delta") {
+            return true;
+        }
+        if (pluginType == "single_chain_ik" && controlSemantics == "cartesian_velocity") {
+            return true;
+        }
+        if (pluginType == "single_chain_ik_velocity") {
+            return controlSemantics == "cartesian_delta" || controlSemantics == "cartesian_velocity";
+        }
+        const auto pluginIt = plugins_.find(pipelineId);
+        if (pluginIt == plugins_.end()) {
+            return false;
+        }
+        return pluginIt->second->requiresRobotState();
+    }
+
     bool RetargetingPipeline::run(const std::string& pipelineId, const model::PrimitiveFrame& frame, const std::string& bodyGroup,
-                                  model::GroupControlIntent* output, std::string* error) const {
+                                  const std::string& controlSemantics, model::GroupControlIntent* output, std::string* error) const {
         const auto pluginIt = plugins_.find(pipelineId);
         if (pluginIt == plugins_.end()) {
             if (error != nullptr) {
                 *error = "pipeline not found: " + pipelineId;
+            }
+            return false;
+        }
+        const auto typeIt = pipelineTypes_.find(pipelineId);
+        if (typeIt == pipelineTypes_.end()) {
+            if (error != nullptr) {
+                *error = "pipeline type not found: " + pipelineId;
+            }
+            return false;
+        }
+        const std::string& pluginType = typeIt->second;
+        if (!supportsGroup(pluginType, bodyGroup)) {
+            if (error != nullptr) {
+                *error = "pipeline " + pipelineId + " plugin " + pluginType + " does not support body_group: " + bodyGroup;
+            }
+            return false;
+        }
+        if (!supportsSemantics(pluginType, controlSemantics)) {
+            if (error != nullptr) {
+                *error = "pipeline " + pipelineId + " plugin " + pluginType + " does not support control_semantics: " + controlSemantics;
             }
             return false;
         }

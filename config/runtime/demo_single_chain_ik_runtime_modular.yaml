@@ -8,4 +8,5 @@ module_configs:
   backends: modules/demo_single_chain_ik/backends.yaml
   gmr_plugin: modules/demo_single_chain_ik/gmr_plugin.yaml
   single_chain_ik: modules/demo_single_chain_ik/single_chain_ik.yaml
+  robot_state: modules/demo_single_chain_ik/robot_state.yaml
   embosa_runtime: modules/demo_single_chain_ik/embosa_runtime.yaml

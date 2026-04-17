@@ -76,6 +76,11 @@ namespace puppet::runtime {
         primitiveFrameHandlers_.push_back(std::move(handler));
     }
 
+    void EmbosaRuntimeChannel::registerRobotStateFrameHandler(RobotStateFrameHandler handler) {
+        std::lock_guard<std::mutex> lock(handlerMutex_);
+        robotStateFrameHandlers_.push_back(std::move(handler));
+    }
+
     void EmbosaRuntimeChannel::registerInputEndpointBinder(const std::string& key, EndpointBinder binder) {
         inputEndpointBinders_[key] = std::move(binder);
     }
@@ -142,13 +147,19 @@ namespace puppet::runtime {
     }
 
     bool EmbosaRuntimeChannel::initBuiltInInputEndpoint(const EmbosaRuntimeConfig::EndpointConfig& endpoint, std::string& error) {
-        if (endpoint.key != "primitive_frame") {
-            return false;
+        if (endpoint.key == "primitive_frame") {
+            auto onMsg = [this](const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg, const void*) {
+                onPrimitiveFrame(msg);
+            };
+            return createReader<::puppet::puppet_proto::PrimitiveFrame>(endpoint.topicName, onMsg, frameReader_, error);
         }
-        auto onMsg = [this](const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg, const void*) {
-            onPrimitiveFrame(msg);
-        };
-        return createReader<::puppet::puppet_proto::PrimitiveFrame>(endpoint.topicName, onMsg, frameReader_, error);
+        if (endpoint.key == "robot_state_frame") {
+            auto onMsg = [this](const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg, const void*) {
+                onRobotStateFrame(msg);
+            };
+            return createReader<::puppet::puppet_proto::PrimitiveFrame>(endpoint.topicName, onMsg, robotStateReader_, error);
+        }
+        return false;
     }
 
     bool EmbosaRuntimeChannel::initBuiltInOutputEndpoint(const EmbosaRuntimeConfig::EndpointConfig& endpoint, std::string& error) {
@@ -194,6 +205,32 @@ namespace puppet::runtime {
         frameQueue_.push_back(frame);
         while (frameQueue_.size() > maxQueueSize_) {
             frameQueue_.pop_front();
+        }
+    }
+
+    void EmbosaRuntimeChannel::onRobotStateFrame(const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg) {
+        if (msg == nullptr) {
+            return;
+        }
+
+        model::PrimitiveFrame frame;
+        if (!puppet::transport::copyFromProto(*msg, &frame)) {
+            std::lock_guard<std::mutex> lock(statsMutex_);
+            stats_.droppedPrimitiveFrameCount++;
+            stats_.lastError = "invalid robot state primitive frame proto";
+            LOG(WARNING) << "EmbosaRuntimeChannel drop invalid robot state PrimitiveFrame proto";
+            return;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(statsMutex_);
+            stats_.receivedRobotStateFrameCount++;
+        }
+        std::lock_guard<std::mutex> lock(handlerMutex_);
+        for (const auto& handler : robotStateFrameHandlers_) {
+            if (handler) {
+                handler(frame);
+            }
         }
     }
 

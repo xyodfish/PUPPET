@@ -76,6 +76,7 @@ namespace puppet::runtime {
 
                 cfg.inputEndpoints = {
                     EmbosaRuntimeConfig::EndpointConfig{"primitive_frame", cfg.inputTopicName, true},
+                    EmbosaRuntimeConfig::EndpointConfig{"robot_state_frame", "puppet_demo/robot_state", false},
                 };
                 cfg.outputEndpoints = {
                     EmbosaRuntimeConfig::EndpointConfig{"control_intent", cfg.outputControlIntentTopic, true},

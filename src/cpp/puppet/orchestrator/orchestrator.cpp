@@ -1,5 +1,7 @@
 #include "puppet/orchestrator/orchestrator.hpp"
 
+#include <unordered_map>
+
 namespace puppet::orchestrator {
 
     void Orchestrator::configure(const std::vector<runtime::GroupRoutingConfig>& groupRouting) {
@@ -7,16 +9,35 @@ namespace puppet::orchestrator {
     }
 
     std::vector<GroupExecutionPlan> Orchestrator::resolvePlans() const {
-        std::vector<GroupExecutionPlan> plans;
-        plans.reserve(groupRouting_.size());
+        constexpr int32_t kWholeBodyBonus = 10000;
+        std::unordered_map<std::string, GroupExecutionPlan> selectedPlans;
+
         for (const auto& route : groupRouting_) {
-            GroupExecutionPlan plan;
-            plan.bodyGroup     = route.bodyGroup;
-            plan.ownerSourceId = route.ownerSourceId;
-            plan.pipelineId    = route.pipelineId;
-            plan.backendId     = route.backendId;
-            plan.mode          = route.mode;
-            plans.push_back(std::move(plan));
+            if (!route.enabled) {
+                continue;
+            }
+            GroupExecutionPlan candidate;
+            candidate.bodyGroup        = route.bodyGroup;
+            candidate.ownerSourceId    = route.ownerSourceId;
+            candidate.pipelineId       = route.pipelineId;
+            candidate.backendId        = route.backendId;
+            candidate.mode             = route.mode;
+            candidate.controlSemantics = route.controlSemantics;
+            candidate.priority         = route.priority;
+            if (route.bodyGroup == "whole_body") {
+                candidate.priority += kWholeBodyBonus;
+            }
+
+            auto it = selectedPlans.find(route.bodyGroup);
+            if (it == selectedPlans.end() || candidate.priority > it->second.priority) {
+                selectedPlans[route.bodyGroup] = std::move(candidate);
+            }
+        }
+
+        std::vector<GroupExecutionPlan> plans;
+        plans.reserve(selectedPlans.size());
+        for (auto& kv : selectedPlans) {
+            plans.push_back(std::move(kv.second));
         }
         return plans;
     }

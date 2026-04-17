@@ -18,6 +18,7 @@ namespace puppet::runtime {
         int idleSleepMs                      = 2;
         std::vector<EndpointConfig> inputEndpoints{
             EndpointConfig{"primitive_frame", "puppet_demo/primitive_frame", true},
+            EndpointConfig{"robot_state_frame", "puppet_demo/robot_state", false},
         };
         std::vector<EndpointConfig> outputEndpoints{
             EndpointConfig{"control_intent", "puppet_demo/control_intent", true},

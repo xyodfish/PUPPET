@@ -13,6 +13,8 @@ namespace puppet::orchestrator {
         std::string pipelineId;
         std::string backendId;
         std::string mode;
+        std::string controlSemantics;
+        int32_t priority = 0;
     };
 
     class Orchestrator {

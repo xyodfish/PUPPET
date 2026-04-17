@@ -46,10 +46,28 @@ namespace puppet::runtime {
             hasAnyInputFrame = true;
 
             model::GroupControlIntent groupIntent;
-            groupIntent.mode        = plan.mode;
-            groupIntent.backendHint = plan.backendId;
+            groupIntent.mode                   = plan.mode;
+            groupIntent.backendHint            = plan.backendId;
+            model::PrimitiveFrame runtimeFrame = *frame;
+            if (pipeline_.requiresRobotState(plan.pipelineId, plan.controlSemantics)) {
+                const bool hasFreshRobotState =
+                    (robotStateSync_ != nullptr) && robotStateSync_->hasFreshState(config_.robotState.freshnessTimeoutMs);
+                if (!hasFreshRobotState) {
+                    static uint64_t noRobotStateWarnCount = 0;
+                    ++noRobotStateWarnCount;
+                    if ((noRobotStateWarnCount % 100ULL) == 1ULL) {
+                        LOG(WARNING) << "TeleopRuntime skip plan due to stale robot state. pipeline=" << plan.pipelineId
+                                     << " body_group=" << plan.bodyGroup
+                                     << " robot_state_timeout_ms=" << config_.robotState.freshnessTimeoutMs;
+                    }
+                    continue;
+                }
+                const auto robotSnapshot = robotStateSync_->snapshot();
+                runtimeFrame.jointStates.insert(runtimeFrame.jointStates.end(), robotSnapshot.frame.jointStates.begin(),
+                                                robotSnapshot.frame.jointStates.end());
+            }
             std::string pipelineError;
-            if (!pipeline_.run(plan.pipelineId, *frame, plan.bodyGroup, &groupIntent, &pipelineError)) {
+            if (!pipeline_.run(plan.pipelineId, runtimeFrame, plan.bodyGroup, plan.controlSemantics, &groupIntent, &pipelineError)) {
                 error = "pipeline run failed: " + pipelineError;
                 return false;
             }

@@ -21,6 +21,9 @@ namespace puppet::runtime {
         std::string mode;
         std::string pipelineId;
         std::string backendId;
+        std::string controlSemantics = "cartesian_absolute";
+        int32_t priority             = 0;
+        bool enabled                 = true;
     };
 
     struct PipelineConfig {
@@ -75,6 +78,10 @@ namespace puppet::runtime {
         std::unordered_map<std::string, SingleChainIkChainConfig> chainMap;
     };
 
+    struct RobotStateConfig {
+        int32_t freshnessTimeoutMs = 200;
+    };
+
     struct RuntimeConfig {
         int32_t loopHz        = 100;
         bool enableMockSource = true;
@@ -86,6 +93,7 @@ namespace puppet::runtime {
         std::vector<BackendConfig> backends;
         GmrPluginConfig gmr;
         SingleChainIkConfig singleChainIk;
+        RobotStateConfig robotState;
 
         std::unordered_map<std::string, PipelineConfig> pipelineMap;
         std::unordered_map<std::string, BackendConfig> backendMap;

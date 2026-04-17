@@ -5,6 +5,7 @@
 
 #include "puppet/config/puppet_config.hpp"
 #include "puppet/runtime/embosa_runtime_channel.hpp"
+#include "puppet/runtime/robot_state_sync.hpp"
 #include "puppet/runtime/runtime_state_report.hpp"
 #include "puppet/runtime/teleop_runtime.hpp"
 
@@ -39,6 +40,7 @@ namespace puppet::runtime {
         std::unique_ptr<TeleopRuntime> runtime_;
         std::unique_ptr<EmbosaRuntimeChannel> channel_;
         std::unique_ptr<RuntimeStateReport> report_;
+        std::shared_ptr<RobotStateSync> robotStateSync_;
         bool initialized_         = false;
         bool stopRequested_       = false;
         PuppetManagerState state_ = PuppetManagerState::kCreated;

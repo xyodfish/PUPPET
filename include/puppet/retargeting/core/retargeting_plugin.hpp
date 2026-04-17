@@ -15,6 +15,7 @@ namespace puppet::retargeting {
 
         virtual std::string name() const                                                 = 0;
         virtual bool configure(const runtime::RuntimeConfig& config, std::string* error) = 0;
+        virtual bool requiresRobotState() const { return false; }
 
         virtual bool process(const model::PrimitiveFrame& input, const std::string& bodyGroup, model::GroupControlIntent* output,
                              std::string* error) = 0;

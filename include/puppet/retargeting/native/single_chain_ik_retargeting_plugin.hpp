@@ -19,6 +19,11 @@ namespace puppet::retargeting {
                      std::string* error) override;
 
        private:
+        model::PrimitiveFrame preprocessToPoseFrame(const model::PrimitiveFrame& input, const std::string& bodyGroup) const;
+        bool seedPoseStateFromRobotJointState(const model::PrimitiveFrame& input, const std::string& bodyGroup,
+                                              const std::string& entity) const;
+        static std::string makeStateKey(const std::string& bodyGroup, const std::string& entity);
+
         struct ChainContext {
             runtime::SingleChainIkChainConfig config;
             std::unique_ptr<TRAC_IK::TRAC_IK> solver;
@@ -32,7 +37,9 @@ namespace puppet::retargeting {
 
         std::unordered_map<std::string, ChainContext> chainContextMap_;
         bool enabled_ = false;
+        double dtSec_ = 0.01;
         std::unordered_map<std::string, runtime::SingleChainIkChainConfig> chainMap_;
+        mutable std::unordered_map<std::string, model::Pose> poseStateMap_;
     };
 
 }  // namespace puppet::retargeting

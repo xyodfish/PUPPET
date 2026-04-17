@@ -22,13 +22,15 @@ namespace puppet::runtime {
 
     class EmbosaRuntimeChannel {
        public:
-        using PrimitiveFrameHandler = std::function<void(const model::PrimitiveFrame&)>;
-        using EndpointBinder        = std::function<bool(const std::string& topicName, std::string& error)>;
+        using PrimitiveFrameHandler  = std::function<void(const model::PrimitiveFrame&)>;
+        using RobotStateFrameHandler = std::function<void(const model::PrimitiveFrame&)>;
+        using EndpointBinder         = std::function<bool(const std::string& topicName, std::string& error)>;
 
         struct RuntimeStats {
-            uint64_t receivedPrimitiveFrameCount = 0;
-            uint64_t droppedPrimitiveFrameCount  = 0;
-            uint64_t publishedControlIntentCount = 0;
+            uint64_t receivedPrimitiveFrameCount  = 0;
+            uint64_t receivedRobotStateFrameCount = 0;
+            uint64_t droppedPrimitiveFrameCount   = 0;
+            uint64_t publishedControlIntentCount  = 0;
             std::string lastError;
         };
 
@@ -41,6 +43,7 @@ namespace puppet::runtime {
         bool tryPopFrame(model::PrimitiveFrame& frame);
         bool publishControlIntent(const model::ControlIntent& intent, std::string& error);
         void registerPrimitiveFrameHandler(PrimitiveFrameHandler handler);
+        void registerRobotStateFrameHandler(RobotStateFrameHandler handler);
         void registerInputEndpointBinder(const std::string& key, EndpointBinder binder);
         void registerOutputEndpointBinder(const std::string& key, EndpointBinder binder);
         RuntimeStats getRuntimeStats() const;
@@ -94,6 +97,7 @@ namespace puppet::runtime {
         void setLastError(const std::string& error);
 
         void onPrimitiveFrame(const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg);
+        void onRobotStateFrame(const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg);
         ::puppet::puppet_proto::ControlIntent toProto(const model::ControlIntent& src) const;
 
         EmbosaRuntimeConfig config_;
@@ -105,6 +109,7 @@ namespace puppet::runtime {
 
         mutable std::mutex handlerMutex_;
         std::vector<PrimitiveFrameHandler> primitiveFrameHandlers_;
+        std::vector<RobotStateFrameHandler> robotStateFrameHandlers_;
 
         mutable std::mutex statsMutex_;
         RuntimeStats stats_;
@@ -115,6 +120,7 @@ namespace puppet::runtime {
 
         std::unique_ptr<galbot::embosa::Node> node_;
         std::shared_ptr<galbot::embosa::SerializationReader<::puppet::puppet_proto::PrimitiveFrame>> frameReader_;
+        std::shared_ptr<galbot::embosa::SerializationReader<::puppet::puppet_proto::PrimitiveFrame>> robotStateReader_;
         std::shared_ptr<galbot::embosa::SerializationWriter<::puppet::puppet_proto::ControlIntent>> controlIntentWriter_;
         std::vector<std::shared_ptr<void>> readerKeepAlive_;
         std::vector<std::shared_ptr<void>> writerKeepAlive_;

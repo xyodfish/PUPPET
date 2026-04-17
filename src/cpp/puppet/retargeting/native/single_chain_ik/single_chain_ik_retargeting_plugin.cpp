@@ -1,6 +1,7 @@
 #include "puppet/retargeting/native/single_chain_ik_retargeting_plugin.hpp"
 
 #include <glog/logging.h>
+#include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/frames.hpp>
 #include <kdl/jntarray.hpp>
 #include <trac_ik/trac_ik.hpp>
@@ -73,6 +74,7 @@ namespace puppet::retargeting {
     bool SingleChainIkRetargetingPlugin::configure(const runtime::RuntimeConfig& config, std::string* error) {
         enabled_  = config.singleChainIk.enabled;
         chainMap_ = config.singleChainIk.chainMap;
+        dtSec_    = config.loopHz > 0 ? (1.0 / static_cast<double>(config.loopHz)) : 0.01;
 
         if (chainMap_.empty()) {
             if (error != nullptr) {
@@ -82,6 +84,7 @@ namespace puppet::retargeting {
         }
 
         chainContextMap_.clear();
+        poseStateMap_.clear();
 
         for (const auto& [bodyGroup, chainCfg] : chainMap_) {
             auto solver = std::make_unique<TRAC_IK::TRAC_IK>(chainCfg.baseLink, chainCfg.tipLink, chainCfg.urdfPath, chainCfg.maxIterations,
@@ -156,9 +159,10 @@ namespace puppet::retargeting {
         const auto& chain = chainCtx.config;
         const auto jointN = static_cast<size_t>(chainCtx.chain.getNrOfJoints());
 
+        const model::PrimitiveFrame runtimeInput = preprocessToPoseFrame(input, bodyGroup);
         const model::PosePrimitive* selectedPose = nullptr;
         if (!chain.eeEntity.empty()) {
-            for (const auto& pose : input.poses) {
+            for (const auto& pose : runtimeInput.poses) {
                 if (pose.meta.entity == chain.eeEntity) {
                     selectedPose = &pose;
                     break;
@@ -167,15 +171,15 @@ namespace puppet::retargeting {
         }
         if (selectedPose == nullptr) {
             const auto targetBodyGroup = single_chain_ik_internal::toBodyGroup(bodyGroup);
-            for (const auto& pose : input.poses) {
+            for (const auto& pose : runtimeInput.poses) {
                 if (pose.meta.bodyGroup == targetBodyGroup) {
                     selectedPose = &pose;
                     break;
                 }
             }
         }
-        if (selectedPose == nullptr && !input.poses.empty()) {
-            selectedPose = &input.poses.front();
+        if (selectedPose == nullptr && !runtimeInput.poses.empty()) {
+            selectedPose = &runtimeInput.poses.front();
         }
 
         if (selectedPose == nullptr) {
@@ -189,7 +193,7 @@ namespace puppet::retargeting {
         if (chainCtx.hasLastSolution) {
             seed = chainCtx.lastSolution;
         }
-        const bool hasInputSeed = single_chain_ik_internal::findSeedFromInput(input, chain.jointNames, &seed);
+        const bool hasInputSeed = single_chain_ik_internal::findSeedFromInput(runtimeInput, chain.jointNames, &seed);
         if (hasInputSeed) {
             for (size_t i = 0; i < jointN; ++i) {
                 seed(i) = std::min(chainCtx.upperLimit(i), std::max(chainCtx.lowerLimit(i), seed(i)));
@@ -256,6 +260,89 @@ namespace puppet::retargeting {
         if (error != nullptr) {
             error->clear();
         }
+        return true;
+    }
+
+    model::PrimitiveFrame SingleChainIkRetargetingPlugin::preprocessToPoseFrame(const model::PrimitiveFrame& input,
+                                                                                const std::string& bodyGroup) const {
+        model::PrimitiveFrame output = input;
+        output.poses.clear();
+
+        if (input.context.mode == "twist") {
+            for (const auto& twistPrimitive : input.twists) {
+                if (twistPrimitive.meta.entity.empty()) {
+                    continue;
+                }
+                const std::string stateKey = makeStateKey(bodyGroup, twistPrimitive.meta.entity);
+                auto stateIt               = poseStateMap_.find(stateKey);
+                if (stateIt == poseStateMap_.end()) {
+                    if (seedPoseStateFromRobotJointState(input, bodyGroup, twistPrimitive.meta.entity)) {
+                        stateIt = poseStateMap_.find(stateKey);
+                    }
+                }
+                if (stateIt == poseStateMap_.end()) {
+                    static uint64_t noSeedWarnCount = 0;
+                    ++noSeedWarnCount;
+                    if ((noSeedWarnCount % 100ULL) == 1ULL) {
+                        LOG(WARNING) << "single_chain_ik skip twist integration due to missing pose seed, body_group=" << bodyGroup
+                                     << " entity=" << twistPrimitive.meta.entity;
+                    }
+                    continue;
+                }
+                auto& poseState = stateIt->second;
+                poseState.position.x += twistPrimitive.twist.linear.x * dtSec_;
+                poseState.position.y += twistPrimitive.twist.linear.y * dtSec_;
+                poseState.position.z += twistPrimitive.twist.linear.z * dtSec_;
+
+                model::PosePrimitive posePrimitive;
+                posePrimitive.meta                  = twistPrimitive.meta;
+                posePrimitive.meta.frameId          = twistPrimitive.bodyFrameId;
+                posePrimitive.meta.referenceFrameId = twistPrimitive.referenceFrameId;
+                posePrimitive.pose                  = poseState;
+                posePrimitive.isRelative            = false;
+                posePrimitive.targetFrameId         = twistPrimitive.referenceFrameId;
+                output.poses.push_back(std::move(posePrimitive));
+            }
+        }
+
+        for (const auto& posePrimitive : input.poses) {
+            if (!posePrimitive.meta.entity.empty()) {
+                poseStateMap_[makeStateKey(bodyGroup, posePrimitive.meta.entity)] = posePrimitive.pose;
+            }
+            output.poses.push_back(posePrimitive);
+        }
+
+        return output;
+    }
+
+    std::string SingleChainIkRetargetingPlugin::makeStateKey(const std::string& bodyGroup, const std::string& entity) {
+        return bodyGroup + "::" + entity;
+    }
+
+    bool SingleChainIkRetargetingPlugin::seedPoseStateFromRobotJointState(const model::PrimitiveFrame& input, const std::string& bodyGroup,
+                                                                          const std::string& entity) const {
+        const auto chainIt = chainContextMap_.find(bodyGroup);
+        if (chainIt == chainContextMap_.end()) {
+            return false;
+        }
+        const auto& chainCtx = chainIt->second;
+        KDL::JntArray joints = chainCtx.seedJoints;
+        if (!single_chain_ik_internal::findSeedFromInput(input, chainCtx.config.jointNames, &joints)) {
+            return false;
+        }
+
+        KDL::ChainFkSolverPos_recursive fkSolver(chainCtx.chain);
+        KDL::Frame eeFrame;
+        if (fkSolver.JntToCart(joints, eeFrame) < 0) {
+            return false;
+        }
+
+        model::Pose pose;
+        pose.position.x = eeFrame.p.x();
+        pose.position.y = eeFrame.p.y();
+        pose.position.z = eeFrame.p.z();
+        eeFrame.M.GetQuaternion(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+        poseStateMap_[makeStateKey(bodyGroup, entity)] = pose;
         return true;
     }
 

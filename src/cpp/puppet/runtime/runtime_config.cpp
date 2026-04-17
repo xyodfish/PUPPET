@@ -78,11 +78,14 @@ namespace puppet::runtime {
             if (routingNode) {
                 for (const auto& routeNode : routingNode) {
                     GroupRoutingConfig route;
-                    route.bodyGroup     = readOr<std::string>(routeNode, "body_group", "");
-                    route.ownerSourceId = readOr<std::string>(routeNode, "owner_source", "");
-                    route.mode          = readOr<std::string>(routeNode, "mode", "direct");
-                    route.pipelineId    = readOr<std::string>(routeNode, "pipeline", "direct_pipeline");
-                    route.backendId     = readOr<std::string>(routeNode, "backend", "direct_backend");
+                    route.bodyGroup        = readOr<std::string>(routeNode, "body_group", "");
+                    route.ownerSourceId    = readOr<std::string>(routeNode, "owner_source", "");
+                    route.mode             = readOr<std::string>(routeNode, "mode", "direct");
+                    route.pipelineId       = readOr<std::string>(routeNode, "pipeline", "direct_pipeline");
+                    route.backendId        = readOr<std::string>(routeNode, "backend", "direct_backend");
+                    route.controlSemantics = readOr<std::string>(routeNode, "control_semantics", "cartesian_absolute");
+                    route.priority         = readOr<int32_t>(routeNode, "priority", 0);
+                    route.enabled          = readOr<bool>(routeNode, "enabled", true);
                     if (!route.bodyGroup.empty()) {
                         config.groupRouting.push_back(std::move(route));
                     }
@@ -181,6 +184,11 @@ namespace puppet::runtime {
                         }
                     }
                 }
+            }
+
+            const YAML::Node robotStateNode = loadSectionNode(yaml, "robot_state", path);
+            if (robotStateNode) {
+                config.robotState.freshnessTimeoutMs = readOr<int32_t>(robotStateNode, "freshness_timeout_ms", 200);
             }
 
             error.clear();

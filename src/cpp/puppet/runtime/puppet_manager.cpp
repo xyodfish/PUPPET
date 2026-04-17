@@ -70,6 +70,14 @@ namespace puppet::runtime {
     }
 
     bool PuppetManager::initModules(std::string& error) {
+        robotStateSync_ = std::make_shared<RobotStateSync>();
+        runtime_->setRobotStateSync(robotStateSync_);
+        channel_->registerRobotStateFrameHandler([this](const model::PrimitiveFrame& frame) {
+            if (robotStateSync_ != nullptr) {
+                robotStateSync_->update(frame);
+            }
+        });
+
         if (!runtime_->init(config_.runtime, error)) {
             return false;
         }
