@@ -48,13 +48,8 @@ int main() {
         return 1;
     }
 
-    galbot::embosa::Qos qos;
-    qos.intra_core_qos.transport_type                         = galbot::embosa::IntraCoreTransportType::LARGE_DATA_TRANSPORT;
-    qos.intra_core_qos.qos_sync_callback_policy.sub_sync_mode = galbot::embosa::QosSyncCallbackSubSyncModePolicy::SYNCHRONOUS_SUB_MODE;
-    qos.intra_core_qos.qos_sync_callback_policy.queue_depth   = 100;
-
     auto reader = node->CreateReader<::puppet::puppet_proto::PrimitiveFrame>("puppet_demo/primitive_frame",
-                                                                             std::bind(&OnPrimitiveFrame, std::placeholders::_1), qos);
+                                                                             std::bind(&OnPrimitiveFrame, std::placeholders::_1));
     if (reader == nullptr) {
         std::cerr << "[receiver] failed to create reader\n";
         return 1;

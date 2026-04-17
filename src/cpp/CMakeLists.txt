@@ -5,6 +5,7 @@ find_package(yaml-cpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(qpOASES REQUIRED)
 find_package(pinocchio REQUIRED)
+find_package(glog REQUIRED)
 
 if (NOT ARCH_FREFIX)
   set(ARCH_FREFIX "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
@@ -65,6 +66,7 @@ target_link_libraries(puppet_cpp_core
     Eigen3::Eigen
     qpOASES
     pinocchio::pinocchio
+    glog::glog
     ${TRAC_IK_LIBRARY}
   PRIVATE
     ${MUJOCO_LIBRARY})

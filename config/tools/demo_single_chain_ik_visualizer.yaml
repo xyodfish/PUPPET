@@ -1,0 +1,35 @@
+robot_qpos_source: control_intent
+node_name: puppet_single_chain_ik_visualizer
+topic_name: puppet_demo/control_intent
+human_frame_topic_name: puppet_demo/primitive_frame
+mujoco_model_xml: assets/unitree_g1/g1_mocap_29dof.xml
+robot_name: unitree_g1
+camera_body_name: pelvis
+camera_distance: 2.0
+camera_azimuth: 180.0
+transparent_robot: 0
+
+show_human_overlay: true
+human_overlay_scale: 0.1
+human_overlay_use_prepared_frame: false
+human_overlay_backend: mujoco_se3
+human_overlay_robot_model_path: assets/unitree_g1/g1_mocap_29dof.xml
+human_overlay_ik_config_path: /data/open_src_code/GMR_custom/general_motion_retargeting/ik_configs/bvh_lafan1_to_g1.json
+human_overlay_actual_human_height: 1.75
+human_overlay_offset_to_ground: false
+
+show_body_overlay: true
+body_overlay_scale: 0.1
+overlay_body_names:
+  - pelvis
+  - left_shoulder_pitch_link
+  - left_elbow_link
+  - left_wrist_yaw_link
+  - right_shoulder_pitch_link
+  - right_elbow_link
+  - right_wrist_yaw_link
+
+window_width: 1280
+window_height: 720
+render_hz: 60
+print_stat: true

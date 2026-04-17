@@ -1,0 +1,80 @@
+loop_hz: 100
+enable_mock_source: false
+
+sources:
+  - source_id: demo_sender_single_chain_ik
+    source_type: external
+    topic: puppet_demo/primitive_frame
+    freshness_timeout_ms: 200
+    history_size: 8
+
+group_routing:
+  - body_group: left_arm
+    owner_source: demo_sender_single_chain_ik
+    mode: single_chain_ik
+    pipeline: single_chain_ik_pipeline
+    backend: direct_backend
+  - body_group: right_arm
+    owner_source: demo_sender_single_chain_ik
+    mode: single_chain_ik
+    pipeline: single_chain_ik_pipeline
+    backend: direct_backend
+
+pipelines:
+  - pipeline_id: single_chain_ik_pipeline
+    plugin: single_chain_ik
+
+backends:
+  - backend_id: direct_backend
+    type: direct_mapping
+
+single_chain_ik:
+  enabled: true
+  chains:
+    - body_group: left_arm
+      ee_entity: left_wrist
+      urdf_path: "assets/unitree_g1/g1_custom_collision_29dof.urdf"
+      base_link: "torso_link"
+      tip_link: "left_wrist_yaw_link"
+      joint_names: [left_shoulder_pitch_joint, left_shoulder_roll_joint, left_shoulder_yaw_joint, left_elbow_joint, left_wrist_roll_joint, left_wrist_pitch_joint, left_wrist_yaw_joint]
+      default_posture: [0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.0]
+      min_position_limit: [-3.0892, -1.5882, -2.6180, -1.0472, -1.972222054, -1.614429558, -1.614429558]
+      max_position_limit: [2.6704, 2.2515, 2.6180, 2.0944, 1.972222054, 1.614429558, 1.614429558]
+      max_iterations: 10000
+      timeout_sec: 0.003
+      epsilon: 0.00001
+      random_restart: false
+      perturbation_max_attempts: 5
+      perturbation_position_range: 0.01
+      perturbation_angle_deg_range: 5.0
+    - body_group: right_arm
+      ee_entity: right_wrist
+      urdf_path: "assets/unitree_g1/g1_custom_collision_29dof.urdf"
+      base_link: "torso_link"
+      tip_link: "right_wrist_yaw_link"
+      joint_names: [right_shoulder_pitch_joint, right_shoulder_roll_joint, right_shoulder_yaw_joint, right_elbow_joint, right_wrist_roll_joint, right_wrist_pitch_joint, right_wrist_yaw_joint]
+      default_posture: [0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.0]
+      min_position_limit: [-3.0892, -2.2515, -2.6180, -1.0472, -1.972222054, -1.614429558, -1.614429558]
+      max_position_limit: [2.6704, 1.5882, 2.6180, 2.0944, 1.972222054, 1.614429558, 1.614429558]
+      max_iterations: 10000
+      timeout_sec: 0.003
+      epsilon: 0.00001
+      random_restart: false
+      perturbation_max_attempts: 5
+      perturbation_position_range: 0.01
+      perturbation_angle_deg_range: 5.0
+
+embosa_runtime:
+  node_name: puppet_single_chain_ik_runtime
+  input_topic_name: puppet_demo/primitive_frame
+  output_control_intent_topic: puppet_demo/control_intent
+  idle_sleep_ms: 2
+  endpoints:
+    inputs:
+      - key: primitive_frame
+        topic: puppet_demo/primitive_frame
+        enabled: true
+    outputs:
+      - key: control_intent
+        topic: puppet_demo/control_intent
+        enabled: true

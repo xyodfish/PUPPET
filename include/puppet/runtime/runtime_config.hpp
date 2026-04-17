@@ -26,6 +26,7 @@ namespace puppet::runtime {
     struct PipelineConfig {
         std::string pipelineId;
         std::string pluginType;
+        bool enabled = true;
     };
 
     struct BackendConfig {

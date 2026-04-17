@@ -119,18 +119,14 @@ namespace puppet::retargeting {
         jointIntent.position.reserve(scalarCoords.size());
 
         for (const auto& coord : scalarCoords) {
-            if (coord.qIndex < 0) {
+            if ((coord.qIndex < 0) || (coord.jointName.empty()) || (coord.qIndex >= qpos.size())) {
                 continue;
             }
-            if (coord.jointName.empty()) {
-                continue;
-            }
-            if (coord.qIndex >= qpos.size()) {
-                continue;
-            }
+
             jointIntent.jointNames.push_back(coord.jointName);
             jointIntent.position.push_back(qpos[coord.qIndex]);
         }
+
         if (holder_->retargeter->hasRootFreeFlyer() && qpos.size() >= 7) {
             jointIntent.jointNames.push_back(gmr_retargeting_detail::kRootPosXKey);
             jointIntent.position.push_back(qpos[0]);

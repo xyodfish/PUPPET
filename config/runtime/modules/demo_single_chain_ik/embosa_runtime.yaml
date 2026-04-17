@@ -1,0 +1,13 @@
+node_name: puppet_single_chain_ik_runtime
+input_topic_name: puppet_demo/primitive_frame
+output_control_intent_topic: puppet_demo/control_intent
+idle_sleep_ms: 2
+endpoints:
+  inputs:
+    - key: primitive_frame
+      topic: puppet_demo/primitive_frame
+      enabled: true
+  outputs:
+    - key: control_intent
+      topic: puppet_demo/control_intent
+      enabled: true

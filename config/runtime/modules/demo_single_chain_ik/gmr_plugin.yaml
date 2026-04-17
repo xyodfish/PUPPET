@@ -1,0 +1,11 @@
+enabled: false
+backend: mujoco_se3
+robot_model_path: "assets/unitree_g1/g1_custom_collision_29dof.urdf"
+robot_model_xml_path: "assets/unitree_g1/g1_mocap_29dof.xml"
+ik_config_path: /data/open_src_code/GMR_custom/general_motion_retargeting/ik_configs/bvh_lafan1_to_g1.json
+actual_human_height: 1.75
+damping: 0.5
+max_iterations: 20
+use_velocity_limit: false
+integration_timestep: 0.01
+progress_threshold: 0.001

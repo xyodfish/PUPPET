@@ -1,5 +1,6 @@
 #include "puppet/runtime/embosa_runtime_config.hpp"
 
+#include <filesystem>
 #include <utility>
 
 #include <yaml-cpp/yaml.h>
@@ -7,6 +8,17 @@
 namespace puppet::runtime {
 
     namespace embosa_config_detail {
+        std::string resolveYamlPath(const std::string& baseYamlPath, const std::string& maybeRelativePath) {
+            namespace fs = std::filesystem;
+            const fs::path rawPath(maybeRelativePath);
+            if (rawPath.is_absolute()) {
+                return rawPath.lexically_normal().string();
+            }
+            const fs::path basePath(baseYamlPath);
+            const fs::path parent = basePath.parent_path();
+            return (parent / rawPath).lexically_normal().string();
+        }
+
         std::vector<EmbosaRuntimeConfig::EndpointConfig> readEndpointConfigs(const YAML::Node& node, const std::string& fieldName) {
             std::vector<EmbosaRuntimeConfig::EndpointConfig> output;
             if (!node[fieldName]) {
@@ -34,8 +46,19 @@ namespace puppet::runtime {
     bool loadEmbosaRuntimeConfig(const std::string& runtimeYaml, EmbosaRuntimeConfig& cfg, std::string& error) {
         try {
             YAML::Node root = YAML::LoadFile(runtimeYaml);
-            if (root["embosa_runtime"]) {
-                auto node = root["embosa_runtime"];
+            YAML::Node node = root["embosa_runtime"];
+            if (root["module_configs"] && root["module_configs"]["embosa_runtime"]) {
+                const std::string modulePath = root["module_configs"]["embosa_runtime"].as<std::string>();
+                if (!modulePath.empty()) {
+                    const YAML::Node moduleRoot = YAML::LoadFile(embosa_config_detail::resolveYamlPath(runtimeYaml, modulePath));
+                    if (moduleRoot["embosa_runtime"]) {
+                        node = moduleRoot["embosa_runtime"];
+                    } else {
+                        node = moduleRoot;
+                    }
+                }
+            }
+            if (node) {
                 if (node["node_name"]) {
                     cfg.embosaNodeName = node["node_name"].as<std::string>();
                 }

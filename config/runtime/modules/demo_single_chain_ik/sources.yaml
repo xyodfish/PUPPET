@@ -1,0 +1,5 @@
+- source_id: demo_sender_single_chain_ik
+  source_type: external
+  topic: puppet_demo/primitive_frame
+  freshness_timeout_ms: 200
+  history_size: 8

@@ -1,5 +1,7 @@
 #include "puppet/runtime/runtime_config.hpp"
 
+#include <filesystem>
+
 #include <yaml-cpp/yaml.h>
 
 namespace puppet::runtime {
@@ -11,6 +13,31 @@ namespace puppet::runtime {
                 return fallback;
             }
             return node[key].as<T>();
+        }
+
+        std::string resolveYamlPath(const std::string& baseYamlPath, const std::string& maybeRelativePath) {
+            namespace fs = std::filesystem;
+            const fs::path rawPath(maybeRelativePath);
+            if (rawPath.is_absolute()) {
+                return rawPath.lexically_normal().string();
+            }
+            const fs::path basePath(baseYamlPath);
+            const fs::path parent = basePath.parent_path();
+            return (parent / rawPath).lexically_normal().string();
+        }
+
+        YAML::Node loadSectionNode(const YAML::Node& root, const std::string& sectionName, const std::string& baseYamlPath) {
+            if (root["module_configs"] && root["module_configs"][sectionName]) {
+                const std::string modulePath = root["module_configs"][sectionName].as<std::string>();
+                if (!modulePath.empty()) {
+                    const YAML::Node moduleRoot = YAML::LoadFile(resolveYamlPath(baseYamlPath, modulePath));
+                    if (moduleRoot[sectionName]) {
+                        return moduleRoot[sectionName];
+                    }
+                    return moduleRoot;
+                }
+            }
+            return root[sectionName];
         }
 
     }  // namespace
@@ -31,8 +58,9 @@ namespace puppet::runtime {
             }
 
             config.sources.clear();
-            if (yaml["sources"]) {
-                for (const auto& sourceNode : yaml["sources"]) {
+            const YAML::Node sourcesNode = loadSectionNode(yaml, "sources", path);
+            if (sourcesNode) {
+                for (const auto& sourceNode : sourcesNode) {
                     SourceConfig source;
                     source.sourceId           = readOr<std::string>(sourceNode, "source_id", "");
                     source.sourceType         = readOr<std::string>(sourceNode, "source_type", "external");
@@ -46,8 +74,9 @@ namespace puppet::runtime {
             }
 
             config.groupRouting.clear();
-            if (yaml["group_routing"]) {
-                for (const auto& routeNode : yaml["group_routing"]) {
+            const YAML::Node routingNode = loadSectionNode(yaml, "group_routing", path);
+            if (routingNode) {
+                for (const auto& routeNode : routingNode) {
                     GroupRoutingConfig route;
                     route.bodyGroup     = readOr<std::string>(routeNode, "body_group", "");
                     route.ownerSourceId = readOr<std::string>(routeNode, "owner_source", "");
@@ -62,11 +91,13 @@ namespace puppet::runtime {
 
             config.pipelines.clear();
             config.pipelineMap.clear();
-            if (yaml["pipelines"]) {
-                for (const auto& pipelineNode : yaml["pipelines"]) {
+            const YAML::Node pipelinesNode = loadSectionNode(yaml, "pipelines", path);
+            if (pipelinesNode) {
+                for (const auto& pipelineNode : pipelinesNode) {
                     PipelineConfig pipeline;
                     pipeline.pipelineId = readOr<std::string>(pipelineNode, "pipeline_id", "");
                     pipeline.pluginType = readOr<std::string>(pipelineNode, "plugin", "direct_pass");
+                    pipeline.enabled    = readOr<bool>(pipelineNode, "enabled", true);
                     if (!pipeline.pipelineId.empty()) {
                         config.pipelineMap[pipeline.pipelineId] = pipeline;
                         config.pipelines.push_back(std::move(pipeline));
@@ -76,8 +107,9 @@ namespace puppet::runtime {
 
             config.backends.clear();
             config.backendMap.clear();
-            if (yaml["backends"]) {
-                for (const auto& backendNode : yaml["backends"]) {
+            const YAML::Node backendsNode = loadSectionNode(yaml, "backends", path);
+            if (backendsNode) {
+                for (const auto& backendNode : backendsNode) {
                     BackendConfig backend;
                     backend.backendId   = readOr<std::string>(backendNode, "backend_id", "");
                     backend.backendType = readOr<std::string>(backendNode, "type", "direct_mapping");
@@ -88,8 +120,8 @@ namespace puppet::runtime {
                 }
             }
 
-            if (yaml["gmr_plugin"]) {
-                const auto gmrNode             = yaml["gmr_plugin"];
+            const YAML::Node gmrNode = loadSectionNode(yaml, "gmr_plugin", path);
+            if (gmrNode) {
                 config.gmr.enabled             = readOr<bool>(gmrNode, "enabled", false);
                 config.gmr.backendName         = readOr<std::string>(gmrNode, "backend", "pin_ik");
                 config.gmr.robotModelPath      = readOr<std::string>(gmrNode, "robot_model_path", "");
@@ -103,11 +135,10 @@ namespace puppet::runtime {
                 config.gmr.progressThreshold   = readOr<double>(gmrNode, "progress_threshold", 1e-3);
             }
 
-            config.singleChainIk.enabled = false;
             config.singleChainIk.chains.clear();
             config.singleChainIk.chainMap.clear();
-            if (yaml["single_chain_ik"]) {
-                const auto ikNode            = yaml["single_chain_ik"];
+            const YAML::Node ikNode = loadSectionNode(yaml, "single_chain_ik", path);
+            if (ikNode) {
                 config.singleChainIk.enabled = readOr<bool>(ikNode, "enabled", false);
                 if (ikNode["chains"]) {
                     for (const auto& chainNode : ikNode["chains"]) {

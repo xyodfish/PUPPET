@@ -1,0 +1,10 @@
+- body_group: left_arm
+  owner_source: demo_sender_single_chain_ik
+  mode: single_chain_ik
+  pipeline: single_chain_ik_pipeline
+  backend: direct_backend
+- body_group: right_arm
+  owner_source: demo_sender_single_chain_ik
+  mode: single_chain_ik
+  pipeline: single_chain_ik_pipeline
+  backend: direct_backend

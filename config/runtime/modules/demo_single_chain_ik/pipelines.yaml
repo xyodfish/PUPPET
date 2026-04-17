@@ -1,0 +1,9 @@
+- pipeline_id: direct_pass_pipeline
+  plugin: direct_pass
+  enabled: false
+- pipeline_id: gmr_pipeline
+  plugin: gmr
+  enabled: false
+- pipeline_id: single_chain_ik_pipeline
+  plugin: single_chain_ik
+  enabled: true

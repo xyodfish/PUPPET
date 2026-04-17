@@ -72,6 +72,17 @@ target_link_libraries(test_embosa_puppet_proto_sender
     ${EMBOSA_LIBRARIES}
     pthread)
 
+add_executable(test_embosa_single_chain_ik_sender
+  "${CMAKE_CURRENT_LIST_DIR}/embosa_single_chain_ik_sender.cpp")
+target_include_directories(test_embosa_single_chain_ik_sender
+  PRIVATE
+    "${EMBOSA_INCLUDE_DIR}")
+target_link_libraries(test_embosa_single_chain_ik_sender
+  PRIVATE
+    puppet_proto_copy_demo
+    ${EMBOSA_LIBRARIES}
+    pthread)
+
 add_executable(test_embosa_puppet_proto_receiver
   "${CMAKE_CURRENT_LIST_DIR}/embosa_puppet_proto_receiver.cpp")
 target_include_directories(test_embosa_puppet_proto_receiver
@@ -86,6 +97,7 @@ target_link_libraries(test_embosa_puppet_proto_receiver
 # Ensure runtime can find embosa shared libraries directly.
 set_target_properties(
   test_embosa_puppet_proto_sender
+  test_embosa_single_chain_ik_sender
   test_embosa_puppet_proto_receiver
   PROPERTIES
     BUILD_RPATH "${EMBOSA_LIBRARY_DIR}"

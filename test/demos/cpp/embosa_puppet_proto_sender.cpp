@@ -84,9 +84,7 @@ int main() {
         return 1;
     }
 
-    galbot::embosa::Qos qos;
-    qos.intra_core_qos.transport_type = galbot::embosa::IntraCoreTransportType::LARGE_DATA_TRANSPORT;
-    auto writer                       = node->CreateWriter<PrimitiveFramePb>("puppet_demo/primitive_frame", qos);
+    auto writer = node->CreateWriter<PrimitiveFramePb>("puppet_demo/primitive_frame");
     if (writer == nullptr) {
         std::cerr << "[sender] failed to create writer\n";
         return 1;

@@ -1,5 +1,9 @@
 #include "puppet/source/source_manager.hpp"
 
+#include <atomic>
+
+#include <glog/logging.h>
+
 namespace puppet::source {
 
     void SourceManager::configure(const std::vector<runtime::SourceConfig>& sourceConfigs) {
@@ -15,6 +19,12 @@ namespace puppet::source {
     void SourceManager::ingestFrame(const model::PrimitiveFrame& frame) {
         auto stateIt = states_.find(frame.context.sourceId);
         if (stateIt == states_.end()) {
+            static std::atomic<uint64_t> unknownSourceCount{0};
+            const uint64_t count = ++unknownSourceCount;
+            if ((count % 200ULL) == 1ULL) {
+                LOG(WARNING) << "SourceManager ignore frame from unknown source_id=" << frame.context.sourceId
+                             << " known_source_count=" << states_.size() << " ignored_count=" << count;
+            }
             return;
         }
         auto framePtr               = std::make_shared<model::PrimitiveFrame>(frame);

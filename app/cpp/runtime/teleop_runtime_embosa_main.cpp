@@ -8,6 +8,9 @@
 
 int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
+    FLAGS_logtostderr      = 1;
+    FLAGS_colorlogtostderr = 1;
+    FLAGS_stderrthreshold  = 0;
 
     std::string runtimeConfig = "config/runtime/teleop_runtime_gmr.yaml";
     if (argc > 1) {

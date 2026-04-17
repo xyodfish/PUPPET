@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include <glog/logging.h>
+
 namespace puppet::runtime {
 
     bool TeleopRuntime::init(const std::string& configPath, std::string& error) {
@@ -33,6 +35,7 @@ namespace puppet::runtime {
     bool TeleopRuntime::runOnce(std::string& error) {
         model::ControlIntent controlIntent;
         controlIntent.sequenceId = ++sequenceId_;
+        bool hasAnyInputFrame    = false;
 
         const auto plans = orchestrator_.resolvePlans();
         for (const auto& plan : plans) {
@@ -40,6 +43,7 @@ namespace puppet::runtime {
             if (frame == nullptr) {
                 continue;
             }
+            hasAnyInputFrame = true;
 
             model::GroupControlIntent groupIntent;
             groupIntent.mode        = plan.mode;
@@ -55,6 +59,14 @@ namespace puppet::runtime {
         lastControlIntent_     = controlIntent;
         const auto finalTarget = backend_.buildTarget(lastControlIntent_);
         // std::cout << "[teleop_runtime] seq=" << finalTarget.sequenceId << " groups=" << finalTarget.groups.size() << std::endl;
+        if (!hasAnyInputFrame) {
+            static uint64_t noInputCount = 0;
+            ++noInputCount;
+            if ((noInputCount % 200ULL) == 1ULL) {
+                LOG(WARNING) << "TeleopRuntime has no input frame for resolved plans. plan_count=" << plans.size()
+                             << " control_intent_groups=" << finalTarget.groups.size();
+            }
+        }
 
         error.clear();
         return true;
