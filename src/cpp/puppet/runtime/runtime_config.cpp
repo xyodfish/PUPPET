@@ -100,6 +100,7 @@ namespace puppet::runtime {
                 config->gmr.enabled             = readOr<bool>(gmrNode, "enabled", false);
                 config->gmr.backendName         = readOr<std::string>(gmrNode, "backend", "pin_ik");
                 config->gmr.robotModelPath      = readOr<std::string>(gmrNode, "robot_model_path", "");
+                config->gmr.robotModelXmlPath   = readOr<std::string>(gmrNode, "robot_model_xml_path", "");
                 config->gmr.ikConfigPath        = readOr<std::string>(gmrNode, "ik_config_path", "");
                 config->gmr.actualHumanHeight   = readOr<double>(gmrNode, "actual_human_height", 1.75);
                 config->gmr.damping             = readOr<double>(gmrNode, "damping", 0.5);

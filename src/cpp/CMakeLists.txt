@@ -6,6 +6,21 @@ find_package(Eigen3 REQUIRED)
 find_package(qpOASES REQUIRED)
 find_package(pinocchio REQUIRED)
 
+if (NOT ARCH_FREFIX)
+  set(ARCH_FREFIX "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
+endif()
+if (NOT ROOT_DEVEL_ARCH_PATH)
+  set(ROOT_DEVEL_ARCH_PATH "/opt/robot/devel/${ARCH_FREFIX}")
+endif()
+set(GMR_THIRDPARTY_PREFIX "${ROOT_DEVEL_ARCH_PATH}" CACHE PATH "Third-party install prefix")
+set(GMR_MUJOCO_PREFIX "/opt/galbot/devel_control/${ARCH_FREFIX}" CACHE PATH "MuJoCo install prefix")
+
+find_library(MUJOCO_LIBRARY
+  NAMES mujoco libmujoco
+  PATHS "${GMR_THIRDPARTY_PREFIX}/lib" "${GMR_MUJOCO_PREFIX}/lib"
+  REQUIRED)
+
+
 set(PUPPET_CORE_SOURCES
   puppet/runtime/message_snapshot.cpp
   puppet/runtime/runtime_config.cpp
@@ -14,28 +29,32 @@ set(PUPPET_CORE_SOURCES
   puppet/orchestrator/orchestrator.cpp
   puppet/retargeting/core/direct_pass_through_plugin.cpp
   puppet/retargeting/core/retargeting_pipeline.cpp
-  puppet/retargeting/native/gmr_retargeting_plugin.cpp
-  puppet/retargeting/native/gmr_retargeter_shim.cpp
+  puppet/retargeting/native/gmr/gmr_retargeting_plugin.cpp
+  puppet/retargeting/native/gmr/gmr_retargeter_shim.cpp
   puppet/robot/backend/direct_mapping_backend.cpp)
 
-set(PUPPET_GMR_CPP_ROOT "${CMAKE_SOURCE_DIR}/src/cpp/puppet/retargeting/native/gmr_cpp")
+set(PUPPET_GMR_CPP_ROOT "${CMAKE_SOURCE_DIR}/src/cpp/puppet/retargeting/native/gmr")
 
-add_library(puppet_cpp_core STATIC ${PUPPET_CORE_SOURCES}
-  ${PUPPET_GMR_CPP_ROOT}/src/solver/qp_solver.cpp
-  ${PUPPET_GMR_CPP_ROOT}/src/solver/hqp_solver.cpp
-  ${PUPPET_GMR_CPP_ROOT}/src/retarget/ik_config.cpp
-  ${PUPPET_GMR_CPP_ROOT}/src/retarget/human_frame_io.cpp
-  ${PUPPET_GMR_CPP_ROOT}/src/retarget/retargeter_pinocchio.cpp
-  ${PUPPET_GMR_CPP_ROOT}/src/retarget/retargeter_pinocchio_legacy.cpp)
+add_library(puppet_cpp_core SHARED ${PUPPET_CORE_SOURCES}
+  ${PUPPET_GMR_CPP_ROOT}/solver/qp_solver.cpp
+  ${PUPPET_GMR_CPP_ROOT}/solver/hqp_solver.cpp
+  ${PUPPET_GMR_CPP_ROOT}/retarget/ik_config.cpp
+  ${PUPPET_GMR_CPP_ROOT}/retarget/human_frame_io.cpp
+  ${PUPPET_GMR_CPP_ROOT}/retarget/retargeter_pinocchio.cpp
+  ${PUPPET_GMR_CPP_ROOT}/retarget/retargeter_pinocchio_legacy.cpp
+  ${PUPPET_GMR_CPP_ROOT}/retarget/retargeter_mujoco.cpp
+  ${PUPPET_GMR_CPP_ROOT}/retarget/retargeter_mujoco_legacy.cpp)
 
 target_include_directories(puppet_cpp_core
   PUBLIC
     ${CMAKE_SOURCE_DIR}/include
-    ${PUPPET_GMR_CPP_ROOT}/include)
+    ${CMAKE_SOURCE_DIR}/include/puppet/retargeting/native)
 
 target_link_libraries(puppet_cpp_core
   PUBLIC
     yaml-cpp
     Eigen3::Eigen
     qpOASES
-    pinocchio::pinocchio)
+    pinocchio::pinocchio
+  PRIVATE
+    ${MUJOCO_LIBRARY})

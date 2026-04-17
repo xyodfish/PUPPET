@@ -14,14 +14,13 @@
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/parsers/mjcf.hpp>
 #include <pinocchio/parsers/urdf.hpp>
-#include <pinocchio/spatial/explog.hpp>
 
+#include <gmr/retarget/retargeter_internal_utils.h>
 #include "gmr/solver/qp_solver.h"
-#include "retargeter_internal_utils.h"
 
 namespace gmr {
 
-    struct PinTaskRuntime {
+    struct PinLegacyTaskRuntime {
         pinocchio::FrameIndex frameId = 0;
         bool useJointPose             = false;
         pinocchio::JointIndex jointId = 0;
@@ -35,7 +34,7 @@ namespace gmr {
         Eigen::Quaterniond targetRot = Eigen::Quaterniond::Identity();
     };
 
-    std::string readTextFile(const std::filesystem::path& path) {
+    std::string readTextFileLegacy(const std::filesystem::path& path) {
         std::ifstream ifs(path);
         if (!ifs.is_open()) {
             throw std::runtime_error("Failed to open file: " + path.string());
@@ -45,7 +44,7 @@ namespace gmr {
         return oss.str();
     }
 
-    void writeTextFile(const std::filesystem::path& path, const std::string& text) {
+    void writeTextFileLegacy(const std::filesystem::path& path, const std::string& text) {
         std::ofstream ofs(path);
         if (!ofs.is_open()) {
             throw std::runtime_error("Failed to open file for writing: " + path.string());
@@ -53,7 +52,7 @@ namespace gmr {
         ofs << text;
     }
 
-    std::size_t findMatchingTagEnd(const std::string& xml, const std::string& tag, std::size_t openPos) {
+    std::size_t findMatchingTagEndLegacy(const std::string& xml, const std::string& tag, std::size_t openPos) {
         const std::string openTag  = "<" + tag;
         const std::string closeTag = "</" + tag + ">";
 
@@ -77,7 +76,7 @@ namespace gmr {
         return cursor;
     }
 
-    std::string stripRepeatedTopLevelTag(const std::string& xml, const std::string& tag) {
+    std::string stripRepeatedTopLevelTagLegacy(const std::string& xml, const std::string& tag) {
         const std::string openTag = "<" + tag;
 
         std::string out             = xml;
@@ -86,30 +85,30 @@ namespace gmr {
             return out;
         }
 
-        std::size_t firstEnd = findMatchingTagEnd(out, tag, firstOpen);
+        std::size_t firstEnd = findMatchingTagEndLegacy(out, tag, firstOpen);
         while (true) {
             const std::size_t nextOpen = out.find(openTag, firstEnd);
             if (nextOpen == std::string::npos) {
                 break;
             }
-            const std::size_t nextEnd = findMatchingTagEnd(out, tag, nextOpen);
+            const std::size_t nextEnd = findMatchingTagEndLegacy(out, tag, nextOpen);
             out.erase(nextOpen, nextEnd - nextOpen);
         }
 
         return out;
     }
 
-    std::string sanitizeMjcfForPinocchio(const std::filesystem::path& path) {
-        std::string xml = readTextFile(path);
-        xml             = stripRepeatedTopLevelTag(xml, "asset");
-        xml             = stripRepeatedTopLevelTag(xml, "worldbody");
+    std::string sanitizeMjcfForPinocchioLegacy(const std::filesystem::path& path) {
+        std::string xml = readTextFileLegacy(path);
+        xml             = stripRepeatedTopLevelTagLegacy(xml, "asset");
+        xml             = stripRepeatedTopLevelTagLegacy(xml, "worldbody");
         return xml;
     }
 
-    void buildSanitizedMjcfModel(const std::filesystem::path& path, pinocchio::Model* model) {
-        const std::string sanitized         = sanitizeMjcfForPinocchio(path);
+    void buildSanitizedMjcfModelLegacy(const std::filesystem::path& path, pinocchio::Model* model) {
+        const std::string sanitized         = sanitizeMjcfForPinocchioLegacy(path);
         const std::filesystem::path tmpPath = path.parent_path() / ".pinocchio_sanitized_tmp.xml";
-        writeTextFile(tmpPath, sanitized);
+        writeTextFileLegacy(tmpPath, sanitized);
         try {
             pinocchio::mjcf::buildModel(tmpPath.string(), *model);
         } catch (...) {
@@ -121,8 +120,8 @@ namespace gmr {
         std::filesystem::remove(tmpPath, ec);
     }
 
-    std::optional<pinocchio::FrameIndex> findFrameByNameAndType(const pinocchio::Model& model, const std::string& name,
-                                                                pinocchio::FrameType type) {
+    std::optional<pinocchio::FrameIndex> findFrameByNameAndTypeLegacy(const pinocchio::Model& model, const std::string& name,
+                                                                      pinocchio::FrameType type) {
         for (pinocchio::FrameIndex i = 0; i < model.nframes; ++i) {
             const auto& frame = model.frames[i];
             if (frame.name == name && frame.type == type) {
@@ -132,11 +131,12 @@ namespace gmr {
         return std::nullopt;
     }
 
-    std::pair<pinocchio::FrameIndex, pinocchio::FrameType> resolveTaskFrameId(const pinocchio::Model& model, const std::string& name) {
+    std::pair<pinocchio::FrameIndex, pinocchio::FrameType> resolveTaskFrameIdLegacy(const pinocchio::Model& model,
+                                                                                    const std::string& name) {
         static const std::array<pinocchio::FrameType, 4> kPriority = {pinocchio::BODY, pinocchio::OP_FRAME, pinocchio::FIXED_JOINT,
                                                                       pinocchio::JOINT};
         for (pinocchio::FrameType type : kPriority) {
-            std::optional<pinocchio::FrameIndex> frameId = findFrameByNameAndType(model, name, type);
+            std::optional<pinocchio::FrameIndex> frameId = findFrameByNameAndTypeLegacy(model, name, type);
             if (frameId.has_value()) {
                 return {*frameId, type};
             }
@@ -144,15 +144,15 @@ namespace gmr {
         throw std::runtime_error("Frame not found in Pinocchio model: " + name);
     }
 
-    struct PinocchioRetargetBackend::Impl {
+    struct PinocchioLegacyRetargetBackend::Impl {
         pinocchio::Model model;
         std::unique_ptr<pinocchio::Data> data;
 
         IkConfig ikConfig;
         RetargetOptions options;
 
-        std::vector<PinTaskRuntime> tasks1;
-        std::vector<PinTaskRuntime> tasks2;
+        std::vector<PinLegacyTaskRuntime> tasks1;
+        std::vector<PinLegacyTaskRuntime> tasks2;
         std::unordered_map<std::string, Eigen::Vector3d> table1PosOffsets;
         std::unordered_map<std::string, Eigen::Quaterniond> table1RotOffsets;
 
@@ -169,7 +169,7 @@ namespace gmr {
                 if (extension == ".urdf") {
                     pinocchio::urdf::buildModel(robotModelPath.string(), pinocchio::JointModelFreeFlyer(), model);
                 } else if (extension == ".xml" || extension == ".mjcf") {
-                    buildSanitizedMjcfModel(robotModelPath, &model);
+                    buildSanitizedMjcfModelLegacy(robotModelPath, &model);
                 } else {
                     throw std::runtime_error("Unsupported robot model extension for Pinocchio: " + extension);
                 }
@@ -195,12 +195,12 @@ namespace gmr {
             qvel    = Eigen::VectorXd::Zero(model.nv);
             qpos    = pinocchioToMujocoQpos(qposPin);
 
-            auto buildTasks = [this](const std::vector<IkTaskEntry>& src, std::vector<PinTaskRuntime>* dst) {
+            auto buildTasks = [this](const std::vector<IkTaskEntry>& src, std::vector<PinLegacyTaskRuntime>* dst) {
                 dst->clear();
                 dst->reserve(src.size());
                 for (const auto& entry : src) {
-                    PinTaskRuntime task;
-                    auto [frameId, frameType] = resolveTaskFrameId(model, entry.robotBodyName);
+                    PinLegacyTaskRuntime task;
+                    auto [frameId, frameType] = resolveTaskFrameIdLegacy(model, entry.robotBodyName);
                     (void)frameType;
                     task.frameId = frameId;
                     if (hasRootFreeFlyer && entry.robotBodyName == ikConfig.robotRootName) {
@@ -261,7 +261,7 @@ namespace gmr {
         }
 
         void updateTaskTargets(const HumanFrame& frame) {
-            auto fill = [&frame](std::vector<PinTaskRuntime>* tasks) {
+            auto fill = [&frame](std::vector<PinLegacyTaskRuntime>* tasks) {
                 for (auto& task : *tasks) {
                     auto it = frame.find(task.humanBodyName);
                     if (it == frame.end()) {
@@ -276,32 +276,36 @@ namespace gmr {
             fill(&tasks2);
         }
 
-        double computeTaskError(const std::vector<PinTaskRuntime>& tasks) const {
+        double computeTaskError(const std::vector<PinLegacyTaskRuntime>& tasks) const {
             double sqErr = 0.0;
             for (const auto& task : tasks) {
-                pinocchio::SE3 currPose;
+                Eigen::Vector3d currPos    = Eigen::Vector3d::Zero();
+                Eigen::Quaterniond currRot = Eigen::Quaterniond::Identity();
                 if (task.useJointPose) {
                     if (task.jointId >= model.njoints) {
                         continue;
                     }
-                    currPose = data->oMi[task.jointId];
+                    const pinocchio::SE3& pose = data->oMi[task.jointId];
+                    currPos                    = pose.translation();
+                    currRot                    = Eigen::Quaterniond(pose.rotation());
                 } else {
                     if (task.frameId >= model.nframes) {
                         continue;
                     }
-                    currPose = data->oMf[task.frameId];
+                    const pinocchio::SE3& pose = data->oMf[task.frameId];
+                    currPos                    = pose.translation();
+                    currRot                    = Eigen::Quaterniond(pose.rotation());
                 }
+                currRot.normalize();
 
-                Eigen::Quaterniond targetRot = task.targetRot;
-                targetRot.normalize();
-                const pinocchio::SE3 targetPose(targetRot.toRotationMatrix(), task.targetPos);
-                const Eigen::Matrix<double, 6, 1> error = pinocchio::log6(currPose.inverse() * targetPose).toVector();
-                sqErr += error.squaredNorm();
+                const Eigen::Vector3d posErr = task.targetPos - currPos;
+                const Eigen::Vector3d rotErr = retarget_internal::computeOrientationErrorWorld(currRot, task.targetRot);
+                sqErr += posErr.squaredNorm() + rotErr.squaredNorm();
             }
             return std::sqrt(sqErr);
         }
 
-        void solveTaskSet(const std::vector<PinTaskRuntime>& tasks) {
+        void solveTaskSet(const std::vector<PinLegacyTaskRuntime>& tasks) {
             if (tasks.empty()) {
                 return;
             }
@@ -311,10 +315,10 @@ namespace gmr {
             if (dt <= 1e-12) {
                 throw std::runtime_error("integrationTimestep must be positive.");
             }
+            const double invDt = 1.0 / dt;
 
             double currError = computeTaskError(tasks);
             solver::QPSolver solver;
-            const Eigen::MatrixXd I = Eigen::MatrixXd::Identity(nv, nv);
 
             for (int iter = 0; iter < options.maxIterations; ++iter) {
                 solver::QPData qp;
@@ -325,8 +329,8 @@ namespace gmr {
                 qp.ciUb.setConstant(1e9);
 
                 if (options.useVelocityLimit) {
-                    qp.ciLb.setConstant(-options.velocityLimit * dt);
-                    qp.ciUb.setConstant(options.velocityLimit * dt);
+                    qp.ciLb.setConstant(-options.velocityLimit);
+                    qp.ciUb.setConstant(options.velocityLimit);
                 }
 
                 for (pinocchio::JointIndex jointId = 1; jointId < model.njoints; ++jointId) {
@@ -340,53 +344,55 @@ namespace gmr {
                     const double qmin = model.lowerPositionLimit[qadr];
                     const double qmax = model.upperPositionLimit[qadr];
                     if (std::isfinite(qmin) && std::isfinite(qmax)) {
-                        qp.ciLb[vadr] = std::max(qp.ciLb[vadr], qmin - qposPin[qadr]);
-                        qp.ciUb[vadr] = std::min(qp.ciUb[vadr], qmax - qposPin[qadr]);
+                        qp.ciLb[vadr] = std::max(qp.ciLb[vadr], (qmin - qposPin[qadr]) / dt);
+                        qp.ciUb[vadr] = std::min(qp.ciUb[vadr], (qmax - qposPin[qadr]) / dt);
                     }
                 }
 
+                Eigen::Matrix<double, 6, Eigen::Dynamic> frameJacobian(6, nv);
                 pinocchio::computeJointJacobians(model, *data, qposPin);
 
                 for (const auto& task : tasks) {
-                    pinocchio::SE3 currPose;
-                    Eigen::Matrix<double, 6, Eigen::Dynamic> jacobianLocal(6, nv);
+                    Eigen::Vector3d currPos    = Eigen::Vector3d::Zero();
+                    Eigen::Quaterniond currRot = Eigen::Quaterniond::Identity();
 
                     if (task.useJointPose) {
                         if (task.jointId >= model.njoints) {
                             continue;
                         }
-                        jacobianLocal = pinocchio::getJointJacobian(model, *data, task.jointId, pinocchio::LOCAL);
-                        currPose      = data->oMi[task.jointId];
+                        frameJacobian = pinocchio::getJointJacobian(model, *data, task.jointId, pinocchio::LOCAL_WORLD_ALIGNED);
+                        const pinocchio::SE3& pose = data->oMi[task.jointId];
+                        currPos                    = pose.translation();
+                        currRot                    = Eigen::Quaterniond(pose.rotation());
                     } else {
                         if (task.frameId >= model.nframes) {
                             continue;
                         }
-                        jacobianLocal.setZero();
-                        pinocchio::computeFrameJacobian(model, *data, qposPin, task.frameId, pinocchio::LOCAL, jacobianLocal);
-                        currPose = data->oMf[task.frameId];
+                        frameJacobian.setZero();
+                        pinocchio::computeFrameJacobian(model, *data, qposPin, task.frameId, pinocchio::LOCAL_WORLD_ALIGNED, frameJacobian);
+                        const pinocchio::SE3& pose = data->oMf[task.frameId];
+                        currPos                    = pose.translation();
+                        currRot                    = Eigen::Quaterniond(pose.rotation());
                     }
 
-                    Eigen::Quaterniond targetRot = task.targetRot;
-                    targetRot.normalize();
-                    const pinocchio::SE3 targetPose(targetRot.toRotationMatrix(), task.targetPos);
-                    const pinocchio::SE3 T_bt = currPose.inverse() * targetPose;
-                    const pinocchio::SE3 T_tb = targetPose.inverse() * currPose;
+                    currRot.normalize();
 
-                    const Eigen::Matrix<double, 6, 1> error = pinocchio::log6(T_bt).toVector();
-                    const Eigen::Matrix<double, 6, 6> jlog  = pinocchio::Jlog6(T_tb);
-                    const Eigen::MatrixXd taskJacobian      = -jlog * jacobianLocal;
+                    const auto Jp = frameJacobian.topRows<3>();
+                    const auto Jr = frameJacobian.bottomRows<3>();
 
-                    Eigen::MatrixXd weightedJacobian = taskJacobian;
-                    weightedJacobian.topRows(3) *= task.posWeight;
-                    weightedJacobian.bottomRows(3) *= task.rotWeight;
+                    const Eigen::Vector3d posErr       = task.targetPos - currPos;
+                    const Eigen::Vector3d rotErr       = retarget_internal::computeOrientationErrorWorld(currRot, task.targetRot);
+                    const Eigen::Vector3d posTargetVel = posErr * invDt;
+                    const Eigen::Vector3d rotTargetVel = rotErr * invDt;
 
-                    Eigen::Matrix<double, 6, 1> weightedError = -error;
-                    weightedError.head<3>() *= task.posWeight;
-                    weightedError.tail<3>() *= task.rotWeight;
-
-                    const double lmMu = weightedError.squaredNorm();
-                    qp.H.noalias() += weightedJacobian.transpose() * weightedJacobian + lmMu * I;
-                    qp.g.noalias() += -(weightedError.transpose() * weightedJacobian).transpose();
+                    if (task.posWeight > 0.0) {
+                        qp.H.noalias() += task.posWeight * (Jp.transpose() * Jp);
+                        qp.g.noalias() += -task.posWeight * (Jp.transpose() * posTargetVel);
+                    }
+                    if (task.rotWeight > 0.0) {
+                        qp.H.noalias() += task.rotWeight * (Jr.transpose() * Jr);
+                        qp.g.noalias() += -task.rotWeight * (Jr.transpose() * rotTargetVel);
+                    }
                 }
 
                 qp.H.diagonal().array() += options.damping;
@@ -396,9 +402,8 @@ namespace gmr {
                     throw std::runtime_error("QP solver failed while retargeting.");
                 }
 
-                const Eigen::VectorXd deltaQ = out.x;
-                qvel                         = deltaQ / dt;
-                qposPin                      = pinocchio::integrate(model, qposPin, deltaQ);
+                qvel    = out.x;
+                qposPin = pinocchio::integrate(model, qposPin, qvel * dt);
                 syncDataFromQpos();
 
                 const double nextError = computeTaskError(tasks);
@@ -410,13 +415,13 @@ namespace gmr {
         }
     };
 
-    PinocchioRetargetBackend::PinocchioRetargetBackend(const std::filesystem::path& robotModelPath, IkConfig ikConfig,
-                                                       RetargetOptions options)
+    PinocchioLegacyRetargetBackend::PinocchioLegacyRetargetBackend(const std::filesystem::path& robotModelPath, IkConfig ikConfig,
+                                                                   RetargetOptions options)
         : impl_(std::make_unique<Impl>(robotModelPath, std::move(ikConfig), std::move(options))) {}
 
-    PinocchioRetargetBackend::~PinocchioRetargetBackend() = default;
+    PinocchioLegacyRetargetBackend::~PinocchioLegacyRetargetBackend() = default;
 
-    Eigen::VectorXd PinocchioRetargetBackend::retargetFrame(const HumanFrame& humanFrame, bool offsetToGround) {
+    Eigen::VectorXd PinocchioLegacyRetargetBackend::retargetFrame(const HumanFrame& humanFrame, bool offsetToGround) {
         HumanFrame prepared = impl_->prepareHumanFrame(humanFrame, offsetToGround);
         impl_->updateTaskTargets(prepared);
         if (impl_->ikConfig.useTable1) {
@@ -428,11 +433,11 @@ namespace gmr {
         return impl_->qpos;
     }
 
-    HumanFrame PinocchioRetargetBackend::prepareHumanFrame(const HumanFrame& humanFrame, bool offsetToGround) const {
+    HumanFrame PinocchioLegacyRetargetBackend::prepareHumanFrame(const HumanFrame& humanFrame, bool offsetToGround) const {
         return impl_->prepareHumanFrame(humanFrame, offsetToGround);
     }
 
-    void PinocchioRetargetBackend::setQpos(const Eigen::VectorXd& qpos) {
+    void PinocchioLegacyRetargetBackend::setQpos(const Eigen::VectorXd& qpos) {
         if (qpos.size() != impl_->qpos.size()) {
             throw std::runtime_error("setQpos size mismatch.");
         }
@@ -442,11 +447,15 @@ namespace gmr {
         impl_->syncDataFromQpos();
     }
 
-    const Eigen::VectorXd& PinocchioRetargetBackend::currentQpos() const { return impl_->qpos; }
+    const Eigen::VectorXd& PinocchioLegacyRetargetBackend::currentQpos() const {
+        return impl_->qpos;
+    }
 
-    bool PinocchioRetargetBackend::hasRootFreeFlyer() const { return impl_->hasRootFreeFlyer; }
+    bool PinocchioLegacyRetargetBackend::hasRootFreeFlyer() const {
+        return impl_->hasRootFreeFlyer;
+    }
 
-    const std::vector<ScalarJointCoordinate>& PinocchioRetargetBackend::scalarJointCoordinates() const {
+    const std::vector<ScalarJointCoordinate>& PinocchioLegacyRetargetBackend::scalarJointCoordinates() const {
         return impl_->scalarJointCoordinates;
     }
 

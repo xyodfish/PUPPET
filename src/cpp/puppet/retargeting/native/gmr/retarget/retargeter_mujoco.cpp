@@ -7,12 +7,14 @@
 
 #include <mujoco/mujoco.h>
 
+#include <pinocchio/spatial/explog.hpp>
+
+#include <gmr/retarget/retargeter_internal_utils.h>
 #include "gmr/solver/qp_solver.h"
-#include "retargeter_internal_utils.h"
 
 namespace gmr {
 
-    struct MujocoLegacyTaskRuntime {
+    struct MujocoTaskRuntime {
         int bodyId = -1;
         std::string humanBodyName;
         double posWeight             = 0.0;
@@ -24,7 +26,7 @@ namespace gmr {
         Eigen::Quaterniond targetRot = Eigen::Quaterniond::Identity();
     };
 
-    struct MujocoLegacyRetargetBackend::Impl {
+    struct MujocoRetargetBackend::Impl {
         struct ModelDeleter {
             void operator()(mjModel* p) const {
                 if (p != nullptr) {
@@ -47,8 +49,8 @@ namespace gmr {
         IkConfig ikConfig;
         RetargetOptions options;
 
-        std::vector<MujocoLegacyTaskRuntime> tasks1;
-        std::vector<MujocoLegacyTaskRuntime> tasks2;
+        std::vector<MujocoTaskRuntime> tasks1;
+        std::vector<MujocoTaskRuntime> tasks2;
         std::unordered_map<std::string, Eigen::Vector3d> table1PosOffsets;
         std::unordered_map<std::string, Eigen::Quaterniond> table1RotOffsets;
 
@@ -97,7 +99,7 @@ namespace gmr {
             std::sort(scalarJointCoordinates.begin(), scalarJointCoordinates.end(),
                       [](const ScalarJointCoordinate& a, const ScalarJointCoordinate& b) { return a.qIndex < b.qIndex; });
 
-            auto buildTasks = [this](const std::vector<IkTaskEntry>& src, std::vector<MujocoLegacyTaskRuntime>* dst) {
+            auto buildTasks = [this](const std::vector<IkTaskEntry>& src, std::vector<MujocoTaskRuntime>* dst) {
                 dst->clear();
                 dst->reserve(src.size());
                 for (const auto& entry : src) {
@@ -106,7 +108,7 @@ namespace gmr {
                         throw std::runtime_error("Body not found in MuJoCo model: " + entry.robotBodyName);
                     }
 
-                    MujocoLegacyTaskRuntime task;
+                    MujocoTaskRuntime task;
                     task.bodyId        = bodyId;
                     task.humanBodyName = entry.humanBodyName;
                     task.posWeight     = entry.posWeight;
@@ -141,7 +143,7 @@ namespace gmr {
         }
 
         void updateTaskTargets(const HumanFrame& frame) {
-            auto fill = [&frame](std::vector<MujocoLegacyTaskRuntime>* tasks) {
+            auto fill = [&frame](std::vector<MujocoTaskRuntime>* tasks) {
                 for (auto& task : *tasks) {
                     auto it = frame.find(task.humanBodyName);
                     if (it == frame.end()) {
@@ -156,7 +158,7 @@ namespace gmr {
             fill(&tasks2);
         }
 
-        double computeTaskError(const std::vector<MujocoLegacyTaskRuntime>& tasks) const {
+        double computeTaskError(const std::vector<MujocoTaskRuntime>& tasks) const {
             double sqErr = 0.0;
             for (const auto& task : tasks) {
                 const double* xpos  = &data->xpos[3 * task.bodyId];
@@ -173,7 +175,7 @@ namespace gmr {
             return std::sqrt(sqErr);
         }
 
-        void solveTaskSet(const std::vector<MujocoLegacyTaskRuntime>& tasks) {
+        void solveTaskSet(const std::vector<MujocoTaskRuntime>& tasks) {
             if (tasks.empty()) {
                 return;
             }
@@ -183,10 +185,10 @@ namespace gmr {
             if (dt <= 1e-12) {
                 throw std::runtime_error("integrationTimestep must be positive.");
             }
-            const double invDt = 1.0 / dt;
 
             double currError = computeTaskError(tasks);
             solver::QPSolver solver;
+            const Eigen::MatrixXd I = Eigen::MatrixXd::Identity(nv, nv);
 
             std::vector<mjtNum> jacp(3 * nv);
             std::vector<mjtNum> jacr(3 * nv);
@@ -200,8 +202,8 @@ namespace gmr {
                 qp.ciUb.setConstant(1e9);
 
                 if (options.useVelocityLimit) {
-                    qp.ciLb.setConstant(-options.velocityLimit);
-                    qp.ciUb.setConstant(options.velocityLimit);
+                    qp.ciLb.setConstant(-options.velocityLimit * dt);
+                    qp.ciUb.setConstant(options.velocityLimit * dt);
                 }
 
                 for (int j = 0; j < model->njnt; ++j) {
@@ -218,8 +220,8 @@ namespace gmr {
                     const double qmin = model->jnt_range[2 * j + 0];
                     const double qmax = model->jnt_range[2 * j + 1];
 
-                    qp.ciLb[vadr] = std::max(qp.ciLb[vadr], (qmin - data->qpos[qadr]) / dt);
-                    qp.ciUb[vadr] = std::min(qp.ciUb[vadr], (qmax - data->qpos[qadr]) / dt);
+                    qp.ciLb[vadr] = std::max(qp.ciLb[vadr], qmin - data->qpos[qadr]);
+                    qp.ciUb[vadr] = std::min(qp.ciUb[vadr], qmax - data->qpos[qadr]);
                 }
 
                 for (const auto& task : tasks) {
@@ -227,28 +229,42 @@ namespace gmr {
                     std::fill(jacr.begin(), jacr.end(), 0.0);
                     mj_jacBody(model.get(), data.get(), jacp.data(), jacr.data(), task.bodyId);
 
-                    const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>> Jp(jacp.data(), 3, nv);
-                    const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>> Jr(jacr.data(), 3, nv);
+                    const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>> JpWorld(jacp.data(), 3, nv);
+                    const Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>> JrWorld(jacr.data(), 3, nv);
 
                     const double* xpos  = &data->xpos[3 * task.bodyId];
                     const double* xquat = &data->xquat[4 * task.bodyId];
                     const Eigen::Vector3d currPos(xpos[0], xpos[1], xpos[2]);
                     Eigen::Quaterniond currRot(xquat[0], xquat[1], xquat[2], xquat[3]);
                     currRot.normalize();
+                    const Eigen::Matrix3d Rwb = currRot.toRotationMatrix();
+                    const Eigen::Matrix3d Rbw = Rwb.transpose();
 
-                    const Eigen::Vector3d posErr       = task.targetPos - currPos;
-                    const Eigen::Vector3d rotErr       = retarget_internal::computeOrientationErrorWorld(currRot, task.targetRot);
-                    const Eigen::Vector3d posTargetVel = posErr * invDt;
-                    const Eigen::Vector3d rotTargetVel = rotErr * invDt;
+                    Eigen::MatrixXd Jlocal(6, nv);
+                    Jlocal.topRows(3)    = Rbw * JpWorld;
+                    Jlocal.bottomRows(3) = Rbw * JrWorld;
 
-                    if (task.posWeight > 0.0) {
-                        qp.H.noalias() += task.posWeight * (Jp.transpose() * Jp);
-                        qp.g.noalias() += -task.posWeight * (Jp.transpose() * posTargetVel);
-                    }
-                    if (task.rotWeight > 0.0) {
-                        qp.H.noalias() += task.rotWeight * (Jr.transpose() * Jr);
-                        qp.g.noalias() += -task.rotWeight * (Jr.transpose() * rotTargetVel);
-                    }
+                    Eigen::Quaterniond targetRot = task.targetRot;
+                    targetRot.normalize();
+                    const pinocchio::SE3 T_wb(Rwb, currPos);
+                    const pinocchio::SE3 T_wt(targetRot.toRotationMatrix(), task.targetPos);
+                    const pinocchio::SE3 T_bt               = T_wb.inverse() * T_wt;
+                    const pinocchio::SE3 T_tb               = T_wt.inverse() * T_wb;
+                    const Eigen::Matrix<double, 6, 1> error = pinocchio::log6(T_bt).toVector();
+                    const Eigen::Matrix<double, 6, 6> jlog  = pinocchio::Jlog6(T_tb);
+                    const Eigen::MatrixXd Jtask             = -jlog * Jlocal;
+
+                    Eigen::MatrixXd weightedJ = Jtask;
+                    weightedJ.topRows(3) *= task.posWeight;
+                    weightedJ.bottomRows(3) *= task.rotWeight;
+
+                    Eigen::Matrix<double, 6, 1> weightedError = -error;
+                    weightedError.head<3>() *= task.posWeight;
+                    weightedError.tail<3>() *= task.rotWeight;
+
+                    const double lmMu = weightedError.squaredNorm();
+                    qp.H.noalias() += weightedJ.transpose() * weightedJ + lmMu * I;
+                    qp.g.noalias() += -(weightedError.transpose() * weightedJ).transpose();
                 }
 
                 qp.H.diagonal().array() += options.damping;
@@ -258,7 +274,8 @@ namespace gmr {
                     throw std::runtime_error("QP solver failed while retargeting.");
                 }
 
-                qvel = out.x;
+                const Eigen::VectorXd deltaQ = out.x;
+                qvel                         = deltaQ / dt;
 
                 mj_integratePos(model.get(), data->qpos, qvel.data(), dt);
                 for (int j = 0; j < model->njnt; ++j) {
@@ -283,13 +300,12 @@ namespace gmr {
         }
     };
 
-    MujocoLegacyRetargetBackend::MujocoLegacyRetargetBackend(const std::filesystem::path& robotModelPath, IkConfig ikConfig,
-                                                             RetargetOptions options)
+    MujocoRetargetBackend::MujocoRetargetBackend(const std::filesystem::path& robotModelPath, IkConfig ikConfig, RetargetOptions options)
         : impl_(std::make_unique<Impl>(robotModelPath, std::move(ikConfig), std::move(options))) {}
 
-    MujocoLegacyRetargetBackend::~MujocoLegacyRetargetBackend() = default;
+    MujocoRetargetBackend::~MujocoRetargetBackend() = default;
 
-    Eigen::VectorXd MujocoLegacyRetargetBackend::retargetFrame(const HumanFrame& humanFrame, bool offsetToGround) {
+    Eigen::VectorXd MujocoRetargetBackend::retargetFrame(const HumanFrame& humanFrame, bool offsetToGround) {
         HumanFrame prepared = impl_->prepareHumanFrame(humanFrame, offsetToGround);
         impl_->updateTaskTargets(prepared);
         if (impl_->ikConfig.useTable1) {
@@ -301,11 +317,11 @@ namespace gmr {
         return impl_->qpos;
     }
 
-    HumanFrame MujocoLegacyRetargetBackend::prepareHumanFrame(const HumanFrame& humanFrame, bool offsetToGround) const {
+    HumanFrame MujocoRetargetBackend::prepareHumanFrame(const HumanFrame& humanFrame, bool offsetToGround) const {
         return impl_->prepareHumanFrame(humanFrame, offsetToGround);
     }
 
-    void MujocoLegacyRetargetBackend::setQpos(const Eigen::VectorXd& qpos) {
+    void MujocoRetargetBackend::setQpos(const Eigen::VectorXd& qpos) {
         if (qpos.size() != impl_->model->nq) {
             throw std::runtime_error("setQpos size mismatch.");
         }
@@ -317,11 +333,15 @@ namespace gmr {
         impl_->syncQposFromData();
     }
 
-    const Eigen::VectorXd& MujocoLegacyRetargetBackend::currentQpos() const { return impl_->qpos; }
+    const Eigen::VectorXd& MujocoRetargetBackend::currentQpos() const {
+        return impl_->qpos;
+    }
 
-    bool MujocoLegacyRetargetBackend::hasRootFreeFlyer() const { return impl_->hasRootFreeFlyer; }
+    bool MujocoRetargetBackend::hasRootFreeFlyer() const {
+        return impl_->hasRootFreeFlyer;
+    }
 
-    const std::vector<ScalarJointCoordinate>& MujocoLegacyRetargetBackend::scalarJointCoordinates() const {
+    const std::vector<ScalarJointCoordinate>& MujocoRetargetBackend::scalarJointCoordinates() const {
         return impl_->scalarJointCoordinates;
     }
 

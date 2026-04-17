@@ -41,8 +41,9 @@ backends:
 
 gmr_plugin:
   enabled: true
-  backend: pin_ik
+  backend: mujoco_se3
   robot_model_path: "assets/unitree_g1/g1_custom_collision_29dof.urdf"
+  robot_model_xml_path: "assets/unitree_g1/g1_mocap_29dof.xml"
   ik_config_path: /data/open_src_code/GMR_custom/general_motion_retargeting/ik_configs/bvh_lafan1_to_g1.json
   actual_human_height: 1.75
   damping: 0.5

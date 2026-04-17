@@ -5,8 +5,7 @@
 #include <Eigen/Dense>
 
 namespace puppet::retargeting {
-    namespace {
-    }  // namespace
+    namespace {}  // namespace
 
     namespace gmr_wrap {
 
@@ -25,9 +24,14 @@ namespace puppet::retargeting {
             }
             return true;
         }
-        if (config.gmr.robotModelPath.empty() || config.gmr.ikConfigPath.empty()) {
+        const gmr::RetargetBackend backend = gmr::parseRetargetBackend(config.gmr.backendName);
+        const bool isMujocoBackend         = backend == gmr::RetargetBackend::kMujoco || backend == gmr::RetargetBackend::kMujocoLegacy;
+        const std::string& resolvedRobotModelPath =
+            isMujocoBackend && !config.gmr.robotModelXmlPath.empty() ? config.gmr.robotModelXmlPath : config.gmr.robotModelPath;
+
+        if (resolvedRobotModelPath.empty() || config.gmr.ikConfigPath.empty()) {
             if (error != nullptr) {
-                *error = "gmr enabled but robot_model_path or ik_config_path is empty";
+                *error = "gmr enabled but resolved robot model path or ik_config_path is empty";
             }
             return false;
         }
@@ -42,8 +46,7 @@ namespace puppet::retargeting {
         gmr::IkConfig ikConfig = gmr::loadIkConfig(config.gmr.ikConfigPath, config.gmr.actualHumanHeight);
 
         auto holder        = std::make_shared<gmr_wrap::RetargeterHolder>();
-        holder->retargeter = gmr::createRetargeter(gmr::parseRetargetBackend(config.gmr.backendName), config.gmr.robotModelPath,
-                                                   std::move(ikConfig), options);
+        holder->retargeter = gmr::createRetargeter(backend, resolvedRobotModelPath, std::move(ikConfig), options);
         holder_            = std::move(holder);
 
         if (error != nullptr) {

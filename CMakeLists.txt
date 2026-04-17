@@ -4,9 +4,6 @@ project(PUPPET VERSION 0.1.0 LANGUAGES CXX)
 option(PUPPET_BUILD_CPP_APPS "Build C++ runtime/tools/demos apps." ON)
 option(PUPPET_BUILD_TESTS "Build tests." ON)
 
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/cpp/puppet/retargeting/native/gmr_cpp/CMakeLists.txt")
-  message(FATAL_ERROR "native gmr source is missing at src/cpp/puppet/retargeting/native/gmr_cpp")
-endif()
 
 add_subdirectory(src/cpp)
 

@@ -37,6 +37,7 @@ namespace puppet::runtime {
         bool enabled            = false;
         std::string backendName = "pin_ik";
         std::string robotModelPath;
+        std::string robotModelXmlPath;
         std::string ikConfigPath;
         double actualHumanHeight   = 1.75;
         double damping             = 0.5;

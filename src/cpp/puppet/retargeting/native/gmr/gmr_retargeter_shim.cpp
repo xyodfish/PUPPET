@@ -1,9 +1,8 @@
-#include "gmr/retarget/retargeter.h"
-
-#include <memory>
 #include <stdexcept>
+#include <string>
 
-#include "retargeter_internal_utils.h"
+#include <gmr/retarget/retargeter.h>
+#include <gmr/retarget/retargeter_internal_utils.h>
 
 namespace gmr {
 
@@ -37,8 +36,9 @@ namespace gmr {
                 return "mujoco_se3";
             case RetargetBackend::kMujocoLegacy:
                 return "mujoco_jacobian_legacy";
+            default:
+                return "unknown";
         }
-        return "unknown";
     }
 
     std::unique_ptr<Retargeter> createRetargeter(RetargetBackend backend, const std::filesystem::path& robotModelPath, IkConfig ikConfig,
