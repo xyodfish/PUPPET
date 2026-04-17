@@ -86,15 +86,6 @@ cmake --build build -j"$(nproc)"
 - 正式入口程序放 `app/*`
 - 可复用实现放 `src/*`
 - 验证性小 demo 可以放 `test/demos/*` 🧪
-
-### 3) Retargeting 3-Nodes Demo
-
-仓库提供了一个可直接运行的 3 节点 retargeting demo（静态 human frame 回放 + runtime retargeting + MuJoCo 可视化）：
-
-- Demo 文档：`[docs/retargeting_3nodes_demo.md](docs/retargeting_3nodes_demo.md)`
-- 一键启动脚本：`./scripts/start_retargeting_3nodes.sh`
-- 对齐问题总结：`[docs/retargeting_visualizer_alignment_summary.md](docs/retargeting_visualizer_alignment_summary.md)`
-
 ---
 
 ## 🧪 测试与 Demo 约定
