@@ -19,7 +19,14 @@ find_library(MUJOCO_LIBRARY
   NAMES mujoco libmujoco
   PATHS "${GMR_THIRDPARTY_PREFIX}/lib" "${GMR_MUJOCO_PREFIX}/lib"
   REQUIRED)
-
+find_path(TRAC_IK_INCLUDE_DIR
+  NAMES trac_ik/trac_ik.hpp
+  PATHS "${ROOT_DEVEL_ARCH_PATH}/include" "${GMR_THIRDPARTY_PREFIX}/include" "${GMR_MUJOCO_PREFIX}/include"
+  REQUIRED)
+find_library(TRAC_IK_LIBRARY
+  NAMES trac_ik libtrac_ik
+  PATHS "${ROOT_DEVEL_ARCH_PATH}/lib" "${GMR_THIRDPARTY_PREFIX}/lib" "${GMR_MUJOCO_PREFIX}/lib"
+  REQUIRED)
 
 set(PUPPET_CORE_SOURCES
   puppet/runtime/message_snapshot.cpp
@@ -30,6 +37,7 @@ set(PUPPET_CORE_SOURCES
   puppet/retargeting/core/direct_pass_through_plugin.cpp
   puppet/retargeting/core/retargeting_pipeline.cpp
   puppet/retargeting/native/gmr/gmr_retargeting_plugin.cpp
+  puppet/retargeting/native/single_chain_ik/single_chain_ik_retargeting_plugin.cpp
   puppet/retargeting/native/gmr/gmr_retargeter_shim.cpp
   puppet/robot/backend/direct_mapping_backend.cpp)
 
@@ -48,7 +56,8 @@ add_library(puppet_cpp_core SHARED ${PUPPET_CORE_SOURCES}
 target_include_directories(puppet_cpp_core
   PUBLIC
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/include/puppet/retargeting/native)
+    ${CMAKE_SOURCE_DIR}/include/puppet/retargeting/native
+    ${TRAC_IK_INCLUDE_DIR})
 
 target_link_libraries(puppet_cpp_core
   PUBLIC
@@ -56,5 +65,6 @@ target_link_libraries(puppet_cpp_core
     Eigen3::Eigen
     qpOASES
     pinocchio::pinocchio
+    ${TRAC_IK_LIBRARY}
   PRIVATE
     ${MUJOCO_LIBRARY})

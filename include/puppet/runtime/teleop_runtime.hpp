@@ -12,10 +12,12 @@ namespace puppet::runtime {
 
     class TeleopRuntime {
        public:
-        bool init(const std::string& configPath, std::string* error);
-        bool runOnce(std::string* error);
+        bool init(const std::string& configPath, std::string& error);
+        bool init(const RuntimeConfig& runtimeConfig, std::string& error);
+        bool runOnce(std::string& error);
 
         source::SourceManager* sourceManager() { return &sourceManager_; }
+        const source::SourceManager* sourceManager() const { return &sourceManager_; }
         const RuntimeConfig& config() const { return config_; }
         const model::ControlIntent& lastControlIntent() const { return lastControlIntent_; }
 

@@ -23,6 +23,7 @@ set(PUPPET_DEFAULT_DEVEL_PREFIX
 list(APPEND CMAKE_PREFIX_PATH "${PUPPET_DEFAULT_DEVEL_PREFIX}")
 
 find_package(puppet_proto CONFIG QUIET)
+find_package(glog REQUIRED)
 set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
 set(EMBOSA_LIBRARIES
@@ -43,6 +44,12 @@ set(EMBOSA_LIBRARIES
 if(puppet_proto_FOUND AND EXISTS "${EMBOSA_INCLUDE_DIR}/embosa.hpp" AND EXISTS "${EMBOSA_LIBRARY_DIR}")
   add_executable(teleop_runtime_embosa_main
     teleop_runtime_embosa_main.cpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/embosa_runtime_config.cpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/embosa_runtime_channel.cpp
+    ${CMAKE_SOURCE_DIR}/src/puppet/config/puppet_config.cpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/time_utils.cpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/runtime_state_report.cpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/puppet_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/cpp/puppet/transport/proto_copy.cpp)
 
   target_include_directories(teleop_runtime_embosa_main
@@ -59,6 +66,7 @@ if(puppet_proto_FOUND AND EXISTS "${EMBOSA_INCLUDE_DIR}/embosa.hpp" AND EXISTS "
       puppet_cpp_core
       puppet_proto::puppet_proto
       yaml-cpp
+      glog::glog
       ${EMBOSA_LIBRARIES}
       pthread)
 

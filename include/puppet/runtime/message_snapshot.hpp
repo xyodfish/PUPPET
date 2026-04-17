@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <mutex>
@@ -15,6 +16,7 @@ namespace puppet::runtime {
        public:
         virtual ~MessageBase()                          = default;
         std::chrono::system_clock::time_point timestamp = std::chrono::system_clock::now();
+        uint64_t sequenceId                             = 0;
     };
 
     template <typename T>
@@ -26,13 +28,13 @@ namespace puppet::runtime {
 
     class MessageSnapshot {
        public:
-        MessageSnapshot(std::unordered_map<std::string, std::deque<std::shared_ptr<MessageBase>>> messages,
-                        std::chrono::system_clock::time_point lastSnapshotTime)
-            : messages_(std::move(messages)), lastSnapshotTime_(lastSnapshotTime) {}
+        explicit MessageSnapshot(std::unordered_map<std::string, std::deque<std::shared_ptr<MessageBase>>> messages)
+            : messages_(std::move(messages)) {}
 
         std::shared_ptr<MessageBase> getLatest(const std::string& topicName) const;
         std::vector<std::shared_ptr<MessageBase>> getAll(const std::string& topicName) const;
-        std::vector<std::shared_ptr<MessageBase>> getIncrement(const std::string& topicName) const;
+        std::vector<std::shared_ptr<MessageBase>> getIncrement(const std::string& topicName, uint64_t lastSequenceId,
+                                                               uint64_t* newestSequenceId) const;
 
         template <typename T>
         std::shared_ptr<T> getLatestTyped(const std::string& topicName, int64_t* timestampNs) const {
@@ -52,7 +54,6 @@ namespace puppet::runtime {
 
        private:
         std::unordered_map<std::string, std::deque<std::shared_ptr<MessageBase>>> messages_;
-        std::chrono::system_clock::time_point lastSnapshotTime_;
     };
 
     class MessageSnapshotManager {
@@ -73,7 +74,7 @@ namespace puppet::runtime {
         std::mutex mutex_;
         std::unordered_map<std::string, std::deque<std::shared_ptr<MessageBase>>> messages_;
         std::unordered_map<std::string, size_t> maxHistorySizes_;
-        std::chrono::system_clock::time_point lastSnapshotTime_ = std::chrono::system_clock::now();
+        uint64_t nextSequenceId_ = 0;
     };
 
 }  // namespace puppet::runtime

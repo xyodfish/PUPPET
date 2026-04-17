@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
     puppet::runtime::TeleopRuntime runtime;
     std::string error;
-    if (!runtime.init(configPath, &error)) {
+    if (!runtime.init(configPath, error)) {
         std::cerr << "init failed: " << error << std::endl;
         return 1;
     }
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
     for (uint64_t i = 1; i <= 50; ++i) {
         runtime.sourceManager()->ingestFrame(buildMockFrame(i, humanBodies));
-        if (!runtime.runOnce(&error)) {
+        if (!runtime.runOnce(error)) {
             std::cerr << "runOnce failed: " << error << std::endl;
             return 2;
         }

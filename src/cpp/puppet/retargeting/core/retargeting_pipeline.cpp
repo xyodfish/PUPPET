@@ -1,6 +1,7 @@
 #include "puppet/retargeting/core/retargeting_pipeline.hpp"
 
 #include "puppet/retargeting/native/gmr_retargeting_plugin.hpp"
+#include "puppet/retargeting/native/single_chain_ik_retargeting_plugin.hpp"
 
 namespace puppet::retargeting {
 
@@ -13,6 +14,8 @@ namespace puppet::retargeting {
                 plugin = std::make_shared<DirectPassThroughPlugin>();
             } else if (pipelineConfig.pluginType == "gmr") {
                 plugin = std::make_shared<GmrRetargetingPlugin>();
+            } else if (pipelineConfig.pluginType == "single_chain_ik") {
+                plugin = std::make_shared<SingleChainIkRetargetingPlugin>();
             } else {
                 if (error != nullptr) {
                     *error = "unknown plugin type: " + pipelineConfig.pluginType;

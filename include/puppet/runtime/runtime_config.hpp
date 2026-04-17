@@ -47,6 +47,33 @@ namespace puppet::runtime {
         double progressThreshold   = 1e-3;
     };
 
+    struct SingleChainIkChainConfig {
+        std::string bodyGroup;
+        std::string eeEntity;
+        std::string urdfPath;
+        std::string baseLink;
+        std::string tipLink;
+        std::vector<std::string> jointNames;
+        std::vector<double> defaultPosture;
+        std::vector<double> minPositionLimit;
+        std::vector<double> maxPositionLimit;
+        std::vector<double> positionGains{1.0, 1.0, 1.0};
+        std::vector<double> orientationGains{1.0, 1.0, 1.0};
+        int32_t maxIterations            = 10000;
+        double timeoutSec                = 0.003;
+        double epsilon                   = 1e-5;
+        bool randomRestart               = false;
+        int32_t perturbationMaxAttempts  = 5;
+        double perturbationPositionRange = 0.01;
+        double perturbationAngleDegRange = 5.0;
+    };
+
+    struct SingleChainIkConfig {
+        bool enabled = false;
+        std::vector<SingleChainIkChainConfig> chains;
+        std::unordered_map<std::string, SingleChainIkChainConfig> chainMap;
+    };
+
     struct RuntimeConfig {
         int32_t loopHz        = 100;
         bool enableMockSource = true;
@@ -57,6 +84,7 @@ namespace puppet::runtime {
         std::vector<PipelineConfig> pipelines;
         std::vector<BackendConfig> backends;
         GmrPluginConfig gmr;
+        SingleChainIkConfig singleChainIk;
 
         std::unordered_map<std::string, PipelineConfig> pipelineMap;
         std::unordered_map<std::string, BackendConfig> backendMap;
@@ -64,7 +92,7 @@ namespace puppet::runtime {
 
     class RuntimeConfigLoader {
        public:
-        static bool loadFromYamlFile(const std::string& path, RuntimeConfig* config, std::string* error);
+        static bool loadFromYamlFile(const std::string& path, RuntimeConfig& config, std::string& error);
     };
 
 }  // namespace puppet::runtime

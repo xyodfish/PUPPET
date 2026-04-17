@@ -4,33 +4,33 @@
 
 namespace puppet::runtime {
 
-    bool TeleopRuntime::init(const std::string& configPath, std::string* error) {
+    bool TeleopRuntime::init(const std::string& configPath, std::string& error) {
         std::string configError;
-        if (!RuntimeConfigLoader::loadFromYamlFile(configPath, &config_, &configError)) {
-            if (error != nullptr) {
-                *error = "load runtime config failed: " + configError;
-            }
+        if (!RuntimeConfigLoader::loadFromYamlFile(configPath, config_, configError)) {
+            error = "load runtime config failed: " + configError;
             return false;
         }
+
+        return init(config_, error);
+    }
+
+    bool TeleopRuntime::init(const RuntimeConfig& runtimeConfig, std::string& error) {
+        config_ = runtimeConfig;
 
         sourceManager_.configure(config_.sources);
         orchestrator_.configure(config_.groupRouting);
 
         std::string pipelineError;
         if (!pipeline_.configure(config_, &pipelineError)) {
-            if (error != nullptr) {
-                *error = "configure retargeting pipeline failed: " + pipelineError;
-            }
+            error = "configure retargeting pipeline failed: " + pipelineError;
             return false;
         }
 
-        if (error != nullptr) {
-            error->clear();
-        }
+        error.clear();
         return true;
     }
 
-    bool TeleopRuntime::runOnce(std::string* error) {
+    bool TeleopRuntime::runOnce(std::string& error) {
         model::ControlIntent controlIntent;
         controlIntent.sequenceId = ++sequenceId_;
 
@@ -46,9 +46,7 @@ namespace puppet::runtime {
             groupIntent.backendHint = plan.backendId;
             std::string pipelineError;
             if (!pipeline_.run(plan.pipelineId, *frame, plan.bodyGroup, &groupIntent, &pipelineError)) {
-                if (error != nullptr) {
-                    *error = "pipeline run failed: " + pipelineError;
-                }
+                error = "pipeline run failed: " + pipelineError;
                 return false;
             }
             controlIntent.groupIntents.push_back(std::move(groupIntent));
@@ -58,9 +56,7 @@ namespace puppet::runtime {
         const auto finalTarget = backend_.buildTarget(lastControlIntent_);
         // std::cout << "[teleop_runtime] seq=" << finalTarget.sequenceId << " groups=" << finalTarget.groups.size() << std::endl;
 
-        if (error != nullptr) {
-            error->clear();
-        }
+        error.clear();
         return true;
     }
 

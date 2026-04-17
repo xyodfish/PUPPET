@@ -23,22 +23,32 @@ namespace puppet::runtime {
         return output;
     }
 
-    std::vector<std::shared_ptr<MessageBase>> MessageSnapshot::getIncrement(const std::string& topicName) const {
+    std::vector<std::shared_ptr<MessageBase>> MessageSnapshot::getIncrement(const std::string& topicName, uint64_t lastSequenceId,
+                                                                            uint64_t* newestSequenceId) const {
         std::vector<std::shared_ptr<MessageBase>> output;
         const auto it = messages_.find(topicName);
         if (it == messages_.end()) {
             return output;
         }
+        uint64_t latestSequenceId = lastSequenceId;
         for (const auto& msg : it->second) {
-            if (msg->timestamp > lastSnapshotTime_) {
+            if (msg->sequenceId > latestSequenceId) {
+                latestSequenceId = msg->sequenceId;
+            }
+            if (msg->sequenceId > lastSequenceId) {
                 output.push_back(msg);
             }
+        }
+        if (newestSequenceId != nullptr) {
+            *newestSequenceId = latestSequenceId;
         }
         return output;
     }
 
     void MessageSnapshotManager::updateInternal(const std::string& topicName, std::shared_ptr<MessageBase> message) {
-        auto& queue = messages_[topicName];
+        ++nextSequenceId_;
+        message->sequenceId = nextSequenceId_;
+        auto& queue         = messages_[topicName];
         queue.push_back(std::move(message));
 
         const auto sizeIt  = maxHistorySizes_.find(topicName);
@@ -50,10 +60,7 @@ namespace puppet::runtime {
 
     MessageSnapshot MessageSnapshotManager::getSnapshot() {
         std::lock_guard<std::mutex> guard(mutex_);
-        const auto now = std::chrono::system_clock::now();
-        MessageSnapshot snapshot(messages_, lastSnapshotTime_);
-        lastSnapshotTime_ = now;
-        return snapshot;
+        return MessageSnapshot(messages_);
     }
 
     void MessageSnapshotManager::setMaxHistorySize(const std::string& topicName, size_t maxSize) {
