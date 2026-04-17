@@ -87,6 +87,14 @@ cmake --build build -j"$(nproc)"
 - 可复用实现放 `src/*`
 - 验证性小 demo 可以放 `test/demos/*` 🧪
 
+### 3) Retargeting 3-Nodes Demo
+
+仓库提供了一个可直接运行的 3 节点 retargeting demo（静态 human frame 回放 + runtime retargeting + MuJoCo 可视化）：
+
+- Demo 文档：`[docs/retargeting_3nodes_demo.md](docs/retargeting_3nodes_demo.md)`
+- 一键启动脚本：`./scripts/start_retargeting_3nodes.sh`
+- 对齐问题总结：`[docs/retargeting_visualizer_alignment_summary.md](docs/retargeting_visualizer_alignment_summary.md)`
+
 ---
 
 ## 🧪 测试与 Demo 约定
@@ -99,20 +107,27 @@ cmake --build build -j"$(nproc)"
 
 如果是对外展示或长期维护的 demo，建议放到 `app/*/demos`。
 
+## 📚 Demo 列表
+
+- [Retargeting 3-Nodes Demo](docs/retargeting_3nodes_demo.md)
+- [Embosa PrimitiveFrame 收发 Demo（C++）](test/demos/cpp/README_embosa_proto_demo.md)
+- [Proto Message 构造 Demo（Python）](test/demos/python/README.md)
+
 ---
 
 ## 🛣️ Roadmap
 
 - [X] 定义 `primitive_frame.proto`
 - [X] 定义 `control_intent.proto`
-- [ ] 搭建 `teleop_runtime` 主循环
+- [X] 搭建 `teleop_runtime` 主循环
 - [ ] 实现 SourceManager 与 freshness 管理
 - [ ] 实现 body-group ownership / routing
 - [ ] 搭建基础 RetargetingPipeline
 - [ ] 实现 DirectMappingBackend
-- [ ] 接入一个简单 VR / external source demo
-- [ ] 增加 Recorder / Visualizer
+- [X] 接入一个简单 VR / external source demo
+- [X] 增加 Recorder / Visualizer
 - [ ] 增加 IK backend
+- [X] 增加 GMR backend
 - [ ] 增加 TSID / WBC backend
 - [ ] 增加 collision / constraint interface
 
