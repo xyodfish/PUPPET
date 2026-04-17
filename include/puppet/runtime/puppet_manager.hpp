@@ -25,7 +25,7 @@ namespace puppet::runtime {
         PuppetManager();
 
         bool init(const std::string& runtimeConfigPath, std::string& error);
-        bool run(std::string& error);
+        void run(std::string& error);
         void stop();
         PuppetManagerState state() const { return state_; }
         const std::string& lastError() const { return lastError_; }

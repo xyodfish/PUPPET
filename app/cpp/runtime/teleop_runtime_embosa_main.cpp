@@ -27,7 +27,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    if (!manager.run(error)) {
+    manager.run(error);
+    if (!error.empty()) {
         std::cerr << "[teleop_runtime_embosa] run failed: " << error << std::endl;
         LOG(ERROR) << "teleop runtime embosa run failed: " << error;
         google::ShutdownGoogleLogging();

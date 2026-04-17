@@ -134,9 +134,6 @@ namespace puppet::retargeting {
         if (pluginType == "single_chain_ik" && controlSemantics == "cartesian_velocity") {
             return true;
         }
-        if (pluginType == "single_chain_ik_velocity") {
-            return controlSemantics == "cartesian_delta" || controlSemantics == "cartesian_velocity";
-        }
         const auto pluginIt = plugins_.find(pipelineId);
         if (pluginIt == plugins_.end()) {
             return false;

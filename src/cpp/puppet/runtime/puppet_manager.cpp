@@ -37,24 +37,26 @@ namespace puppet::runtime {
         return true;
     }
 
-    bool PuppetManager::run(std::string& error) {
+    void PuppetManager::run(std::string& error) {
         if (!initialized_) {
             error = "PuppetManager is not initialized";
             setError(error);
-            return false;
+            return;
         }
 
         state_ = PuppetManagerState::kRunning;
         while (!stopRequested_ && channel_->isRunning()) {
+            const auto tStart = std::chrono::steady_clock::now();
             if (!processOneLoop(error)) {
                 setError(error);
-                return false;
+                return;
             }
+
+            sysPreciseDelay(tStart, static_cast<double>(channel_->idleSleepMs()) * 1e-3);
         }
 
         state_ = PuppetManagerState::kStopped;
         error.clear();
-        return true;
     }
 
     void PuppetManager::stop() {
@@ -90,11 +92,9 @@ namespace puppet::runtime {
     }
 
     bool PuppetManager::processOneLoop(std::string& error) {
-        const auto tStart = std::chrono::steady_clock::now();
         model::PrimitiveFrame frame;
         if (!channel_->tryPopFrame(frame)) {
             report_->recordNoFrameSleep();
-            sysPreciseDelay(tStart, static_cast<double>(channel_->idleSleepMs()) * 1e-3);
             error.clear();
             return true;
         }
