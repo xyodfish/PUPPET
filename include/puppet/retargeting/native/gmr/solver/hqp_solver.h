@@ -5,18 +5,18 @@
 
 namespace gmr::solver {
 
-class HQPSolver {
- public:
-  HQPSolver() = default;
-  ~HQPSolver() = default;
+    class HQPSolver {
+       public:
+        HQPSolver()  = default;
+        ~HQPSolver() = default;
 
-  const QPOutput& solve(HQPData& hqpData);
+        const QPOutput& solve(HQPData& hqpData);
 
- private:
-  QPSolver qp0Solver_;
-  QPSolver qp1Solver_;
+       private:
+        QPSolver qp0Solver_;
+        QPSolver qp1Solver_;
 
-  QPOutput output_;
-};
+        QPOutput output_;
+    };
 
 }  // namespace gmr::solver

@@ -1,11 +1,30 @@
+robot_qpos_source: local_retarget # control_intent | local_retarget
 node_name: puppet_retargeting_mujoco_visualizer
 topic_name: puppet_demo/control_intent
+human_frame_topic_name: puppet_demo/primitive_frame
 mujoco_model_xml: assets/unitree_g1/g1_mocap_29dof.xml
 robot_name: unitree_g1
 camera_body_name: pelvis
 camera_distance: 2.0
-camera_azimuth: 180.0
 transparent_robot: 0
+show_human_overlay: true
+human_overlay_scale: 0.1
+human_overlay_use_prepared_frame: true
+human_overlay_backend: mujoco_se3
+human_overlay_robot_model_path: assets/unitree_g1/g1_mocap_29dof.xml
+human_overlay_ik_config_path: /data/open_src_code/GMR_custom/general_motion_retargeting/ik_configs/bvh_lafan1_to_g1.json
+human_overlay_actual_human_height: 1.75
+human_overlay_offset_to_ground: false
+local_retarget_backend: mujoco_jacobian_legacy
+local_retarget_robot_model_path: assets/unitree_g1/g1_mocap_29dof.xml
+local_retarget_ik_config_path: /data/open_src_code/GMR_custom/general_motion_retargeting/ik_configs/bvh_lafan1_to_g1.json
+local_retarget_actual_human_height: 1.75
+local_retarget_damping: 0.5
+local_retarget_max_iterations: 20
+local_retarget_use_velocity_limit: false
+local_retarget_integration_timestep: 0.01
+local_retarget_progress_threshold: 0.001
+local_retarget_offset_to_ground: false
 show_body_overlay: true
 body_overlay_scale: 0.1
 overlay_body_names:

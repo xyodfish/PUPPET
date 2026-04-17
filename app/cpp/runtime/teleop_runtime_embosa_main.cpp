@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
         }
 
         if (!hasFrame) {
-            std::cout << "Waiting for frame..." << std::endl;
+            // std::cout << "Waiting for frame..." << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(embosaCfg.idleSleepMs));
             continue;
         }

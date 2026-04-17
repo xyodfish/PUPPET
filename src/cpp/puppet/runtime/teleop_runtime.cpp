@@ -30,9 +30,9 @@ namespace puppet::runtime {
         return true;
     }
 
-bool TeleopRuntime::runOnce(std::string* error) {
-  model::ControlIntent controlIntent;
-  controlIntent.sequenceId = ++sequenceId_;
+    bool TeleopRuntime::runOnce(std::string* error) {
+        model::ControlIntent controlIntent;
+        controlIntent.sequenceId = ++sequenceId_;
 
         const auto plans = orchestrator_.resolvePlans();
         for (const auto& plan : plans) {
@@ -54,9 +54,9 @@ bool TeleopRuntime::runOnce(std::string* error) {
             controlIntent.groupIntents.push_back(std::move(groupIntent));
         }
 
-  lastControlIntent_ = controlIntent;
-  const auto finalTarget = backend_.buildTarget(lastControlIntent_);
-        std::cout << "[teleop_runtime] seq=" << finalTarget.sequenceId << " groups=" << finalTarget.groups.size() << std::endl;
+        lastControlIntent_     = controlIntent;
+        const auto finalTarget = backend_.buildTarget(lastControlIntent_);
+        // std::cout << "[teleop_runtime] seq=" << finalTarget.sequenceId << " groups=" << finalTarget.groups.size() << std::endl;
 
         if (error != nullptr) {
             error->clear();

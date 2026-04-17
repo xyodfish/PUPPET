@@ -4,8 +4,18 @@
 #include <gmr/retarget/retargeter.h>
 #include <Eigen/Dense>
 
+#include <iostream>
+
 namespace puppet::retargeting {
-    namespace {}  // namespace
+    namespace gmr_retargeting_detail {
+        constexpr const char* kRootPosXKey  = "__root_pos_x";
+        constexpr const char* kRootPosYKey  = "__root_pos_y";
+        constexpr const char* kRootPosZKey  = "__root_pos_z";
+        constexpr const char* kRootQuatWKey = "__root_quat_w";
+        constexpr const char* kRootQuatXKey = "__root_quat_x";
+        constexpr const char* kRootQuatYKey = "__root_quat_y";
+        constexpr const char* kRootQuatZKey = "__root_quat_z";
+    }  // namespace gmr_retargeting_detail
 
     namespace gmr_wrap {
 
@@ -57,6 +67,7 @@ namespace puppet::retargeting {
 
     bool GmrRetargetingPlugin::process(const model::PrimitiveFrame& input, const std::string& bodyGroup, model::GroupControlIntent* output,
                                        std::string* error) {
+        static bool firstRun = true;
         if (!enabled_) {
             if (error != nullptr) {
                 *error = "GMR plugin is not enabled in runtime config";
@@ -119,6 +130,22 @@ namespace puppet::retargeting {
             }
             jointIntent.jointNames.push_back(coord.jointName);
             jointIntent.position.push_back(qpos[coord.qIndex]);
+        }
+        if (holder_->retargeter->hasRootFreeFlyer() && qpos.size() >= 7) {
+            jointIntent.jointNames.push_back(gmr_retargeting_detail::kRootPosXKey);
+            jointIntent.position.push_back(qpos[0]);
+            jointIntent.jointNames.push_back(gmr_retargeting_detail::kRootPosYKey);
+            jointIntent.position.push_back(qpos[1]);
+            jointIntent.jointNames.push_back(gmr_retargeting_detail::kRootPosZKey);
+            jointIntent.position.push_back(qpos[2]);
+            jointIntent.jointNames.push_back(gmr_retargeting_detail::kRootQuatWKey);
+            jointIntent.position.push_back(qpos[3]);
+            jointIntent.jointNames.push_back(gmr_retargeting_detail::kRootQuatXKey);
+            jointIntent.position.push_back(qpos[4]);
+            jointIntent.jointNames.push_back(gmr_retargeting_detail::kRootQuatYKey);
+            jointIntent.position.push_back(qpos[5]);
+            jointIntent.jointNames.push_back(gmr_retargeting_detail::kRootQuatZKey);
+            jointIntent.position.push_back(qpos[6]);
         }
 
         output->ownerSourceId = input.context.sourceId;

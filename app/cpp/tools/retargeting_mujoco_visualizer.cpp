@@ -7,27 +7,63 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
 #include <yaml-cpp/yaml.h>
+#include <Eigen/Geometry>
 
 #include "embosa.hpp"
+#include "gmr/retarget/ik_config.h"
+#include "gmr/retarget/retargeter.h"
 #include "puppet/control_intent.pb.h"
+#include "puppet/primitive_frame.pb.h"
 
 namespace puppet::tools::retargeting_mujoco_visualizer_internal {
+    namespace visualizer_detail {
+        constexpr const char* kRootPosXKey  = "__root_pos_x";
+        constexpr const char* kRootPosYKey  = "__root_pos_y";
+        constexpr const char* kRootPosZKey  = "__root_pos_z";
+        constexpr const char* kRootQuatWKey = "__root_quat_w";
+        constexpr const char* kRootQuatXKey = "__root_quat_x";
+        constexpr const char* kRootQuatYKey = "__root_quat_y";
+        constexpr const char* kRootQuatZKey = "__root_quat_z";
+    }  // namespace visualizer_detail
 
     struct VisualizerConfig {
-        std::string nodeName  = "puppet_retargeting_mujoco_visualizer";
-        std::string topicName = "puppet_demo/control_intent";
+        std::string robotQposSource     = "control_intent";  // control_intent | local_retarget
+        std::string nodeName            = "puppet_retargeting_mujoco_visualizer";
+        std::string topicName           = "puppet_demo/control_intent";
+        std::string humanFrameTopicName = "puppet_demo/primitive_frame";
         std::string mujocoModelXml;
-        std::string robotName                     = "unitree_g1";
-        std::string cameraBodyName                = "pelvis";
-        double cameraDistance                     = 2.5;
-        double cameraAzimuth                      = 180.0;
-        int transparentRobot                      = 0;
-        bool showBodyOverlay                      = true;
-        double bodyOverlayScale                   = 0.1;
+        std::string robotName                  = "unitree_g1";
+        std::string cameraBodyName             = "pelvis";
+        double cameraDistance                  = 2.5;
+        double cameraAzimuth                   = 0.0;
+        bool hasCameraAzimuth                  = false;
+        int transparentRobot                   = 0;
+        bool showBodyOverlay                   = true;
+        double bodyOverlayScale                = 0.1;
+        bool showHumanOverlay                  = true;
+        double humanOverlayScale               = 0.1;
+        bool humanOverlayUsePreparedFrame      = true;
+        std::string humanOverlayBackend        = "mujoco_se3";
+        std::string humanOverlayRobotModelPath = "assets/unitree_g1/g1_mocap_29dof.xml";
+        std::string humanOverlayIkConfigPath = "/data/open_src_code/GMR_custom/general_motion_retargeting/ik_configs/bvh_lafan1_to_g1.json";
+        double humanOverlayActualHumanHeight = 1.75;
+        bool humanOverlayOffsetToGround      = false;
+        std::string localRetargetBackend     = "mujoco_se3";
+        std::string localRetargetRobotModelPath = "assets/unitree_g1/g1_mocap_29dof.xml";
+        std::string localRetargetIkConfigPath =
+            "/data/open_src_code/GMR_custom/general_motion_retargeting/ik_configs/bvh_lafan1_to_g1.json";
+        double localRetargetActualHumanHeight     = 1.75;
+        double localRetargetDamping               = 0.5;
+        int localRetargetMaxIterations            = 20;
+        bool localRetargetUseVelocityLimit        = false;
+        double localRetargetIntegrationTimestep   = 0.01;
+        double localRetargetProgressThreshold     = 0.001;
+        bool localRetargetOffsetToGround          = false;
         std::vector<std::string> overlayBodyNames = {"pelvis"};
         int width                                 = 1280;
         int height                                = 720;
@@ -130,10 +166,14 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
     bool loadConfig(const std::string& path, VisualizerConfig* cfg, std::string* error) {
         try {
             YAML::Node root = YAML::LoadFile(path);
+            if (root["robot_qpos_source"])
+                cfg->robotQposSource = root["robot_qpos_source"].as<std::string>();
             if (root["node_name"])
                 cfg->nodeName = root["node_name"].as<std::string>();
             if (root["topic_name"])
                 cfg->topicName = root["topic_name"].as<std::string>();
+            if (root["human_frame_topic_name"])
+                cfg->humanFrameTopicName = root["human_frame_topic_name"].as<std::string>();
             if (root["mujoco_model_xml"]) {
                 cfg->mujocoModelXml = root["mujoco_model_xml"].as<std::string>();
             }
@@ -143,14 +183,52 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
                 cfg->cameraBodyName = root["camera_body_name"].as<std::string>();
             if (root["camera_distance"])
                 cfg->cameraDistance = root["camera_distance"].as<double>();
-            if (root["camera_azimuth"])
-                cfg->cameraAzimuth = root["camera_azimuth"].as<double>();
+            if (root["camera_azimuth"]) {
+                cfg->cameraAzimuth    = root["camera_azimuth"].as<double>();
+                cfg->hasCameraAzimuth = true;
+            }
             if (root["transparent_robot"])
                 cfg->transparentRobot = root["transparent_robot"].as<int>();
             if (root["show_body_overlay"])
                 cfg->showBodyOverlay = root["show_body_overlay"].as<bool>();
             if (root["body_overlay_scale"])
                 cfg->bodyOverlayScale = root["body_overlay_scale"].as<double>();
+            if (root["show_human_overlay"])
+                cfg->showHumanOverlay = root["show_human_overlay"].as<bool>();
+            if (root["human_overlay_scale"])
+                cfg->humanOverlayScale = root["human_overlay_scale"].as<double>();
+            if (root["human_overlay_use_prepared_frame"])
+                cfg->humanOverlayUsePreparedFrame = root["human_overlay_use_prepared_frame"].as<bool>();
+            if (root["human_overlay_backend"])
+                cfg->humanOverlayBackend = root["human_overlay_backend"].as<std::string>();
+            if (root["human_overlay_robot_model_path"])
+                cfg->humanOverlayRobotModelPath = root["human_overlay_robot_model_path"].as<std::string>();
+            if (root["human_overlay_ik_config_path"])
+                cfg->humanOverlayIkConfigPath = root["human_overlay_ik_config_path"].as<std::string>();
+            if (root["human_overlay_actual_human_height"])
+                cfg->humanOverlayActualHumanHeight = root["human_overlay_actual_human_height"].as<double>();
+            if (root["human_overlay_offset_to_ground"])
+                cfg->humanOverlayOffsetToGround = root["human_overlay_offset_to_ground"].as<bool>();
+            if (root["local_retarget_backend"])
+                cfg->localRetargetBackend = root["local_retarget_backend"].as<std::string>();
+            if (root["local_retarget_robot_model_path"])
+                cfg->localRetargetRobotModelPath = root["local_retarget_robot_model_path"].as<std::string>();
+            if (root["local_retarget_ik_config_path"])
+                cfg->localRetargetIkConfigPath = root["local_retarget_ik_config_path"].as<std::string>();
+            if (root["local_retarget_actual_human_height"])
+                cfg->localRetargetActualHumanHeight = root["local_retarget_actual_human_height"].as<double>();
+            if (root["local_retarget_damping"])
+                cfg->localRetargetDamping = root["local_retarget_damping"].as<double>();
+            if (root["local_retarget_max_iterations"])
+                cfg->localRetargetMaxIterations = root["local_retarget_max_iterations"].as<int>();
+            if (root["local_retarget_use_velocity_limit"])
+                cfg->localRetargetUseVelocityLimit = root["local_retarget_use_velocity_limit"].as<bool>();
+            if (root["local_retarget_integration_timestep"])
+                cfg->localRetargetIntegrationTimestep = root["local_retarget_integration_timestep"].as<double>();
+            if (root["local_retarget_progress_threshold"])
+                cfg->localRetargetProgressThreshold = root["local_retarget_progress_threshold"].as<double>();
+            if (root["local_retarget_offset_to_ground"])
+                cfg->localRetargetOffsetToGround = root["local_retarget_offset_to_ground"].as<bool>();
             if (root["overlay_body_names"])
                 cfg->overlayBodyNames = root["overlay_body_names"].as<std::vector<std::string>>();
             if (root["window_width"])
@@ -203,6 +281,171 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         std::unordered_map<std::string, double> jointPosition_;
         int64_t messageCount_ = 0;
         uint64_t lastSeq_     = 0;
+    };
+
+    class HumanPoseCache {
+       public:
+        struct PoseAxes {
+            std::array<double, 3> pos  = {0.0, 0.0, 0.0};
+            std::array<double, 9> xmat = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+        };
+
+        class HumanOverlayPreprocessor {
+           public:
+            bool init(const VisualizerConfig& cfg, std::string* error) {
+                if (!cfg.humanOverlayUsePreparedFrame) {
+                    return true;
+                }
+                if (cfg.humanOverlayRobotModelPath.empty() || cfg.humanOverlayIkConfigPath.empty()) {
+                    if (error != nullptr) {
+                        *error = "human overlay preprocessor requires robot_model_path and ik_config_path";
+                    }
+                    return false;
+                }
+                const auto backend = gmr::parseRetargetBackend(cfg.humanOverlayBackend);
+                gmr::RetargetOptions options;
+                gmr::IkConfig ikConfig = gmr::loadIkConfig(cfg.humanOverlayIkConfigPath, cfg.humanOverlayActualHumanHeight);
+                retargeter_            = gmr::createRetargeter(backend, cfg.humanOverlayRobotModelPath, std::move(ikConfig), options);
+                offsetToGround_        = cfg.humanOverlayOffsetToGround;
+                enabled_               = true;
+                return true;
+            }
+
+            gmr::HumanFrame process(const gmr::HumanFrame& humanFrame) const {
+                if (!enabled_ || retargeter_ == nullptr) {
+                    return humanFrame;
+                }
+                return retargeter_->prepareHumanFrame(humanFrame, offsetToGround_);
+            }
+
+           private:
+            bool enabled_        = false;
+            bool offsetToGround_ = false;
+            std::unique_ptr<gmr::Retargeter> retargeter_;
+        };
+
+        bool initPreprocessor(const VisualizerConfig& cfg, std::string* error) { return preprocessor_.init(cfg, error); }
+
+        void update(const ::puppet::puppet_proto::PrimitiveFrame& msg) {
+            gmr::HumanFrame humanFrame;
+            for (const auto& pose : msg.poses()) {
+                if (pose.meta().entity().empty()) {
+                    continue;
+                }
+                gmr::HumanBodyState state;
+                state.position    = Eigen::Vector3d(pose.pose().position().x(), pose.pose().position().y(), pose.pose().position().z());
+                state.orientation = Eigen::Quaterniond(pose.pose().orientation().w(), pose.pose().orientation().x(),
+                                                       pose.pose().orientation().y(), pose.pose().orientation().z());
+                humanFrame[pose.meta().entity()] = state;
+            }
+            const gmr::HumanFrame preparedFrame = preprocessor_.process(humanFrame);
+
+            std::vector<PoseAxes> localPoses;
+            localPoses.reserve(preparedFrame.size());
+            for (const auto& kv : preparedFrame) {
+                const auto& body = kv.second;
+                PoseAxes axes;
+                axes.pos[0]                    = body.position.x();
+                axes.pos[1]                    = body.position.y();
+                axes.pos[2]                    = body.position.z();
+                const Eigen::Matrix3d rotation = body.orientation.normalized().toRotationMatrix();
+                axes.xmat                      = {
+                    rotation(0, 0), rotation(0, 1), rotation(0, 2), rotation(1, 0), rotation(1, 1),
+                    rotation(1, 2), rotation(2, 0), rotation(2, 1), rotation(2, 2),
+                };
+                localPoses.push_back(axes);
+            }
+
+            std::lock_guard<std::mutex> lk(mutex_);
+            poses_ = std::move(localPoses);
+        }
+
+        std::vector<PoseAxes> snapshot() const {
+            std::lock_guard<std::mutex> lk(mutex_);
+            return poses_;
+        }
+
+       private:
+        mutable std::mutex mutex_;
+        std::vector<PoseAxes> poses_;
+        HumanOverlayPreprocessor preprocessor_;
+    };
+
+    class LocalRetargetCache {
+       public:
+        bool init(const VisualizerConfig& cfg, std::string* error) {
+            enabled_ = cfg.robotQposSource == "local_retarget";
+            if (!enabled_) {
+                return true;
+            }
+            if (cfg.localRetargetRobotModelPath.empty() || cfg.localRetargetIkConfigPath.empty()) {
+                if (error != nullptr) {
+                    *error = "local retarget requires robot model path and ik config path";
+                }
+                return false;
+            }
+            const auto backend = gmr::parseRetargetBackend(cfg.localRetargetBackend);
+            gmr::RetargetOptions options;
+            options.damping             = cfg.localRetargetDamping;
+            options.maxIterations       = cfg.localRetargetMaxIterations;
+            options.useVelocityLimit    = cfg.localRetargetUseVelocityLimit;
+            options.integrationTimestep = cfg.localRetargetIntegrationTimestep;
+            options.progressThreshold   = cfg.localRetargetProgressThreshold;
+            gmr::IkConfig ikConfig      = gmr::loadIkConfig(cfg.localRetargetIkConfigPath, cfg.localRetargetActualHumanHeight);
+            retargeter_                 = gmr::createRetargeter(backend, cfg.localRetargetRobotModelPath, std::move(ikConfig), options);
+            offsetToGround_             = cfg.localRetargetOffsetToGround;
+            return true;
+        }
+
+        void update(const ::puppet::puppet_proto::PrimitiveFrame& msg) {
+            if (!enabled_ || retargeter_ == nullptr) {
+                return;
+            }
+            gmr::HumanFrame humanFrame;
+            for (const auto& pose : msg.poses()) {
+                if (pose.meta().entity().empty()) {
+                    continue;
+                }
+                gmr::HumanBodyState state;
+                state.position    = Eigen::Vector3d(pose.pose().position().x(), pose.pose().position().y(), pose.pose().position().z());
+                state.orientation = Eigen::Quaterniond(pose.pose().orientation().w(), pose.pose().orientation().x(),
+                                                       pose.pose().orientation().y(), pose.pose().orientation().z());
+                humanFrame[pose.meta().entity()] = state;
+            }
+            if (humanFrame.empty()) {
+                return;
+            }
+            const Eigen::VectorXd qpos = retargeter_->retargetFrame(humanFrame, offsetToGround_);
+            std::lock_guard<std::mutex> lk(mutex_);
+            qpos_       = qpos;
+            sequenceId_ = msg.sequence_id();
+            hasQpos_    = true;
+        }
+
+        bool enabled() const { return enabled_; }
+
+        bool snapshot(Eigen::VectorXd* qpos, uint64_t* sequenceId) const {
+            std::lock_guard<std::mutex> lk(mutex_);
+            if (!hasQpos_) {
+                return false;
+            }
+            if (qpos != nullptr) {
+                *qpos = qpos_;
+            }
+            if (sequenceId != nullptr) {
+                *sequenceId = sequenceId_;
+            }
+            return true;
+        }
+
+       private:
+        bool enabled_        = false;
+        bool offsetToGround_ = false;
+        std::unique_ptr<gmr::Retargeter> retargeter_;
+        mutable std::mutex mutex_;
+        Eigen::VectorXd qpos_;
+        uint64_t sequenceId_ = 0;
+        bool hasQpos_        = false;
     };
 
 }  // namespace puppet::tools::retargeting_mujoco_visualizer_internal
@@ -265,8 +508,10 @@ int main(int argc, char** argv) {
     camera.type                 = mjCAMERA_TRACKING;
     const double cameraDistance = resolveCameraDistance(cfg.robotName, cfg.cameraDistance);
     camera.distance             = cameraDistance;
-    camera.azimuth              = cfg.cameraAzimuth;
     camera.elevation            = -10.0;
+    if (cfg.hasCameraAzimuth) {
+        camera.azimuth = cfg.cameraAzimuth;
+    }
 
     const std::string resolvedCameraBodyName = resolveCameraBodyName(cfg.robotName, cfg.cameraBodyName);
     int cameraBodyId                         = mj_name2id(model.get(), mjOBJ_BODY, resolvedCameraBodyName.c_str());
@@ -295,8 +540,29 @@ int main(int argc, char** argv) {
             jointQposAdr[name] = model->jnt_qposadr[j];
         }
     }
+    int freeJointQposAdr = -1;
+    for (int j = 0; j < model->njnt; ++j) {
+        if (model->jnt_type[j] == mjJNT_FREE) {
+            freeJointQposAdr = model->jnt_qposadr[j];
+            break;
+        }
+    }
 
     ControlIntentCache cache;
+    HumanPoseCache humanPoseCache;
+    LocalRetargetCache localRetargetCache;
+    if (!humanPoseCache.initPreprocessor(cfg, &error)) {
+        std::cerr << "[retargeting_mujoco_visualizer] init human overlay preprocessor failed: " << error << std::endl;
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 8;
+    }
+    if (!localRetargetCache.init(cfg, &error)) {
+        std::cerr << "[retargeting_mujoco_visualizer] init local retarget failed: " << error << std::endl;
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 10;
+    }
 
     galbot::embosa::EmbosaInit();
     auto node = galbot::embosa::CreateNode(cfg.nodeName);
@@ -321,23 +587,80 @@ int main(int argc, char** argv) {
         glfwTerminate();
         return 7;
     }
+    auto humanCallback = [&](const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg, const void*) {
+        if (msg == nullptr) {
+            return;
+        }
+        humanPoseCache.update(*msg);
+        localRetargetCache.update(*msg);
+    };
+    auto humanFrameReader = node->CreateReader<::puppet::puppet_proto::PrimitiveFrame>(cfg.humanFrameTopicName, humanCallback);
+    if (humanFrameReader == nullptr) {
+        std::cerr << "[retargeting_mujoco_visualizer] create human frame reader failed" << std::endl;
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 9;
+    }
 
     const int renderHz = cfg.renderHz > 0 ? cfg.renderHz : 60;
     const auto sleepDt = std::chrono::milliseconds(1000 / renderHz);
 
     while (!glfwWindowShouldClose(window) && galbot::embosa::OK()) {
-        int64_t messageCount = 0;
-        uint64_t lastSeq     = 0;
-        const auto jointMap  = cache.snapshot(&messageCount, &lastSeq);
-        int mappedCount      = 0;
+        int64_t messageCount      = 0;
+        uint64_t lastSeq          = 0;
+        const auto jointMap       = cache.snapshot(&messageCount, &lastSeq);
+        uint64_t localRetargetSeq = 0;
+        Eigen::VectorXd localQpos;
+        const bool hasLocalQpos = localRetargetCache.snapshot(&localQpos, &localRetargetSeq);
+        int mappedCount         = 0;
 
-        for (const auto& kv : jointMap) {
-            const auto it = jointQposAdr.find(kv.first);
-            if (it == jointQposAdr.end()) {
-                continue;
+        // Keep the same rendering semantics as main_retarget_viewer:
+        // start from model qpos0 every frame, then apply retargeted qpos.
+        mju_copy(data->qpos, model->qpos0, model->nq);
+        if (localRetargetCache.enabled() && hasLocalQpos && localQpos.size() == model->nq) {
+            mju_copy(data->qpos, localQpos.data(), model->nq);
+            mappedCount = model->nq;
+            lastSeq     = localRetargetSeq;
+        } else {
+            for (const auto& kv : jointMap) {
+                const auto it = jointQposAdr.find(kv.first);
+                if (it == jointQposAdr.end()) {
+                    continue;
+                }
+                data->qpos[it->second] = kv.second;
+                ++mappedCount;
             }
-            data->qpos[it->second] = kv.second;
-            ++mappedCount;
+            if (freeJointQposAdr >= 0) {
+                const auto rootPosXIt  = jointMap.find(visualizer_detail::kRootPosXKey);
+                const auto rootPosYIt  = jointMap.find(visualizer_detail::kRootPosYKey);
+                const auto rootPosZIt  = jointMap.find(visualizer_detail::kRootPosZKey);
+                const auto rootQuatWIt = jointMap.find(visualizer_detail::kRootQuatWKey);
+                const auto rootQuatXIt = jointMap.find(visualizer_detail::kRootQuatXKey);
+                const auto rootQuatYIt = jointMap.find(visualizer_detail::kRootQuatYKey);
+                const auto rootQuatZIt = jointMap.find(visualizer_detail::kRootQuatZKey);
+                const bool hasRootQpos = rootPosXIt != jointMap.end() && rootPosYIt != jointMap.end() && rootPosZIt != jointMap.end() &&
+                                         rootQuatWIt != jointMap.end() && rootQuatXIt != jointMap.end() && rootQuatYIt != jointMap.end() &&
+                                         rootQuatZIt != jointMap.end();
+                if (hasRootQpos) {
+                    data->qpos[freeJointQposAdr + 0] = rootPosXIt->second;
+                    data->qpos[freeJointQposAdr + 1] = rootPosYIt->second;
+                    data->qpos[freeJointQposAdr + 2] = rootPosZIt->second;
+                    data->qpos[freeJointQposAdr + 3] = rootQuatWIt->second;
+                    data->qpos[freeJointQposAdr + 4] = rootQuatXIt->second;
+                    data->qpos[freeJointQposAdr + 5] = rootQuatYIt->second;
+                    data->qpos[freeJointQposAdr + 6] = rootQuatZIt->second;
+                    mappedCount += 7;
+                }
+            }
+        }
+        for (int j = 0; j < model->njnt; ++j) {
+            const int jointType = model->jnt_type[j];
+            if ((jointType == mjJNT_HINGE || jointType == mjJNT_SLIDE) && model->jnt_limited[j] > 0) {
+                const int qadr    = model->jnt_qposadr[j];
+                const double qmin = model->jnt_range[2 * j + 0];
+                const double qmax = model->jnt_range[2 * j + 1];
+                data->qpos[qadr]  = std::min(std::max(data->qpos[qadr], qmin), qmax);
+            }
         }
 
         mj_forward(model.get(), data.get());
@@ -348,13 +671,21 @@ int main(int argc, char** argv) {
             camera.lookat[1]   = data->xpos[3 * cameraBodyId + 1];
             camera.lookat[2]   = data->xpos[3 * cameraBodyId + 2];
             camera.distance    = cameraDistance;
-            camera.azimuth     = cfg.cameraAzimuth;
             camera.elevation   = -10.0;
+            if (cfg.hasCameraAzimuth) {
+                camera.azimuth = cfg.cameraAzimuth;
+            }
         }
 
         mjrRect viewport = {0, 0, 0, 0};
         glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
         mjv_updateScene(model.get(), data.get(), &option, nullptr, &camera, mjCAT_ALL, &scene);
+        if (cfg.showHumanOverlay) {
+            const auto humanPoses = humanPoseCache.snapshot();
+            for (const auto& pose : humanPoses) {
+                drawAxesAtPose(pose.pos.data(), pose.xmat.data(), &scene, cfg.humanOverlayScale);
+            }
+        }
         if (cfg.showBodyOverlay) {
             for (const auto& bodyName : cfg.overlayBodyNames) {
                 const int bodyId = mj_name2id(model.get(), mjOBJ_BODY, bodyName.c_str());
@@ -373,6 +704,7 @@ int main(int argc, char** argv) {
             if (messageCount != lastPrintCount) {
                 lastPrintCount = messageCount;
                 std::cout << "[retargeting_mujoco_visualizer] msg_count=" << messageCount << " last_seq=" << lastSeq
+                          << " source=" << (localRetargetCache.enabled() ? "local_retarget" : "control_intent")
                           << " cache_joints=" << jointMap.size() << " mapped_joints=" << mappedCount << std::endl;
             }
         }

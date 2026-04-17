@@ -64,7 +64,7 @@ namespace gmr {
         PinocchioRetargetBackend(const std::filesystem::path& robotModelPath, IkConfig ikConfig, RetargetOptions options = {});
         ~PinocchioRetargetBackend() override;
 
-        PinocchioRetargetBackend(const PinocchioRetargetBackend&) = delete;
+        PinocchioRetargetBackend(const PinocchioRetargetBackend&)            = delete;
         PinocchioRetargetBackend& operator=(const PinocchioRetargetBackend&) = delete;
 
         Eigen::VectorXd retargetFrame(const HumanFrame& humanFrame, bool offsetToGround = false) override;
@@ -85,7 +85,7 @@ namespace gmr {
         MujocoRetargetBackend(const std::filesystem::path& robotModelPath, IkConfig ikConfig, RetargetOptions options = {});
         ~MujocoRetargetBackend() override;
 
-        MujocoRetargetBackend(const MujocoRetargetBackend&) = delete;
+        MujocoRetargetBackend(const MujocoRetargetBackend&)            = delete;
         MujocoRetargetBackend& operator=(const MujocoRetargetBackend&) = delete;
 
         Eigen::VectorXd retargetFrame(const HumanFrame& humanFrame, bool offsetToGround = false) override;
@@ -106,7 +106,7 @@ namespace gmr {
         PinocchioLegacyRetargetBackend(const std::filesystem::path& robotModelPath, IkConfig ikConfig, RetargetOptions options = {});
         ~PinocchioLegacyRetargetBackend() override;
 
-        PinocchioLegacyRetargetBackend(const PinocchioLegacyRetargetBackend&) = delete;
+        PinocchioLegacyRetargetBackend(const PinocchioLegacyRetargetBackend&)            = delete;
         PinocchioLegacyRetargetBackend& operator=(const PinocchioLegacyRetargetBackend&) = delete;
 
         Eigen::VectorXd retargetFrame(const HumanFrame& humanFrame, bool offsetToGround = false) override;
@@ -127,7 +127,7 @@ namespace gmr {
         MujocoLegacyRetargetBackend(const std::filesystem::path& robotModelPath, IkConfig ikConfig, RetargetOptions options = {});
         ~MujocoLegacyRetargetBackend() override;
 
-        MujocoLegacyRetargetBackend(const MujocoLegacyRetargetBackend&) = delete;
+        MujocoLegacyRetargetBackend(const MujocoLegacyRetargetBackend&)            = delete;
         MujocoLegacyRetargetBackend& operator=(const MujocoLegacyRetargetBackend&) = delete;
 
         Eigen::VectorXd retargetFrame(const HumanFrame& humanFrame, bool offsetToGround = false) override;
