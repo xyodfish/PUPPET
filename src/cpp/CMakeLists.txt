@@ -36,7 +36,7 @@ add_library(puppet_cpp_core SHARED ${PUPPET_CORE_SOURCES}
 
 find_library(OROCOS_KDL_LIBRARY NAMES orocos-kdl REQUIRED)
 find_library(TRAC_IK_LIBRARY NAMES trac_ik REQUIRED)
-find_library(MUJOCO_LIBRARY NAMES mujoco REQUIRED)
+# find_library(MUJOCO_LIBRARY NAMES mujoco REQUIRED)
 
 target_include_directories(puppet_cpp_core
   PUBLIC

@@ -20,7 +20,7 @@ namespace puppet::source {
     class SourceManager {
        public:
         void configure(const std::vector<runtime::SourceConfig>& sourceConfigs);
-        void ingestFrame(const model::PrimitiveFrame& frame);
+        void captureFrame(const model::PrimitiveFrame& frame);
 
         std::shared_ptr<model::PrimitiveFrame> getLatestFrame(const std::string& sourceId) const;
         SourceHealth getSourceHealth(const std::string& sourceId) const;

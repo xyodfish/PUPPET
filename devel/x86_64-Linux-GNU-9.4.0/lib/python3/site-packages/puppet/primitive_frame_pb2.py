@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1cpuppet/primitive_frame.proto\x12\x13puppet.puppet_proto\x1a\x13puppet/common.proto\x1a\x14puppet/uniform.proto\"\x98\x01\n\rPosePrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\'\n\x04pose\x18\x02 \x01(\x0b\x32\x19.puppet.puppet_proto.Pose\x12\x13\n\x0bis_relative\x18\x03 \x01(\x08\x12\x17\n\x0ftarget_frame_id\x18\x04 \x01(\t\"\xa0\x01\n\x0eTwistPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12)\n\x05twist\x18\x02 \x01(\x0b\x32\x1a.puppet.puppet_proto.Twist\x12\x15\n\rbody_frame_id\x18\x03 \x01(\t\x12\x1a\n\x12reference_frame_id\x18\x04 \x01(\t\"\xa1\x01\n\x13JointStatePrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\x13\n\x0bjoint_names\x18\x02 \x03(\t\x12\x10\n\x08position\x18\x03 \x03(\x01\x12\x10\n\x08velocity\x18\x04 \x03(\x01\x12\x0e\n\x06\x65\x66\x66ort\x18\x05 \x03(\x01\x12\x0f\n\x07\x63urrent\x18\x06 \x03(\x01\"\xed\x03\n\x15JointCommandPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12I\n\x04mode\x18\x02 \x01(\x0e\x32;.puppet.puppet_proto.JointCommandPrimitive.JointCommandMode\x12\x13\n\x0bjoint_names\x18\x03 \x03(\t\x12\x10\n\x08position\x18\x04 \x03(\x01\x12\x10\n\x08velocity\x18\x05 \x03(\x01\x12\x0e\n\x06\x65\x66\x66ort\x18\x06 \x03(\x01\x12\x11\n\tstiffness\x18\x07 \x03(\x01\x12\x0f\n\x07\x64\x61mping\x18\x08 \x03(\x01\"\xe9\x01\n\x10JointCommandMode\x12\"\n\x1eJOINT_COMMAND_MODE_UNSPECIFIED\x10\x00\x12\x1f\n\x1bJOINT_COMMAND_MODE_POSITION\x10\x01\x12\x1f\n\x1bJOINT_COMMAND_MODE_VELOCITY\x10\x02\x12\x1d\n\x19JOINT_COMMAND_MODE_EFFORT\x10\x03\x12(\n$JOINT_COMMAND_MODE_POSITION_VELOCITY\x10\x04\x12&\n\"JOINT_COMMAND_MODE_POSITION_EFFORT\x10\x05\"x\n\x0fScalarPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\tmin_value\x18\x03 \x01(\x01\x12\x11\n\tmax_value\x18\x04 \x01(\x01\"S\n\x10\x42ooleanPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\r\n\x05value\x18\x02 \x01(\x08\"u\n\rModePrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\x11\n\tmode_name\x18\x02 \x01(\t\x12\x0f\n\x07mode_id\x18\x03 \x01(\x05\x12\x0e\n\x06sticky\x18\x04 \x01(\x08\"\x89\x01\n\x15PlanarMotionPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\n\n\x02vx\x18\x02 \x01(\x01\x12\n\n\x02vy\x18\x03 \x01(\x01\x12\n\n\x02wz\x18\x04 \x01(\x01\x12\x1a\n\x12reference_frame_id\x18\x05 \x01(\t\"p\n\rSkeletonJoint\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0cparent_index\x18\x02 \x01(\x05\x12\'\n\x04pose\x18\x03 \x01(\x0b\x32\x19.puppet.puppet_proto.Pose\x12\x12\n\nconfidence\x18\x04 \x01(\x02\"\xac\x01\n\x11SkeletonPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\x15\n\rskeleton_name\x18\x02 \x01(\t\x12\x1a\n\x12reference_frame_id\x18\x03 \x01(\t\x12\x32\n\x06joints\x18\x04 \x03(\x0b\x32\".puppet.puppet_proto.SkeletonJoint\"n\n\x08Landmark\x12\x0c\n\x04name\x18\x01 \x01(\t\x12,\n\x08position\x18\x02 \x01(\x0b\x32\x1a.puppet.puppet_proto.Point\x12\x12\n\nconfidence\x18\x03 \x01(\x02\x12\x12\n\nvisibility\x18\x04 \x01(\x02\"\xa8\x01\n\x14LandmarkSetPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\x10\n\x08set_name\x18\x02 \x01(\t\x12\x1a\n\x12reference_frame_id\x18\x03 \x01(\t\x12\x30\n\tlandmarks\x18\x04 \x03(\x0b\x32\x1d.puppet.puppet_proto.Landmark\"\xc0\x06\n\x0ePrimitiveFrame\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.puppet.puppet_proto.Header\x12\x32\n\x07\x63ontext\x18\x02 \x01(\x0b\x32!.puppet.puppet_proto.FrameContext\x12\x13\n\x0bsequence_id\x18\x03 \x01(\x04\x12\x31\n\x05poses\x18\n \x03(\x0b\x32\".puppet.puppet_proto.PosePrimitive\x12\x33\n\x06twists\x18\x0b \x03(\x0b\x32#.puppet.puppet_proto.TwistPrimitive\x12>\n\x0cjoint_states\x18\x0c \x03(\x0b\x32(.puppet.puppet_proto.JointStatePrimitive\x12\x42\n\x0ejoint_commands\x18\r \x03(\x0b\x32*.puppet.puppet_proto.JointCommandPrimitive\x12\x35\n\x07scalars\x18\x0e \x03(\x0b\x32$.puppet.puppet_proto.ScalarPrimitive\x12\x37\n\x08\x62ooleans\x18\x0f \x03(\x0b\x32%.puppet.puppet_proto.BooleanPrimitive\x12\x31\n\x05modes\x18\x10 \x03(\x0b\x32\".puppet.puppet_proto.ModePrimitive\x12\x42\n\x0eplanar_motions\x18\x11 \x03(\x0b\x32*.puppet.puppet_proto.PlanarMotionPrimitive\x12\x39\n\tskeletons\x18\x12 \x03(\x0b\x32&.puppet.puppet_proto.SkeletonPrimitive\x12@\n\rlandmark_sets\x18\x13 \x03(\x0b\x32).puppet.puppet_proto.LandmarkSetPrimitive\x12;\n\x04tags\x18\x1e \x03(\x0b\x32-.puppet.puppet_proto.PrimitiveFrame.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x62\x06proto3'
+  serialized_pb=b'\n\x1cpuppet/primitive_frame.proto\x12\x13puppet.puppet_proto\x1a\x13puppet/common.proto\x1a\x14puppet/uniform.proto\"\x98\x01\n\rPosePrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\'\n\x04pose\x18\x02 \x01(\x0b\x32\x19.puppet.puppet_proto.Pose\x12\x13\n\x0bis_relative\x18\x03 \x01(\x08\x12\x17\n\x0ftarget_frame_id\x18\x04 \x01(\t\"\xb5\x01\n\x0eTwistPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12)\n\x05twist\x18\x02 \x01(\x0b\x32\x1a.puppet.puppet_proto.Twist\x12\x13\n\x0bis_relative\x18\x03 \x01(\x08\x12\x15\n\rbody_frame_id\x18\x04 \x01(\t\x12\x1a\n\x12reference_frame_id\x18\x05 \x01(\t\"\xd2\x01\n\x13JointStatePrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\x13\n\x0bjoint_names\x18\x02 \x03(\t\x12\x10\n\x08position\x18\x03 \x03(\x01\x12\x10\n\x08velocity\x18\x04 \x03(\x01\x12\x14\n\x0c\x61\x63\x63\x65leration\x18\x05 \x03(\x01\x12\x0e\n\x06\x65\x66\x66ort\x18\x06 \x03(\x01\x12\x0f\n\x07\x63urrent\x18\x07 \x03(\x01\x12\x19\n\x11is_relative_flags\x18\x08 \x01(\x07\"\x9e\x04\n\x15JointCommandPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12I\n\x04mode\x18\x02 \x01(\x0e\x32;.puppet.puppet_proto.JointCommandPrimitive.JointCommandMode\x12\x13\n\x0bjoint_names\x18\x03 \x03(\t\x12\x10\n\x08position\x18\x04 \x03(\x01\x12\x10\n\x08velocity\x18\x05 \x03(\x01\x12\x14\n\x0c\x61\x63\x63\x65leration\x18\x06 \x03(\x01\x12\x0e\n\x06\x65\x66\x66ort\x18\x07 \x03(\x01\x12\x11\n\tstiffness\x18\x08 \x03(\x01\x12\x0f\n\x07\x64\x61mping\x18\t \x03(\x01\x12\x19\n\x11is_relative_flags\x18\n \x01(\x07\"\xe9\x01\n\x10JointCommandMode\x12\"\n\x1eJOINT_COMMAND_MODE_UNSPECIFIED\x10\x00\x12\x1f\n\x1bJOINT_COMMAND_MODE_POSITION\x10\x01\x12\x1f\n\x1bJOINT_COMMAND_MODE_VELOCITY\x10\x02\x12\x1d\n\x19JOINT_COMMAND_MODE_EFFORT\x10\x03\x12(\n$JOINT_COMMAND_MODE_POSITION_VELOCITY\x10\x04\x12&\n\"JOINT_COMMAND_MODE_POSITION_EFFORT\x10\x05\"\xa3\x01\n\x0fScalarPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\tmin_value\x18\x03 \x01(\x01\x12\x11\n\tmax_value\x18\x04 \x01(\x01\x12\x13\n\x0bscale_value\x18\x05 \x01(\x01\x12\x14\n\x0coffset_value\x18\x06 \x01(\x01\"S\n\x10\x42ooleanPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\r\n\x05value\x18\x02 \x01(\x08\"u\n\rModePrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\x11\n\tmode_name\x18\x02 \x01(\t\x12\x0f\n\x07mode_id\x18\x03 \x01(\x05\x12\x0e\n\x06sticky\x18\x04 \x01(\x08\"\x89\x01\n\x15PlanarMotionPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\n\n\x02vx\x18\x02 \x01(\x01\x12\n\n\x02vy\x18\x03 \x01(\x01\x12\n\n\x02wz\x18\x04 \x01(\x01\x12\x1a\n\x12reference_frame_id\x18\x05 \x01(\t\"p\n\rSkeletonJoint\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0cparent_index\x18\x02 \x01(\x05\x12\'\n\x04pose\x18\x03 \x01(\x0b\x32\x19.puppet.puppet_proto.Pose\x12\x12\n\nconfidence\x18\x04 \x01(\x02\"\xac\x01\n\x11SkeletonPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\x15\n\rskeleton_name\x18\x02 \x01(\t\x12\x1a\n\x12reference_frame_id\x18\x03 \x01(\t\x12\x32\n\x06joints\x18\x04 \x03(\x0b\x32\".puppet.puppet_proto.SkeletonJoint\"n\n\x08Landmark\x12\x0c\n\x04name\x18\x01 \x01(\t\x12,\n\x08position\x18\x02 \x01(\x0b\x32\x1a.puppet.puppet_proto.Point\x12\x12\n\nconfidence\x18\x03 \x01(\x02\x12\x12\n\nvisibility\x18\x04 \x01(\x02\"\xa8\x01\n\x14LandmarkSetPrimitive\x12\x30\n\x04meta\x18\x01 \x01(\x0b\x32\".puppet.puppet_proto.PrimitiveMeta\x12\x10\n\x08set_name\x18\x02 \x01(\t\x12\x1a\n\x12reference_frame_id\x18\x03 \x01(\t\x12\x30\n\tlandmarks\x18\x04 \x03(\x0b\x32\x1d.puppet.puppet_proto.Landmark\"\xc0\x06\n\x0ePrimitiveFrame\x12+\n\x06header\x18\x01 \x01(\x0b\x32\x1b.puppet.puppet_proto.Header\x12\x32\n\x07\x63ontext\x18\x02 \x01(\x0b\x32!.puppet.puppet_proto.FrameContext\x12\x13\n\x0bsequence_id\x18\x03 \x01(\x04\x12\x31\n\x05poses\x18\n \x03(\x0b\x32\".puppet.puppet_proto.PosePrimitive\x12\x33\n\x06twists\x18\x0b \x03(\x0b\x32#.puppet.puppet_proto.TwistPrimitive\x12>\n\x0cjoint_states\x18\x0c \x03(\x0b\x32(.puppet.puppet_proto.JointStatePrimitive\x12\x42\n\x0ejoint_commands\x18\r \x03(\x0b\x32*.puppet.puppet_proto.JointCommandPrimitive\x12\x35\n\x07scalars\x18\x0e \x03(\x0b\x32$.puppet.puppet_proto.ScalarPrimitive\x12\x37\n\x08\x62ooleans\x18\x0f \x03(\x0b\x32%.puppet.puppet_proto.BooleanPrimitive\x12\x31\n\x05modes\x18\x10 \x03(\x0b\x32\".puppet.puppet_proto.ModePrimitive\x12\x42\n\x0eplanar_motions\x18\x11 \x03(\x0b\x32*.puppet.puppet_proto.PlanarMotionPrimitive\x12\x39\n\tskeletons\x18\x12 \x03(\x0b\x32&.puppet.puppet_proto.SkeletonPrimitive\x12@\n\rlandmark_sets\x18\x13 \x03(\x0b\x32).puppet.puppet_proto.LandmarkSetPrimitive\x12;\n\x04tags\x18\x1e \x03(\x0b\x32-.puppet.puppet_proto.PrimitiveFrame.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x62\x06proto3'
   ,
   dependencies=[puppet_dot_common__pb2.DESCRIPTOR,puppet_dot_uniform__pb2.DESCRIPTOR,])
 
@@ -67,8 +67,8 @@ _JOINTCOMMANDPRIMITIVE_JOINTCOMMANDMODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=839,
-  serialized_end=1072,
+  serialized_start=958,
+  serialized_end=1191,
 )
 _sym_db.RegisterEnumDescriptor(_JOINTCOMMANDPRIMITIVE_JOINTCOMMANDMODE)
 
@@ -149,15 +149,22 @@ _TWISTPRIMITIVE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='body_frame_id', full_name='puppet.puppet_proto.TwistPrimitive.body_frame_id', index=2,
-      number=3, type=9, cpp_type=9, label=1,
+      name='is_relative', full_name='puppet.puppet_proto.TwistPrimitive.is_relative', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='body_frame_id', full_name='puppet.puppet_proto.TwistPrimitive.body_frame_id', index=3,
+      number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='reference_frame_id', full_name='puppet.puppet_proto.TwistPrimitive.reference_frame_id', index=3,
-      number=4, type=9, cpp_type=9, label=1,
+      name='reference_frame_id', full_name='puppet.puppet_proto.TwistPrimitive.reference_frame_id', index=4,
+      number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -175,7 +182,7 @@ _TWISTPRIMITIVE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=252,
-  serialized_end=412,
+  serialized_end=433,
 )
 
 
@@ -216,16 +223,30 @@ _JOINTSTATEPRIMITIVE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='effort', full_name='puppet.puppet_proto.JointStatePrimitive.effort', index=4,
+      name='acceleration', full_name='puppet.puppet_proto.JointStatePrimitive.acceleration', index=4,
       number=5, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='current', full_name='puppet.puppet_proto.JointStatePrimitive.current', index=5,
+      name='effort', full_name='puppet.puppet_proto.JointStatePrimitive.effort', index=5,
       number=6, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='current', full_name='puppet.puppet_proto.JointStatePrimitive.current', index=6,
+      number=7, type=1, cpp_type=5, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='is_relative_flags', full_name='puppet.puppet_proto.JointStatePrimitive.is_relative_flags', index=7,
+      number=8, type=7, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -241,8 +262,8 @@ _JOINTSTATEPRIMITIVE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=415,
-  serialized_end=576,
+  serialized_start=436,
+  serialized_end=646,
 )
 
 
@@ -290,23 +311,37 @@ _JOINTCOMMANDPRIMITIVE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='effort', full_name='puppet.puppet_proto.JointCommandPrimitive.effort', index=5,
+      name='acceleration', full_name='puppet.puppet_proto.JointCommandPrimitive.acceleration', index=5,
       number=6, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='stiffness', full_name='puppet.puppet_proto.JointCommandPrimitive.stiffness', index=6,
+      name='effort', full_name='puppet.puppet_proto.JointCommandPrimitive.effort', index=6,
       number=7, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='damping', full_name='puppet.puppet_proto.JointCommandPrimitive.damping', index=7,
+      name='stiffness', full_name='puppet.puppet_proto.JointCommandPrimitive.stiffness', index=7,
       number=8, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='damping', full_name='puppet.puppet_proto.JointCommandPrimitive.damping', index=8,
+      number=9, type=1, cpp_type=5, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='is_relative_flags', full_name='puppet.puppet_proto.JointCommandPrimitive.is_relative_flags', index=9,
+      number=10, type=7, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -323,8 +358,8 @@ _JOINTCOMMANDPRIMITIVE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=579,
-  serialized_end=1072,
+  serialized_start=649,
+  serialized_end=1191,
 )
 
 
@@ -364,6 +399,20 @@ _SCALARPRIMITIVE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='scale_value', full_name='puppet.puppet_proto.ScalarPrimitive.scale_value', index=4,
+      number=5, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='offset_value', full_name='puppet.puppet_proto.ScalarPrimitive.offset_value', index=5,
+      number=6, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -376,8 +425,8 @@ _SCALARPRIMITIVE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1074,
-  serialized_end=1194,
+  serialized_start=1194,
+  serialized_end=1357,
 )
 
 
@@ -415,8 +464,8 @@ _BOOLEANPRIMITIVE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1196,
-  serialized_end=1279,
+  serialized_start=1359,
+  serialized_end=1442,
 )
 
 
@@ -468,8 +517,8 @@ _MODEPRIMITIVE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1281,
-  serialized_end=1398,
+  serialized_start=1444,
+  serialized_end=1561,
 )
 
 
@@ -528,8 +577,8 @@ _PLANARMOTIONPRIMITIVE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1401,
-  serialized_end=1538,
+  serialized_start=1564,
+  serialized_end=1701,
 )
 
 
@@ -581,8 +630,8 @@ _SKELETONJOINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1540,
-  serialized_end=1652,
+  serialized_start=1703,
+  serialized_end=1815,
 )
 
 
@@ -634,8 +683,8 @@ _SKELETONPRIMITIVE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1655,
-  serialized_end=1827,
+  serialized_start=1818,
+  serialized_end=1990,
 )
 
 
@@ -687,8 +736,8 @@ _LANDMARK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1829,
-  serialized_end=1939,
+  serialized_start=1992,
+  serialized_end=2102,
 )
 
 
@@ -740,8 +789,8 @@ _LANDMARKSETPRIMITIVE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1942,
-  serialized_end=2110,
+  serialized_start=2105,
+  serialized_end=2273,
 )
 
 
@@ -779,8 +828,8 @@ _PRIMITIVEFRAME_TAGSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2902,
-  serialized_end=2945,
+  serialized_start=3065,
+  serialized_end=3108,
 )
 
 _PRIMITIVEFRAME = _descriptor.Descriptor(
@@ -901,8 +950,8 @@ _PRIMITIVEFRAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2113,
-  serialized_end=2945,
+  serialized_start=2276,
+  serialized_end=3108,
 )
 
 _POSEPRIMITIVE.fields_by_name['meta'].message_type = puppet_dot_uniform__pb2._PRIMITIVEMETA

@@ -17,8 +17,9 @@ message PosePrimitive {
 message TwistPrimitive {
     PrimitiveMeta meta = 1;       // 通用元信息。
     Twist twist = 2;              // 线速度 + 角速度。
-    string body_frame_id = 3;     // 速度作用的刚体/链路坐标系。
-    string reference_frame_id = 4; // 速度表达参考坐标系。
+    bool is_relative = 3;
+    string body_frame_id = 4;     // 速度作用的刚体/链路坐标系。
+    string reference_frame_id = 5; // 速度表达参考坐标系。
 }
 
 // 关节观测状态 primitive（来自设备或估计器）。
@@ -27,8 +28,10 @@ message JointStatePrimitive {
     repeated string joint_names = 2; // 关节名列表。
     repeated double position = 3;    // 位置数组（与 joint_names 对齐）。
     repeated double velocity = 4;    // 速度数组（与 joint_names 对齐）。
-    repeated double effort = 5;      // 力/力矩数组（与 joint_names 对齐）。
-    repeated double current = 6;     // 电流数组（与 joint_names 对齐，可选）。
+    repeated double acceleration = 5;
+    repeated double effort = 6;      // 力/力矩数组（与 joint_names 对齐）。
+    repeated double current = 7;     // 电流数组（与 joint_names 对齐，可选）。
+    fixed32 is_relative_flags = 8;
 }
 
 // 关节命令 primitive（第一版统一表示，不拆分多种命令消息）。
@@ -48,9 +51,12 @@ message JointCommandPrimitive {
     repeated string joint_names = 3; // 关节名列表。
     repeated double position = 4;    // 目标位置数组（按模式使用）。
     repeated double velocity = 5;    // 目标速度数组（按模式使用）。
-    repeated double effort = 6;      // 目标力/力矩数组（按模式使用）。
-    repeated double stiffness = 7;   // 刚度数组（可选）。
-    repeated double damping = 8;     // 阻尼数组（可选）。
+    repeated double acceleration = 6;
+    repeated double effort = 7;      // 目标力/力矩数组（按模式使用）。
+    repeated double stiffness = 8;   // 刚度数组（可选）。
+    repeated double damping = 9;     // 阻尼数组（可选）。
+    fixed32 is_relative_flags = 10;
+
 }
 
 // 标量类 primitive（trigger、grip、speed_scale 等）。
@@ -59,6 +65,8 @@ message ScalarPrimitive {
     double value = 2;        // 当前值。
     double min_value = 3;    // 建议最小值（可选）。
     double max_value = 4;    // 建议最大值（可选）。
+    double scale_value = 5;
+    double offset_value = 6;
 }
 
 // 布尔类 primitive（enable、clutch、deadman 等）。

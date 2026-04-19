@@ -3,28 +3,25 @@
 #include <utility>
 
 namespace puppet::transport {
-    namespace {
 
-        template <typename ProtoMap, typename DstMap>
-        void CopyMap(const ProtoMap& src, DstMap* dst) {
-            dst->clear();
-            dst->reserve(src.size());
-            for (const auto& kv : src) {
-                dst->emplace(kv.first, kv.second);
-            }
+    template <typename ProtoMap, typename DstMap>
+    void CopyMap(const ProtoMap& src, DstMap* dst) {
+        dst->clear();
+        dst->reserve(src.size());
+        for (const auto& kv : src) {
+            dst->emplace(kv.first, kv.second);
         }
+    }
 
-        template <typename ProtoRepeated, typename DstVec>
-        void CopyStringRepeated(const ProtoRepeated& src, DstVec* dst) {
-            dst->assign(src.begin(), src.end());
-        }
+    template <typename ProtoRepeated, typename DstVec>
+    void CopyStringRepeated(const ProtoRepeated& src, DstVec* dst) {
+        dst->assign(src.begin(), src.end());
+    }
 
-        template <typename ProtoRepeated, typename DstVec>
-        void CopyScalarRepeated(const ProtoRepeated& src, DstVec* dst) {
-            dst->assign(src.begin(), src.end());
-        }
-
-    }  // namespace
+    template <typename ProtoRepeated, typename DstVec>
+    void CopyScalarRepeated(const ProtoRepeated& src, DstVec* dst) {
+        dst->assign(src.begin(), src.end());
+    }
 
     bool copyFromProto(const ::puppet::puppet_proto::Timestamp& src, model::Timestamp* dst) {
         if (dst == nullptr)
@@ -137,6 +134,7 @@ namespace puppet::transport {
             return false;
         copyFromProto(src.meta(), &dst->meta);
         copyFromProto(src.twist(), &dst->twist);
+        dst->isRelative       = src.is_relative();
         dst->bodyFrameId      = src.body_frame_id();
         dst->referenceFrameId = src.reference_frame_id();
         return true;
@@ -151,6 +149,10 @@ namespace puppet::transport {
         CopyScalarRepeated(src.velocity(), &dst->velocity);
         CopyScalarRepeated(src.effort(), &dst->effort);
         CopyScalarRepeated(src.current(), &dst->current);
+
+        for (int i = 0; i < 5; ++i) {
+            dst->isRelatived[i] = (src.is_relative_flags() >> i) & 1u;
+        }
         return true;
     }
 
@@ -165,6 +167,9 @@ namespace puppet::transport {
         CopyScalarRepeated(src.effort(), &dst->effort);
         CopyScalarRepeated(src.stiffness(), &dst->stiffness);
         CopyScalarRepeated(src.damping(), &dst->damping);
+        for (int i = 0; i < 5; ++i) {
+            dst->isRelatived[i] = (src.is_relative_flags() >> i) & 1u;
+        }
         return true;
     }
 
@@ -172,9 +177,11 @@ namespace puppet::transport {
         if (dst == nullptr)
             return false;
         copyFromProto(src.meta(), &dst->meta);
-        dst->value    = src.value();
-        dst->minValue = src.min_value();
-        dst->maxValue = src.max_value();
+        dst->value       = src.value();
+        dst->minValue    = src.min_value();
+        dst->maxValue    = src.max_value();
+        dst->scaleValue  = src.scale_value();
+        dst->offsetValue = src.offset_value();
         return true;
     }
 

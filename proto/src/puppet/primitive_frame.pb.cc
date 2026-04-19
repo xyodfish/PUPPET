@@ -324,6 +324,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_puppet_2fprimitive_5fframe_2ep
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::TwistPrimitive, meta_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::TwistPrimitive, twist_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::TwistPrimitive, is_relative_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::TwistPrimitive, body_frame_id_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::TwistPrimitive, reference_frame_id_),
   ~0u,  // no _has_bits_
@@ -335,8 +336,10 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_puppet_2fprimitive_5fframe_2ep
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointStatePrimitive, joint_names_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointStatePrimitive, position_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointStatePrimitive, velocity_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointStatePrimitive, acceleration_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointStatePrimitive, effort_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointStatePrimitive, current_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointStatePrimitive, is_relative_flags_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -347,9 +350,11 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_puppet_2fprimitive_5fframe_2ep
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, joint_names_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, position_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, velocity_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, acceleration_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, effort_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, stiffness_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, damping_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::JointCommandPrimitive, is_relative_flags_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::ScalarPrimitive, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -359,6 +364,8 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_puppet_2fprimitive_5fframe_2ep
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::ScalarPrimitive, value_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::ScalarPrimitive, min_value_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::ScalarPrimitive, max_value_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::ScalarPrimitive, scale_value_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::ScalarPrimitive, offset_value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::BooleanPrimitive, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -453,18 +460,18 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_puppet_2fprimitive_5fframe_2ep
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::puppet::puppet_proto::PosePrimitive)},
   { 9, -1, sizeof(::puppet::puppet_proto::TwistPrimitive)},
-  { 18, -1, sizeof(::puppet::puppet_proto::JointStatePrimitive)},
-  { 29, -1, sizeof(::puppet::puppet_proto::JointCommandPrimitive)},
-  { 42, -1, sizeof(::puppet::puppet_proto::ScalarPrimitive)},
-  { 51, -1, sizeof(::puppet::puppet_proto::BooleanPrimitive)},
-  { 58, -1, sizeof(::puppet::puppet_proto::ModePrimitive)},
-  { 67, -1, sizeof(::puppet::puppet_proto::PlanarMotionPrimitive)},
-  { 77, -1, sizeof(::puppet::puppet_proto::SkeletonJoint)},
-  { 86, -1, sizeof(::puppet::puppet_proto::SkeletonPrimitive)},
-  { 95, -1, sizeof(::puppet::puppet_proto::Landmark)},
-  { 104, -1, sizeof(::puppet::puppet_proto::LandmarkSetPrimitive)},
-  { 113, 120, sizeof(::puppet::puppet_proto::PrimitiveFrame_TagsEntry_DoNotUse)},
-  { 122, -1, sizeof(::puppet::puppet_proto::PrimitiveFrame)},
+  { 19, -1, sizeof(::puppet::puppet_proto::JointStatePrimitive)},
+  { 32, -1, sizeof(::puppet::puppet_proto::JointCommandPrimitive)},
+  { 47, -1, sizeof(::puppet::puppet_proto::ScalarPrimitive)},
+  { 58, -1, sizeof(::puppet::puppet_proto::BooleanPrimitive)},
+  { 65, -1, sizeof(::puppet::puppet_proto::ModePrimitive)},
+  { 74, -1, sizeof(::puppet::puppet_proto::PlanarMotionPrimitive)},
+  { 84, -1, sizeof(::puppet::puppet_proto::SkeletonJoint)},
+  { 93, -1, sizeof(::puppet::puppet_proto::SkeletonPrimitive)},
+  { 102, -1, sizeof(::puppet::puppet_proto::Landmark)},
+  { 111, -1, sizeof(::puppet::puppet_proto::LandmarkSetPrimitive)},
+  { 120, 127, sizeof(::puppet::puppet_proto::PrimitiveFrame_TagsEntry_DoNotUse)},
+  { 129, -1, sizeof(::puppet::puppet_proto::PrimitiveFrame)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -491,74 +498,78 @@ const char descriptor_table_protodef_puppet_2fprimitive_5fframe_2eproto[] PROTOB
   "\030\001 \001(\0132\".puppet.puppet_proto.PrimitiveMe"
   "ta\022\'\n\004pose\030\002 \001(\0132\031.puppet.puppet_proto.P"
   "ose\022\023\n\013is_relative\030\003 \001(\010\022\027\n\017target_frame"
-  "_id\030\004 \001(\t\"\240\001\n\016TwistPrimitive\0220\n\004meta\030\001 \001"
+  "_id\030\004 \001(\t\"\265\001\n\016TwistPrimitive\0220\n\004meta\030\001 \001"
   "(\0132\".puppet.puppet_proto.PrimitiveMeta\022)"
   "\n\005twist\030\002 \001(\0132\032.puppet.puppet_proto.Twis"
-  "t\022\025\n\rbody_frame_id\030\003 \001(\t\022\032\n\022reference_fr"
-  "ame_id\030\004 \001(\t\"\241\001\n\023JointStatePrimitive\0220\n\004"
-  "meta\030\001 \001(\0132\".puppet.puppet_proto.Primiti"
-  "veMeta\022\023\n\013joint_names\030\002 \003(\t\022\020\n\010position\030"
-  "\003 \003(\001\022\020\n\010velocity\030\004 \003(\001\022\016\n\006effort\030\005 \003(\001\022"
-  "\017\n\007current\030\006 \003(\001\"\355\003\n\025JointCommandPrimiti"
-  "ve\0220\n\004meta\030\001 \001(\0132\".puppet.puppet_proto.P"
-  "rimitiveMeta\022I\n\004mode\030\002 \001(\0162;.puppet.pupp"
-  "et_proto.JointCommandPrimitive.JointComm"
-  "andMode\022\023\n\013joint_names\030\003 \003(\t\022\020\n\010position"
-  "\030\004 \003(\001\022\020\n\010velocity\030\005 \003(\001\022\016\n\006effort\030\006 \003(\001"
-  "\022\021\n\tstiffness\030\007 \003(\001\022\017\n\007damping\030\010 \003(\001\"\351\001\n"
-  "\020JointCommandMode\022\"\n\036JOINT_COMMAND_MODE_"
-  "UNSPECIFIED\020\000\022\037\n\033JOINT_COMMAND_MODE_POSI"
-  "TION\020\001\022\037\n\033JOINT_COMMAND_MODE_VELOCITY\020\002\022"
-  "\035\n\031JOINT_COMMAND_MODE_EFFORT\020\003\022(\n$JOINT_"
-  "COMMAND_MODE_POSITION_VELOCITY\020\004\022&\n\"JOIN"
-  "T_COMMAND_MODE_POSITION_EFFORT\020\005\"x\n\017Scal"
+  "t\022\023\n\013is_relative\030\003 \001(\010\022\025\n\rbody_frame_id\030"
+  "\004 \001(\t\022\032\n\022reference_frame_id\030\005 \001(\t\"\322\001\n\023Jo"
+  "intStatePrimitive\0220\n\004meta\030\001 \001(\0132\".puppet"
+  ".puppet_proto.PrimitiveMeta\022\023\n\013joint_nam"
+  "es\030\002 \003(\t\022\020\n\010position\030\003 \003(\001\022\020\n\010velocity\030\004"
+  " \003(\001\022\024\n\014acceleration\030\005 \003(\001\022\016\n\006effort\030\006 \003"
+  "(\001\022\017\n\007current\030\007 \003(\001\022\031\n\021is_relative_flags"
+  "\030\010 \001(\007\"\236\004\n\025JointCommandPrimitive\0220\n\004meta"
+  "\030\001 \001(\0132\".puppet.puppet_proto.PrimitiveMe"
+  "ta\022I\n\004mode\030\002 \001(\0162;.puppet.puppet_proto.J"
+  "ointCommandPrimitive.JointCommandMode\022\023\n"
+  "\013joint_names\030\003 \003(\t\022\020\n\010position\030\004 \003(\001\022\020\n\010"
+  "velocity\030\005 \003(\001\022\024\n\014acceleration\030\006 \003(\001\022\016\n\006"
+  "effort\030\007 \003(\001\022\021\n\tstiffness\030\010 \003(\001\022\017\n\007dampi"
+  "ng\030\t \003(\001\022\031\n\021is_relative_flags\030\n \001(\007\"\351\001\n\020"
+  "JointCommandMode\022\"\n\036JOINT_COMMAND_MODE_U"
+  "NSPECIFIED\020\000\022\037\n\033JOINT_COMMAND_MODE_POSIT"
+  "ION\020\001\022\037\n\033JOINT_COMMAND_MODE_VELOCITY\020\002\022\035"
+  "\n\031JOINT_COMMAND_MODE_EFFORT\020\003\022(\n$JOINT_C"
+  "OMMAND_MODE_POSITION_VELOCITY\020\004\022&\n\"JOINT"
+  "_COMMAND_MODE_POSITION_EFFORT\020\005\"\243\001\n\017Scal"
   "arPrimitive\0220\n\004meta\030\001 \001(\0132\".puppet.puppe"
   "t_proto.PrimitiveMeta\022\r\n\005value\030\002 \001(\001\022\021\n\t"
-  "min_value\030\003 \001(\001\022\021\n\tmax_value\030\004 \001(\001\"S\n\020Bo"
-  "oleanPrimitive\0220\n\004meta\030\001 \001(\0132\".puppet.pu"
-  "ppet_proto.PrimitiveMeta\022\r\n\005value\030\002 \001(\010\""
-  "u\n\rModePrimitive\0220\n\004meta\030\001 \001(\0132\".puppet."
-  "puppet_proto.PrimitiveMeta\022\021\n\tmode_name\030"
-  "\002 \001(\t\022\017\n\007mode_id\030\003 \001(\005\022\016\n\006sticky\030\004 \001(\010\"\211"
-  "\001\n\025PlanarMotionPrimitive\0220\n\004meta\030\001 \001(\0132\""
-  ".puppet.puppet_proto.PrimitiveMeta\022\n\n\002vx"
-  "\030\002 \001(\001\022\n\n\002vy\030\003 \001(\001\022\n\n\002wz\030\004 \001(\001\022\032\n\022refere"
-  "nce_frame_id\030\005 \001(\t\"p\n\rSkeletonJoint\022\014\n\004n"
-  "ame\030\001 \001(\t\022\024\n\014parent_index\030\002 \001(\005\022\'\n\004pose\030"
-  "\003 \001(\0132\031.puppet.puppet_proto.Pose\022\022\n\nconf"
-  "idence\030\004 \001(\002\"\254\001\n\021SkeletonPrimitive\0220\n\004me"
-  "ta\030\001 \001(\0132\".puppet.puppet_proto.Primitive"
-  "Meta\022\025\n\rskeleton_name\030\002 \001(\t\022\032\n\022reference"
-  "_frame_id\030\003 \001(\t\0222\n\006joints\030\004 \003(\0132\".puppet"
-  ".puppet_proto.SkeletonJoint\"n\n\010Landmark\022"
-  "\014\n\004name\030\001 \001(\t\022,\n\010position\030\002 \001(\0132\032.puppet"
-  ".puppet_proto.Point\022\022\n\nconfidence\030\003 \001(\002\022"
-  "\022\n\nvisibility\030\004 \001(\002\"\250\001\n\024LandmarkSetPrimi"
-  "tive\0220\n\004meta\030\001 \001(\0132\".puppet.puppet_proto"
-  ".PrimitiveMeta\022\020\n\010set_name\030\002 \001(\t\022\032\n\022refe"
-  "rence_frame_id\030\003 \001(\t\0220\n\tlandmarks\030\004 \003(\0132"
-  "\035.puppet.puppet_proto.Landmark\"\300\006\n\016Primi"
-  "tiveFrame\022+\n\006header\030\001 \001(\0132\033.puppet.puppe"
-  "t_proto.Header\0222\n\007context\030\002 \001(\0132!.puppet"
-  ".puppet_proto.FrameContext\022\023\n\013sequence_i"
-  "d\030\003 \001(\004\0221\n\005poses\030\n \003(\0132\".puppet.puppet_p"
-  "roto.PosePrimitive\0223\n\006twists\030\013 \003(\0132#.pup"
-  "pet.puppet_proto.TwistPrimitive\022>\n\014joint"
-  "_states\030\014 \003(\0132(.puppet.puppet_proto.Join"
-  "tStatePrimitive\022B\n\016joint_commands\030\r \003(\0132"
-  "*.puppet.puppet_proto.JointCommandPrimit"
-  "ive\0225\n\007scalars\030\016 \003(\0132$.puppet.puppet_pro"
-  "to.ScalarPrimitive\0227\n\010booleans\030\017 \003(\0132%.p"
-  "uppet.puppet_proto.BooleanPrimitive\0221\n\005m"
-  "odes\030\020 \003(\0132\".puppet.puppet_proto.ModePri"
-  "mitive\022B\n\016planar_motions\030\021 \003(\0132*.puppet."
-  "puppet_proto.PlanarMotionPrimitive\0229\n\tsk"
-  "eletons\030\022 \003(\0132&.puppet.puppet_proto.Skel"
-  "etonPrimitive\022@\n\rlandmark_sets\030\023 \003(\0132).p"
-  "uppet.puppet_proto.LandmarkSetPrimitive\022"
-  ";\n\004tags\030\036 \003(\0132-.puppet.puppet_proto.Prim"
-  "itiveFrame.TagsEntry\032+\n\tTagsEntry\022\013\n\003key"
-  "\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001b\006proto3"
+  "min_value\030\003 \001(\001\022\021\n\tmax_value\030\004 \001(\001\022\023\n\013sc"
+  "ale_value\030\005 \001(\001\022\024\n\014offset_value\030\006 \001(\001\"S\n"
+  "\020BooleanPrimitive\0220\n\004meta\030\001 \001(\0132\".puppet"
+  ".puppet_proto.PrimitiveMeta\022\r\n\005value\030\002 \001"
+  "(\010\"u\n\rModePrimitive\0220\n\004meta\030\001 \001(\0132\".pupp"
+  "et.puppet_proto.PrimitiveMeta\022\021\n\tmode_na"
+  "me\030\002 \001(\t\022\017\n\007mode_id\030\003 \001(\005\022\016\n\006sticky\030\004 \001("
+  "\010\"\211\001\n\025PlanarMotionPrimitive\0220\n\004meta\030\001 \001("
+  "\0132\".puppet.puppet_proto.PrimitiveMeta\022\n\n"
+  "\002vx\030\002 \001(\001\022\n\n\002vy\030\003 \001(\001\022\n\n\002wz\030\004 \001(\001\022\032\n\022ref"
+  "erence_frame_id\030\005 \001(\t\"p\n\rSkeletonJoint\022\014"
+  "\n\004name\030\001 \001(\t\022\024\n\014parent_index\030\002 \001(\005\022\'\n\004po"
+  "se\030\003 \001(\0132\031.puppet.puppet_proto.Pose\022\022\n\nc"
+  "onfidence\030\004 \001(\002\"\254\001\n\021SkeletonPrimitive\0220\n"
+  "\004meta\030\001 \001(\0132\".puppet.puppet_proto.Primit"
+  "iveMeta\022\025\n\rskeleton_name\030\002 \001(\t\022\032\n\022refere"
+  "nce_frame_id\030\003 \001(\t\0222\n\006joints\030\004 \003(\0132\".pup"
+  "pet.puppet_proto.SkeletonJoint\"n\n\010Landma"
+  "rk\022\014\n\004name\030\001 \001(\t\022,\n\010position\030\002 \001(\0132\032.pup"
+  "pet.puppet_proto.Point\022\022\n\nconfidence\030\003 \001"
+  "(\002\022\022\n\nvisibility\030\004 \001(\002\"\250\001\n\024LandmarkSetPr"
+  "imitive\0220\n\004meta\030\001 \001(\0132\".puppet.puppet_pr"
+  "oto.PrimitiveMeta\022\020\n\010set_name\030\002 \001(\t\022\032\n\022r"
+  "eference_frame_id\030\003 \001(\t\0220\n\tlandmarks\030\004 \003"
+  "(\0132\035.puppet.puppet_proto.Landmark\"\300\006\n\016Pr"
+  "imitiveFrame\022+\n\006header\030\001 \001(\0132\033.puppet.pu"
+  "ppet_proto.Header\0222\n\007context\030\002 \001(\0132!.pup"
+  "pet.puppet_proto.FrameContext\022\023\n\013sequenc"
+  "e_id\030\003 \001(\004\0221\n\005poses\030\n \003(\0132\".puppet.puppe"
+  "t_proto.PosePrimitive\0223\n\006twists\030\013 \003(\0132#."
+  "puppet.puppet_proto.TwistPrimitive\022>\n\014jo"
+  "int_states\030\014 \003(\0132(.puppet.puppet_proto.J"
+  "ointStatePrimitive\022B\n\016joint_commands\030\r \003"
+  "(\0132*.puppet.puppet_proto.JointCommandPri"
+  "mitive\0225\n\007scalars\030\016 \003(\0132$.puppet.puppet_"
+  "proto.ScalarPrimitive\0227\n\010booleans\030\017 \003(\0132"
+  "%.puppet.puppet_proto.BooleanPrimitive\0221"
+  "\n\005modes\030\020 \003(\0132\".puppet.puppet_proto.Mode"
+  "Primitive\022B\n\016planar_motions\030\021 \003(\0132*.pupp"
+  "et.puppet_proto.PlanarMotionPrimitive\0229\n"
+  "\tskeletons\030\022 \003(\0132&.puppet.puppet_proto.S"
+  "keletonPrimitive\022@\n\rlandmark_sets\030\023 \003(\0132"
+  ").puppet.puppet_proto.LandmarkSetPrimiti"
+  "ve\022;\n\004tags\030\036 \003(\0132-.puppet.puppet_proto.P"
+  "rimitiveFrame.TagsEntry\032+\n\tTagsEntry\022\013\n\003"
+  "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_puppet_2fprimitive_5fframe_2eproto_deps[2] = {
   &::descriptor_table_puppet_2fcommon_2eproto,
@@ -582,7 +593,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_pup
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_puppet_2fprimitive_5fframe_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_puppet_2fprimitive_5fframe_2eproto = {
-  false, false, descriptor_table_protodef_puppet_2fprimitive_5fframe_2eproto, "puppet/primitive_frame.proto", 2953,
+  false, false, descriptor_table_protodef_puppet_2fprimitive_5fframe_2eproto, "puppet/primitive_frame.proto", 3116,
   &descriptor_table_puppet_2fprimitive_5fframe_2eproto_once, descriptor_table_puppet_2fprimitive_5fframe_2eproto_sccs, descriptor_table_puppet_2fprimitive_5fframe_2eproto_deps, 14, 2,
   schemas, file_default_instances, TableStruct_puppet_2fprimitive_5fframe_2eproto::offsets,
   file_level_metadata_puppet_2fprimitive_5fframe_2eproto, 14, file_level_enum_descriptors_puppet_2fprimitive_5fframe_2eproto, file_level_service_descriptors_puppet_2fprimitive_5fframe_2eproto,
@@ -1010,6 +1021,7 @@ TwistPrimitive::TwistPrimitive(const TwistPrimitive& from)
   } else {
     twist_ = nullptr;
   }
+  is_relative_ = from.is_relative_;
   // @@protoc_insertion_point(copy_constructor:puppet.puppet_proto.TwistPrimitive)
 }
 
@@ -1019,8 +1031,8 @@ void TwistPrimitive::SharedCtor() {
   reference_frame_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
       reinterpret_cast<char*>(&meta_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&twist_) -
-      reinterpret_cast<char*>(&meta_)) + sizeof(twist_));
+      0, static_cast<size_t>(reinterpret_cast<char*>(&is_relative_) -
+      reinterpret_cast<char*>(&meta_)) + sizeof(is_relative_));
 }
 
 TwistPrimitive::~TwistPrimitive() {
@@ -1068,6 +1080,7 @@ void TwistPrimitive::Clear() {
     delete twist_;
   }
   twist_ = nullptr;
+  is_relative_ = false;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1092,18 +1105,25 @@ const char* TwistPrimitive::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // string body_frame_id = 3;
+      // bool is_relative = 3;
       case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
+          is_relative_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // string body_frame_id = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
           auto str = _internal_mutable_body_frame_id();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "puppet.puppet_proto.TwistPrimitive.body_frame_id"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // string reference_frame_id = 4;
-      case 4:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+      // string reference_frame_id = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
           auto str = _internal_mutable_reference_frame_id();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "puppet.puppet_proto.TwistPrimitive.reference_frame_id"));
@@ -1154,24 +1174,30 @@ failure:
         2, _Internal::twist(this), target, stream);
   }
 
-  // string body_frame_id = 3;
+  // bool is_relative = 3;
+  if (this->is_relative() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(3, this->_internal_is_relative(), target);
+  }
+
+  // string body_frame_id = 4;
   if (this->body_frame_id().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_body_frame_id().data(), static_cast<int>(this->_internal_body_frame_id().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "puppet.puppet_proto.TwistPrimitive.body_frame_id");
     target = stream->WriteStringMaybeAliased(
-        3, this->_internal_body_frame_id(), target);
+        4, this->_internal_body_frame_id(), target);
   }
 
-  // string reference_frame_id = 4;
+  // string reference_frame_id = 5;
   if (this->reference_frame_id().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_reference_frame_id().data(), static_cast<int>(this->_internal_reference_frame_id().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "puppet.puppet_proto.TwistPrimitive.reference_frame_id");
     target = stream->WriteStringMaybeAliased(
-        4, this->_internal_reference_frame_id(), target);
+        5, this->_internal_reference_frame_id(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1190,14 +1216,14 @@ size_t TwistPrimitive::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // string body_frame_id = 3;
+  // string body_frame_id = 4;
   if (this->body_frame_id().size() > 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_body_frame_id());
   }
 
-  // string reference_frame_id = 4;
+  // string reference_frame_id = 5;
   if (this->reference_frame_id().size() > 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
@@ -1216,6 +1242,11 @@ size_t TwistPrimitive::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *twist_);
+  }
+
+  // bool is_relative = 3;
+  if (this->is_relative() != 0) {
+    total_size += 1 + 1;
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1261,6 +1292,9 @@ void TwistPrimitive::MergeFrom(const TwistPrimitive& from) {
   if (from.has_twist()) {
     _internal_mutable_twist()->::puppet::puppet_proto::Twist::MergeFrom(from._internal_twist());
   }
+  if (from.is_relative() != 0) {
+    _internal_set_is_relative(from._internal_is_relative());
+  }
 }
 
 void TwistPrimitive::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -1287,8 +1321,8 @@ void TwistPrimitive::InternalSwap(TwistPrimitive* other) {
   body_frame_id_.Swap(&other->body_frame_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   reference_frame_id_.Swap(&other->reference_frame_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(TwistPrimitive, twist_)
-      + sizeof(TwistPrimitive::twist_)
+      PROTOBUF_FIELD_OFFSET(TwistPrimitive, is_relative_)
+      + sizeof(TwistPrimitive::is_relative_)
       - PROTOBUF_FIELD_OFFSET(TwistPrimitive, meta_)>(
           reinterpret_cast<char*>(&meta_),
           reinterpret_cast<char*>(&other->meta_));
@@ -1321,6 +1355,7 @@ JointStatePrimitive::JointStatePrimitive(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   joint_names_(arena),
   position_(arena),
   velocity_(arena),
+  acceleration_(arena),
   effort_(arena),
   current_(arena) {
   SharedCtor();
@@ -1332,6 +1367,7 @@ JointStatePrimitive::JointStatePrimitive(const JointStatePrimitive& from)
       joint_names_(from.joint_names_),
       position_(from.position_),
       velocity_(from.velocity_),
+      acceleration_(from.acceleration_),
       effort_(from.effort_),
       current_(from.current_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -1340,12 +1376,16 @@ JointStatePrimitive::JointStatePrimitive(const JointStatePrimitive& from)
   } else {
     meta_ = nullptr;
   }
+  is_relative_flags_ = from.is_relative_flags_;
   // @@protoc_insertion_point(copy_constructor:puppet.puppet_proto.JointStatePrimitive)
 }
 
 void JointStatePrimitive::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_JointStatePrimitive_puppet_2fprimitive_5fframe_2eproto.base);
-  meta_ = nullptr;
+  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+      reinterpret_cast<char*>(&meta_) - reinterpret_cast<char*>(this)),
+      0, static_cast<size_t>(reinterpret_cast<char*>(&is_relative_flags_) -
+      reinterpret_cast<char*>(&meta_)) + sizeof(is_relative_flags_));
 }
 
 JointStatePrimitive::~JointStatePrimitive() {
@@ -1383,12 +1423,14 @@ void JointStatePrimitive::Clear() {
   joint_names_.Clear();
   position_.Clear();
   velocity_.Clear();
+  acceleration_.Clear();
   effort_.Clear();
   current_.Clear();
   if (GetArena() == nullptr && meta_ != nullptr) {
     delete meta_;
   }
   meta_ = nullptr;
+  is_relative_flags_ = 0u;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1440,24 +1482,41 @@ const char* JointStatePrimitive::_InternalParse(const char* ptr, ::PROTOBUF_NAME
           ptr += sizeof(double);
         } else goto handle_unusual;
         continue;
-      // repeated double effort = 5;
+      // repeated double acceleration = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_effort(), ptr, ctx);
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_acceleration(), ptr, ctx);
           CHK_(ptr);
         } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 41) {
+          _internal_add_acceleration(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // repeated double effort = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_effort(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 49) {
           _internal_add_effort(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
           ptr += sizeof(double);
         } else goto handle_unusual;
         continue;
-      // repeated double current = 6;
-      case 6:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
+      // repeated double current = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_current(), ptr, ctx);
           CHK_(ptr);
-        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 49) {
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 57) {
           _internal_add_current(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
           ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // fixed32 is_relative_flags = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 69)) {
+          is_relative_flags_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint32>(ptr);
+          ptr += sizeof(::PROTOBUF_NAMESPACE_ID::uint32);
         } else goto handle_unusual;
         continue;
       default: {
@@ -1516,14 +1575,25 @@ failure:
     target = stream->WriteFixedPacked(4, _internal_velocity(), target);
   }
 
-  // repeated double effort = 5;
-  if (this->_internal_effort_size() > 0) {
-    target = stream->WriteFixedPacked(5, _internal_effort(), target);
+  // repeated double acceleration = 5;
+  if (this->_internal_acceleration_size() > 0) {
+    target = stream->WriteFixedPacked(5, _internal_acceleration(), target);
   }
 
-  // repeated double current = 6;
+  // repeated double effort = 6;
+  if (this->_internal_effort_size() > 0) {
+    target = stream->WriteFixedPacked(6, _internal_effort(), target);
+  }
+
+  // repeated double current = 7;
   if (this->_internal_current_size() > 0) {
-    target = stream->WriteFixedPacked(6, _internal_current(), target);
+    target = stream->WriteFixedPacked(7, _internal_current(), target);
+  }
+
+  // fixed32 is_relative_flags = 8;
+  if (this->is_relative_flags() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFixed32ToArray(8, this->_internal_is_relative_flags(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1580,7 +1650,22 @@ size_t JointStatePrimitive::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // repeated double effort = 5;
+  // repeated double acceleration = 5;
+  {
+    unsigned int count = static_cast<unsigned int>(this->_internal_acceleration_size());
+    size_t data_size = 8UL * count;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _acceleration_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // repeated double effort = 6;
   {
     unsigned int count = static_cast<unsigned int>(this->_internal_effort_size());
     size_t data_size = 8UL * count;
@@ -1595,7 +1680,7 @@ size_t JointStatePrimitive::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // repeated double current = 6;
+  // repeated double current = 7;
   {
     unsigned int count = static_cast<unsigned int>(this->_internal_current_size());
     size_t data_size = 8UL * count;
@@ -1615,6 +1700,11 @@ size_t JointStatePrimitive::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *meta_);
+  }
+
+  // fixed32 is_relative_flags = 8;
+  if (this->is_relative_flags() != 0) {
+    total_size += 1 + 4;
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1651,10 +1741,14 @@ void JointStatePrimitive::MergeFrom(const JointStatePrimitive& from) {
   joint_names_.MergeFrom(from.joint_names_);
   position_.MergeFrom(from.position_);
   velocity_.MergeFrom(from.velocity_);
+  acceleration_.MergeFrom(from.acceleration_);
   effort_.MergeFrom(from.effort_);
   current_.MergeFrom(from.current_);
   if (from.has_meta()) {
     _internal_mutable_meta()->::puppet::puppet_proto::PrimitiveMeta::MergeFrom(from._internal_meta());
+  }
+  if (from.is_relative_flags() != 0) {
+    _internal_set_is_relative_flags(from._internal_is_relative_flags());
   }
 }
 
@@ -1682,9 +1776,15 @@ void JointStatePrimitive::InternalSwap(JointStatePrimitive* other) {
   joint_names_.InternalSwap(&other->joint_names_);
   position_.InternalSwap(&other->position_);
   velocity_.InternalSwap(&other->velocity_);
+  acceleration_.InternalSwap(&other->acceleration_);
   effort_.InternalSwap(&other->effort_);
   current_.InternalSwap(&other->current_);
-  swap(meta_, other->meta_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(JointStatePrimitive, is_relative_flags_)
+      + sizeof(JointStatePrimitive::is_relative_flags_)
+      - PROTOBUF_FIELD_OFFSET(JointStatePrimitive, meta_)>(
+          reinterpret_cast<char*>(&meta_),
+          reinterpret_cast<char*>(&other->meta_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata JointStatePrimitive::GetMetadata() const {
@@ -1714,6 +1814,7 @@ JointCommandPrimitive::JointCommandPrimitive(::PROTOBUF_NAMESPACE_ID::Arena* are
   joint_names_(arena),
   position_(arena),
   velocity_(arena),
+  acceleration_(arena),
   effort_(arena),
   stiffness_(arena),
   damping_(arena) {
@@ -1726,6 +1827,7 @@ JointCommandPrimitive::JointCommandPrimitive(const JointCommandPrimitive& from)
       joint_names_(from.joint_names_),
       position_(from.position_),
       velocity_(from.velocity_),
+      acceleration_(from.acceleration_),
       effort_(from.effort_),
       stiffness_(from.stiffness_),
       damping_(from.damping_) {
@@ -1735,7 +1837,9 @@ JointCommandPrimitive::JointCommandPrimitive(const JointCommandPrimitive& from)
   } else {
     meta_ = nullptr;
   }
-  mode_ = from.mode_;
+  ::memcpy(&mode_, &from.mode_,
+    static_cast<size_t>(reinterpret_cast<char*>(&is_relative_flags_) -
+    reinterpret_cast<char*>(&mode_)) + sizeof(is_relative_flags_));
   // @@protoc_insertion_point(copy_constructor:puppet.puppet_proto.JointCommandPrimitive)
 }
 
@@ -1743,8 +1847,8 @@ void JointCommandPrimitive::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_JointCommandPrimitive_puppet_2fprimitive_5fframe_2eproto.base);
   ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
       reinterpret_cast<char*>(&meta_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&mode_) -
-      reinterpret_cast<char*>(&meta_)) + sizeof(mode_));
+      0, static_cast<size_t>(reinterpret_cast<char*>(&is_relative_flags_) -
+      reinterpret_cast<char*>(&meta_)) + sizeof(is_relative_flags_));
 }
 
 JointCommandPrimitive::~JointCommandPrimitive() {
@@ -1782,6 +1886,7 @@ void JointCommandPrimitive::Clear() {
   joint_names_.Clear();
   position_.Clear();
   velocity_.Clear();
+  acceleration_.Clear();
   effort_.Clear();
   stiffness_.Clear();
   damping_.Clear();
@@ -1789,7 +1894,9 @@ void JointCommandPrimitive::Clear() {
     delete meta_;
   }
   meta_ = nullptr;
-  mode_ = 0;
+  ::memset(&mode_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&is_relative_flags_) -
+      reinterpret_cast<char*>(&mode_)) + sizeof(is_relative_flags_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1849,34 +1956,51 @@ const char* JointCommandPrimitive::_InternalParse(const char* ptr, ::PROTOBUF_NA
           ptr += sizeof(double);
         } else goto handle_unusual;
         continue;
-      // repeated double effort = 6;
+      // repeated double acceleration = 6;
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_effort(), ptr, ctx);
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_acceleration(), ptr, ctx);
           CHK_(ptr);
         } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 49) {
+          _internal_add_acceleration(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // repeated double effort = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_effort(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 57) {
           _internal_add_effort(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
           ptr += sizeof(double);
         } else goto handle_unusual;
         continue;
-      // repeated double stiffness = 7;
-      case 7:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+      // repeated double stiffness = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_stiffness(), ptr, ctx);
           CHK_(ptr);
-        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 57) {
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 65) {
           _internal_add_stiffness(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
           ptr += sizeof(double);
         } else goto handle_unusual;
         continue;
-      // repeated double damping = 8;
-      case 8:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+      // repeated double damping = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 74)) {
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_damping(), ptr, ctx);
           CHK_(ptr);
-        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 65) {
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 73) {
           _internal_add_damping(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
           ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // fixed32 is_relative_flags = 10;
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 85)) {
+          is_relative_flags_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint32>(ptr);
+          ptr += sizeof(::PROTOBUF_NAMESPACE_ID::uint32);
         } else goto handle_unusual;
         continue;
       default: {
@@ -1942,19 +2066,30 @@ failure:
     target = stream->WriteFixedPacked(5, _internal_velocity(), target);
   }
 
-  // repeated double effort = 6;
+  // repeated double acceleration = 6;
+  if (this->_internal_acceleration_size() > 0) {
+    target = stream->WriteFixedPacked(6, _internal_acceleration(), target);
+  }
+
+  // repeated double effort = 7;
   if (this->_internal_effort_size() > 0) {
-    target = stream->WriteFixedPacked(6, _internal_effort(), target);
+    target = stream->WriteFixedPacked(7, _internal_effort(), target);
   }
 
-  // repeated double stiffness = 7;
+  // repeated double stiffness = 8;
   if (this->_internal_stiffness_size() > 0) {
-    target = stream->WriteFixedPacked(7, _internal_stiffness(), target);
+    target = stream->WriteFixedPacked(8, _internal_stiffness(), target);
   }
 
-  // repeated double damping = 8;
+  // repeated double damping = 9;
   if (this->_internal_damping_size() > 0) {
-    target = stream->WriteFixedPacked(8, _internal_damping(), target);
+    target = stream->WriteFixedPacked(9, _internal_damping(), target);
+  }
+
+  // fixed32 is_relative_flags = 10;
+  if (this->is_relative_flags() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFixed32ToArray(10, this->_internal_is_relative_flags(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2011,7 +2146,22 @@ size_t JointCommandPrimitive::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // repeated double effort = 6;
+  // repeated double acceleration = 6;
+  {
+    unsigned int count = static_cast<unsigned int>(this->_internal_acceleration_size());
+    size_t data_size = 8UL * count;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
+    }
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
+    _acceleration_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // repeated double effort = 7;
   {
     unsigned int count = static_cast<unsigned int>(this->_internal_effort_size());
     size_t data_size = 8UL * count;
@@ -2026,7 +2176,7 @@ size_t JointCommandPrimitive::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // repeated double stiffness = 7;
+  // repeated double stiffness = 8;
   {
     unsigned int count = static_cast<unsigned int>(this->_internal_stiffness_size());
     size_t data_size = 8UL * count;
@@ -2041,7 +2191,7 @@ size_t JointCommandPrimitive::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // repeated double damping = 8;
+  // repeated double damping = 9;
   {
     unsigned int count = static_cast<unsigned int>(this->_internal_damping_size());
     size_t data_size = 8UL * count;
@@ -2067,6 +2217,11 @@ size_t JointCommandPrimitive::ByteSizeLong() const {
   if (this->mode() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_mode());
+  }
+
+  // fixed32 is_relative_flags = 10;
+  if (this->is_relative_flags() != 0) {
+    total_size += 1 + 4;
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2103,6 +2258,7 @@ void JointCommandPrimitive::MergeFrom(const JointCommandPrimitive& from) {
   joint_names_.MergeFrom(from.joint_names_);
   position_.MergeFrom(from.position_);
   velocity_.MergeFrom(from.velocity_);
+  acceleration_.MergeFrom(from.acceleration_);
   effort_.MergeFrom(from.effort_);
   stiffness_.MergeFrom(from.stiffness_);
   damping_.MergeFrom(from.damping_);
@@ -2111,6 +2267,9 @@ void JointCommandPrimitive::MergeFrom(const JointCommandPrimitive& from) {
   }
   if (from.mode() != 0) {
     _internal_set_mode(from._internal_mode());
+  }
+  if (from.is_relative_flags() != 0) {
+    _internal_set_is_relative_flags(from._internal_is_relative_flags());
   }
 }
 
@@ -2138,12 +2297,13 @@ void JointCommandPrimitive::InternalSwap(JointCommandPrimitive* other) {
   joint_names_.InternalSwap(&other->joint_names_);
   position_.InternalSwap(&other->position_);
   velocity_.InternalSwap(&other->velocity_);
+  acceleration_.InternalSwap(&other->acceleration_);
   effort_.InternalSwap(&other->effort_);
   stiffness_.InternalSwap(&other->stiffness_);
   damping_.InternalSwap(&other->damping_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(JointCommandPrimitive, mode_)
-      + sizeof(JointCommandPrimitive::mode_)
+      PROTOBUF_FIELD_OFFSET(JointCommandPrimitive, is_relative_flags_)
+      + sizeof(JointCommandPrimitive::is_relative_flags_)
       - PROTOBUF_FIELD_OFFSET(JointCommandPrimitive, meta_)>(
           reinterpret_cast<char*>(&meta_),
           reinterpret_cast<char*>(&other->meta_));
@@ -2186,8 +2346,8 @@ ScalarPrimitive::ScalarPrimitive(const ScalarPrimitive& from)
     meta_ = nullptr;
   }
   ::memcpy(&value_, &from.value_,
-    static_cast<size_t>(reinterpret_cast<char*>(&max_value_) -
-    reinterpret_cast<char*>(&value_)) + sizeof(max_value_));
+    static_cast<size_t>(reinterpret_cast<char*>(&offset_value_) -
+    reinterpret_cast<char*>(&value_)) + sizeof(offset_value_));
   // @@protoc_insertion_point(copy_constructor:puppet.puppet_proto.ScalarPrimitive)
 }
 
@@ -2195,8 +2355,8 @@ void ScalarPrimitive::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ScalarPrimitive_puppet_2fprimitive_5fframe_2eproto.base);
   ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
       reinterpret_cast<char*>(&meta_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&max_value_) -
-      reinterpret_cast<char*>(&meta_)) + sizeof(max_value_));
+      0, static_cast<size_t>(reinterpret_cast<char*>(&offset_value_) -
+      reinterpret_cast<char*>(&meta_)) + sizeof(offset_value_));
 }
 
 ScalarPrimitive::~ScalarPrimitive() {
@@ -2236,8 +2396,8 @@ void ScalarPrimitive::Clear() {
   }
   meta_ = nullptr;
   ::memset(&value_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&max_value_) -
-      reinterpret_cast<char*>(&value_)) + sizeof(max_value_));
+      reinterpret_cast<char*>(&offset_value_) -
+      reinterpret_cast<char*>(&value_)) + sizeof(offset_value_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2273,6 +2433,20 @@ const char* ScalarPrimitive::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPAC
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 33)) {
           max_value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // double scale_value = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 41)) {
+          scale_value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // double offset_value = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 49)) {
+          offset_value_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
           ptr += sizeof(double);
         } else goto handle_unusual;
         continue;
@@ -2330,6 +2504,18 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(4, this->_internal_max_value(), target);
   }
 
+  // double scale_value = 5;
+  if (!(this->scale_value() <= 0 && this->scale_value() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(5, this->_internal_scale_value(), target);
+  }
+
+  // double offset_value = 6;
+  if (!(this->offset_value() <= 0 && this->offset_value() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(6, this->_internal_offset_value(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -2365,6 +2551,16 @@ size_t ScalarPrimitive::ByteSizeLong() const {
 
   // double max_value = 4;
   if (!(this->max_value() <= 0 && this->max_value() >= 0)) {
+    total_size += 1 + 8;
+  }
+
+  // double scale_value = 5;
+  if (!(this->scale_value() <= 0 && this->scale_value() >= 0)) {
+    total_size += 1 + 8;
+  }
+
+  // double offset_value = 6;
+  if (!(this->offset_value() <= 0 && this->offset_value() >= 0)) {
     total_size += 1 + 8;
   }
 
@@ -2411,6 +2607,12 @@ void ScalarPrimitive::MergeFrom(const ScalarPrimitive& from) {
   if (!(from.max_value() <= 0 && from.max_value() >= 0)) {
     _internal_set_max_value(from._internal_max_value());
   }
+  if (!(from.scale_value() <= 0 && from.scale_value() >= 0)) {
+    _internal_set_scale_value(from._internal_scale_value());
+  }
+  if (!(from.offset_value() <= 0 && from.offset_value() >= 0)) {
+    _internal_set_offset_value(from._internal_offset_value());
+  }
 }
 
 void ScalarPrimitive::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -2435,8 +2637,8 @@ void ScalarPrimitive::InternalSwap(ScalarPrimitive* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(ScalarPrimitive, max_value_)
-      + sizeof(ScalarPrimitive::max_value_)
+      PROTOBUF_FIELD_OFFSET(ScalarPrimitive, offset_value_)
+      + sizeof(ScalarPrimitive::offset_value_)
       - PROTOBUF_FIELD_OFFSET(ScalarPrimitive, meta_)>(
           reinterpret_cast<char*>(&meta_),
           reinterpret_cast<char*>(&other->meta_));

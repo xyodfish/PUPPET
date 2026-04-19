@@ -46,7 +46,7 @@ if(puppet_proto_FOUND AND EXISTS "${EMBOSA_INCLUDE_DIR}/embosa.hpp" AND EXISTS "
     teleop_runtime_embosa_main.cpp
     ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/embosa_runtime_config.cpp
     ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/embosa_runtime_channel.cpp
-    ${CMAKE_SOURCE_DIR}/src/puppet/config/puppet_config.cpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/puppet/config/puppet_config.cpp
     ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/time_utils.cpp
     ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/runtime_state_report.cpp
     ${CMAKE_SOURCE_DIR}/src/cpp/puppet/runtime/puppet_manager.cpp

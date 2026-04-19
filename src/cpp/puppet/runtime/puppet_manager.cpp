@@ -99,7 +99,7 @@ namespace puppet::runtime {
             return true;
         }
 
-        runtime_->sourceManager()->ingestFrame(frame);
+        runtime_->sourceManager()->captureFrame(frame);
         if (!runtime_->runOnce(error)) {
             report_->recordRunOnceFailure(error);
             LOG(ERROR) << "PuppetManager runOnce failed: " << error;

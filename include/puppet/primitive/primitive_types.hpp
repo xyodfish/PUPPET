@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -19,6 +20,7 @@ namespace puppet::model {
     struct TwistPrimitive {
         PrimitiveMeta meta;
         Twist twist;
+        bool isRelative = false;
         std::string bodyFrameId;
         std::string referenceFrameId;
     };
@@ -28,8 +30,10 @@ namespace puppet::model {
         std::vector<std::string> jointNames;
         std::vector<double> position;
         std::vector<double> velocity;
+        std::vector<double> acceleration;
         std::vector<double> effort;
         std::vector<double> current;
+        std::array<bool, 5> isRelatived;  // pos vel acc eff cur isRelative size = 5
     };
 
     enum class JointCommandMode {
@@ -47,16 +51,20 @@ namespace puppet::model {
         std::vector<std::string> jointNames;
         std::vector<double> position;
         std::vector<double> velocity;
+        std::vector<double> acceleration;
         std::vector<double> effort;
         std::vector<double> stiffness;
         std::vector<double> damping;
+        std::array<bool, 5> isRelatived;  // pos vel acc eff cur isRelative size = 5
     };
 
     struct ScalarPrimitive {
         PrimitiveMeta meta;
-        double value    = 0.0;
-        double minValue = 0.0;
-        double maxValue = 0.0;
+        double value       = 0.0;
+        double minValue    = 0.0;
+        double maxValue    = 0.0;
+        double scaleValue  = 1.0;
+        double offsetValue = 0.0;
     };
 
     struct BooleanPrimitive {

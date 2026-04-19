@@ -95,7 +95,7 @@ namespace {
         } else {
             left_z += edge * ((phase - 0.75) / 0.25);
         }
-        const double left_yaw = 0.12 * (2.0 * squareWaveUnit(phase) - 1.0);
+        const double left_yaw = 0.5 * (2.0 * squareWaveUnit(phase) - 1.0);
 
         auto* left_pose = frame->add_poses();
         left_pose->mutable_meta()->set_name("left_wrist_pose_demo");

@@ -16,7 +16,7 @@ namespace puppet::source {
         }
     }
 
-    void SourceManager::ingestFrame(const model::PrimitiveFrame& frame) {
+    void SourceManager::captureFrame(const model::PrimitiveFrame& frame) {
         auto stateIt = states_.find(frame.context.sourceId);
         if (stateIt == states_.end()) {
             static std::atomic<uint64_t> unknownSourceCount{0};

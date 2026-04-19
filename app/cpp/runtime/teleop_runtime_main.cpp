@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     }
 
     for (uint64_t i = 1; i <= 50; ++i) {
-        runtime.sourceManager()->ingestFrame(buildMockFrame(i, humanBodies));
+        runtime.sourceManager()->captureFrame(buildMockFrame(i, humanBodies));
         if (!runtime.runOnce(error)) {
             std::cerr << "runOnce failed: " << error << std::endl;
             return 2;

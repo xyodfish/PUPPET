@@ -50,7 +50,7 @@ message FrameContext {
 message PrimitiveMeta {
   string name = 1;          // Primitive 名称，如 left_wrist_pose。
   string entity = 2;        // 控制实体名，如 left_hand、head、base。
-  BodyGroup body_group = 3; // 归属身体分组。
+  BodyGroup body_group = 3; // 归属身体分组。  在使用 CUSTOM 时，强制要求填写 [PrimitiveMeta.name]
   string frame_id = 4;      // 当前数据坐标系。
   string reference_frame_id = 5; // 参考坐标系（用于相对表达）。
   Timestamp timestamp = 6;       // Primitive 生效时间。
