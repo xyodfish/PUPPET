@@ -23,6 +23,22 @@ find_package(glfw3 QUIET)
 
 set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+# Use full paths for EMBOSA libraries to avoid version conflicts
+set(EMBOSA_LIBRARIES
+    embosa
+    fastcdr
+    fastrtps
+    foonathan_memory-0.7.3
+    ssl
+    crypto
+    tinyxml2
+    spdlog
+    protobuf
+    z
+    rt
+    dl
+    boost_thread)
+
 if(EXISTS "${EMBOSA_INCLUDE_DIR}/embosa.hpp")
   set(EMBOSA_INCLUDE_OK TRUE)
 else()
@@ -49,22 +65,7 @@ if(NOT MUJOCO_LIBRARY OR MUJOCO_LIBRARY STREQUAL "MUJOCO_LIBRARY-NOTFOUND")
   endif()
 endif()
 
-set(EMBOSA_LIBRARIES
-    embosa
-    fastcdr
-    fastrtps
-    foonathan_memory-0.7.3
-    ssl
-    crypto
-    tinyxml2
-    spdlog
-    protobuf
-    z
-    rt
-    dl
-    boost_thread)
-
-if(puppet_proto_FOUND AND MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY AND EMBOSA_INCLUDE_OK AND EMBOSA_LIBDIR_OK)
+if(MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY)
   add_executable(retargeting_mujoco_visualizer
     retargeting_mujoco_visualizer.cpp)
 
@@ -81,11 +82,8 @@ if(puppet_proto_FOUND AND MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY AND EMBOSA_INCLU
   target_link_libraries(retargeting_mujoco_visualizer
     PRIVATE
       puppet_cpp_core
-      puppet_proto::puppet_proto
-      yaml-cpp
       ${MUJOCO_LIBRARY}
-      ${EMBOSA_LIBRARIES}
-      pthread)
+      )
 
   if(glfw3_FOUND)
     target_link_libraries(retargeting_mujoco_visualizer PRIVATE glfw)

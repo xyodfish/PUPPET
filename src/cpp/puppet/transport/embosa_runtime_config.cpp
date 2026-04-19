@@ -1,4 +1,4 @@
-#include "puppet/runtime/embosa_runtime_config.hpp"
+#include "puppet/transport/embosa_runtime_config.hpp"
 
 #include <filesystem>
 #include <utility>

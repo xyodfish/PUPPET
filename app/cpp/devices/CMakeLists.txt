@@ -1,5 +1,4 @@
 # Device-specific executable targets.
-
 if (NOT ARCH_FREFIX)
   set(ARCH_FREFIX "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
 endif()
@@ -15,6 +14,7 @@ list(APPEND CMAKE_PREFIX_PATH "${PUPPET_DEFAULT_DEVEL_PREFIX}")
 find_package(puppet_proto CONFIG QUIET)
 set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+# Use full paths for EMBOSA libraries to avoid version conflicts
 set(EMBOSA_LIBRARIES
     embosa
     fastcdr
@@ -30,31 +30,20 @@ set(EMBOSA_LIBRARIES
     dl
     boost_thread)
 
-if(puppet_proto_FOUND AND EXISTS "${EMBOSA_INCLUDE_DIR}/embosa.hpp" AND EXISTS "${EMBOSA_LIBRARY_DIR}")
-  add_executable(static_file_replay_device
-    static_file_replay_device.cpp)
+add_executable(static_file_replay_device
+  static_file_replay_device.cpp)
+target_include_directories(static_file_replay_device
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${EMBOSA_INCLUDE_DIR})
+target_link_directories(static_file_replay_device
+  PRIVATE
+    ${EMBOSA_LIBRARY_DIR})
+target_link_libraries(static_file_replay_device
+  PRIVATE
+    puppet_cpp_core)
+set_target_properties(static_file_replay_device
+  PROPERTIES
+    BUILD_RPATH "${EMBOSA_LIBRARY_DIR}"
+    INSTALL_RPATH "${EMBOSA_LIBRARY_DIR}")
 
-  target_include_directories(static_file_replay_device
-    PRIVATE
-      ${CMAKE_SOURCE_DIR}/include
-      ${EMBOSA_INCLUDE_DIR})
-
-  target_link_directories(static_file_replay_device
-    PRIVATE
-      ${EMBOSA_LIBRARY_DIR})
-
-  target_link_libraries(static_file_replay_device
-    PRIVATE
-      puppet_cpp_core
-      puppet_proto::puppet_proto
-      yaml-cpp
-      ${EMBOSA_LIBRARIES}
-      pthread)
-
-  set_target_properties(static_file_replay_device
-    PROPERTIES
-      BUILD_RPATH "${EMBOSA_LIBRARY_DIR}"
-      INSTALL_RPATH "${EMBOSA_LIBRARY_DIR}")
-else()
-  message(WARNING "Skip static_file_replay_device: puppet_proto or embosa dependency not found")
-endif()

@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "puppet/primitive/primitive_types.hpp"
-#include "puppet/runtime/message_snapshot.hpp"
 #include "puppet/runtime/runtime_config.hpp"
+#include "puppet/transport/message_snapshot.hpp"
 
 namespace puppet::source {
 

@@ -4,10 +4,10 @@
 #include <string>
 
 #include "puppet/config/puppet_config.hpp"
-#include "puppet/runtime/embosa_runtime_channel.hpp"
 #include "puppet/runtime/robot_state_sync.hpp"
 #include "puppet/runtime/runtime_state_report.hpp"
 #include "puppet/runtime/teleop_runtime.hpp"
+#include "puppet/transport/embosa_runtime_channel.hpp"
 
 namespace puppet::runtime {
 

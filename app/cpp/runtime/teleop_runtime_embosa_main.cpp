@@ -4,7 +4,7 @@
 #include <glog/logging.h>
 #include <spdlog/spdlog.h>
 
-#include "puppet/runtime/puppet_manager.hpp"
+#include "puppet/core/puppet_manager.hpp"
 
 int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);

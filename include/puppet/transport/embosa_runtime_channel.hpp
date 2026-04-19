@@ -16,7 +16,7 @@
 #include "puppet/control_intent.pb.h"
 #include "puppet/primitive/primitive_types.hpp"
 #include "puppet/primitive_frame.pb.h"
-#include "puppet/runtime/embosa_runtime_config.hpp"
+#include "puppet/transport/embosa_runtime_config.hpp"
 
 namespace puppet::runtime {
 

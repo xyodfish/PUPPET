@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <string>
 
-#include "puppet/runtime/embosa_runtime_channel.hpp"
 #include "puppet/runtime/teleop_runtime.hpp"
+#include "puppet/transport/embosa_runtime_channel.hpp"
 
 namespace puppet::runtime {
 

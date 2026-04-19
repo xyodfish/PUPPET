@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "puppet/runtime/embosa_runtime_config.hpp"
 #include "puppet/runtime/runtime_config.hpp"
+#include "puppet/transport/embosa_runtime_config.hpp"
 
 namespace puppet::runtime {
 

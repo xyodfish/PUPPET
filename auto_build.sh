@@ -16,13 +16,8 @@ help_function() {
   --cmake-install-dir 指定 proto 的 CMake package 安装相对目录
                      （默认: lib/cmake/puppet_proto）
   -j, --jobs N     并行编译线程数（默认: nproc）
-  --clean          构建前清理 build 与 proto/build（全量清理）
-  --no-clean-proto 禁用 proto 构建时的自动清理（用于快速迭代调试）
+  --clean          构建前清理 build 与 proto/build
   -h, --help       显示帮助
-
-说明:
-  - Proto 构建时会自动清理 proto/build 目录，确保生成文件版本一致
-  - 如需禁用此行为（快速调试），可使用 --no-clean-proto 选项
 
 示例:
   ./auto_build.sh
@@ -31,14 +26,12 @@ help_function() {
   ./auto_build.sh --proto-only --cmake-install-dir lib/cmake/puppet_proto_v2
   ./auto_build.sh --main-only -j 12
   ./auto_build.sh --clean --proto
-  ./auto_build.sh --proto-only --no-clean-proto  # 快速调试，不清理
 EOF
 }
 
 CURRENT_DIR="$(cd "$(dirname "$0")" && pwd)"
 JOBS="$(nproc)"
 CLEAN_FIRST=false
-CLEAN_PROTO=true  # 默认启用 proto 自动清理
 BUILD_MAIN=true
 BUILD_PROTO=true
 INSTALL_PROTO=false
@@ -100,10 +93,6 @@ while [[ $# -gt 0 ]]; do
       CLEAN_FIRST=true
       shift
       ;;
-    --no-clean-proto)
-      CLEAN_PROTO=false
-      shift
-      ;;
     -h|--help)
       help_function
       exit 0
@@ -129,14 +118,6 @@ build_main() {
 }
 
 build_proto() {
-  # 默认清理 proto/build 目录，确保生成文件版本一致
-  if [[ "${CLEAN_PROTO}" == "true" ]]; then
-    echo "[auto_build] cleaning proto/build directory to ensure consistency..."
-    rm -rf "${CURRENT_DIR}/proto/build"
-  else
-    echo "[auto_build] skipping proto/build cleanup (fast mode)"
-  fi
-  
   echo "[auto_build] configure proto project..."
   effectiveProtoCmakeInstallDir="${PROTO_CMAKE_INSTALL_DIR:-${DEFAULT_PROTO_CMAKE_INSTALL_DIR}}"
   cmakeArgs=(-S "${CURRENT_DIR}/proto" -B "${CURRENT_DIR}/proto/build")
@@ -151,7 +132,7 @@ build_proto() {
   fi
 }
 
-echo "[auto_build] settings: BUILD_MAIN=${BUILD_MAIN}, BUILD_PROTO=${BUILD_PROTO}, INSTALL_PROTO=${INSTALL_PROTO}, INSTALL_PREFIX=${INSTALL_PREFIX}, PROTO_CMAKE_INSTALL_DIR=${PROTO_CMAKE_INSTALL_DIR:-${DEFAULT_PROTO_CMAKE_INSTALL_DIR}}, JOBS=${JOBS}, CLEAN_PROTO=${CLEAN_PROTO}"
+echo "[auto_build] settings: BUILD_MAIN=${BUILD_MAIN}, BUILD_PROTO=${BUILD_PROTO}, INSTALL_PROTO=${INSTALL_PROTO}, INSTALL_PREFIX=${INSTALL_PREFIX}, PROTO_CMAKE_INSTALL_DIR=${PROTO_CMAKE_INSTALL_DIR:-${DEFAULT_PROTO_CMAKE_INSTALL_DIR}}, JOBS=${JOBS}"
 
 if [[ "${BUILD_MAIN}" == "true" ]]; then
   build_main

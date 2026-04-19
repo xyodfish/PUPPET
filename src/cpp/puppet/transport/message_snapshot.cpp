@@ -1,4 +1,4 @@
-#include "puppet/runtime/message_snapshot.hpp"
+#include "puppet/transport/message_snapshot.hpp"
 
 namespace puppet::runtime {
     namespace {

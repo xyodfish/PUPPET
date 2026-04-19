@@ -6,21 +6,67 @@ find_package(Eigen3 REQUIRED)
 find_package(qpOASES REQUIRED)
 find_package(pinocchio REQUIRED)
 find_package(glog REQUIRED)
+find_package(puppet_proto CONFIG QUIET)
+
+
+set(PUPPET_REPO_ROOT ${CMAKE_SOURCE_DIR})
+set(PUPPET_DEFAULT_DEVEL_PREFIX
+    "${PUPPET_REPO_ROOT}/devel/${CMAKE_SYSTEM_PROCESSOR}-Linux-GNU-${CMAKE_CXX_COMPILER_VERSION}")
+list(APPEND CMAKE_PREFIX_PATH "${PUPPET_DEFAULT_DEVEL_PREFIX}")
+
+if (NOT ARCH_FREFIX)
+  set(ARCH_FREFIX "${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_SYSTEM_NAME}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
+endif()
+
+if (NOT ROOT_DEVEL_ARCH_PATH)
+  set(ROOT_DEVEL_ARCH_PATH "/opt/robot/devel/${ARCH_FREFIX}")
+endif()
+
+set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
+set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+
+message(STATUS "EMBOSA_INCLUDE_DIR: ${EMBOSA_INCLUDE_DIR}")
+message(STATUS "EMBOSA_LIBRARY_DIR: ${EMBOSA_LIBRARY_DIR}")
+
+# 使用完整路径确保链接正确版本的 embosa 核心库
+# 其他依赖库使用名称,由链接器在 EMBOSA_LIBRARY_DIR 中查找
+set(EMBOSA_LIBRARIES
+    ${EMBOSA_LIBRARY_DIR}/libembosa.so
+    ${EMBOSA_LIBRARY_DIR}/libfastcdr.so
+    ${EMBOSA_LIBRARY_DIR}/libfastrtps.so
+    ${EMBOSA_LIBRARY_DIR}/libfoonathan_memory-0.7.3.so
+    ssl
+    crypto
+    tinyxml2
+    spdlog
+    protobuf
+    z
+    rt
+    dl
+    boost_thread)
 
 
 set(PUPPET_CORE_SOURCES
-  puppet/runtime/message_snapshot.cpp
   puppet/runtime/robot_state_sync.cpp
   puppet/runtime/runtime_config.cpp
   puppet/runtime/teleop_runtime.cpp
+  puppet/runtime/runtime_state_report.cpp
   puppet/source/source_manager.cpp
+  puppet/transport/embosa_runtime_channel.cpp
+  puppet/transport/embosa_runtime_config.cpp
+  puppet/transport/message_snapshot.cpp
+  puppet/transport/proto_copy.cpp
   puppet/orchestrator/orchestrator.cpp
   puppet/retargeting/core/direct_pass_through_plugin.cpp
   puppet/retargeting/core/retargeting_pipeline.cpp
   puppet/retargeting/native/single_chain_ik/single_chain_ik_retargeting_plugin.cpp
   puppet/retargeting/native/gmr/gmr_retargeting_plugin.cpp
   puppet/retargeting/native/gmr/gmr_retargeter_shim.cpp
-  puppet/robot/backend/direct_mapping_backend.cpp)
+  puppet/robot/backend/direct_mapping_backend.cpp
+  puppet/common/time_utils.cpp
+  puppet/config/puppet_config.cpp
+  puppet/core/puppet_manager.cpp
+  )
 
 set(PUPPET_GMR_CPP_ROOT "${CMAKE_SOURCE_DIR}/src/cpp/puppet/retargeting/native/gmr")
 
@@ -41,7 +87,14 @@ find_library(TRAC_IK_LIBRARY NAMES trac_ik REQUIRED)
 target_include_directories(puppet_cpp_core
   PUBLIC
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/include/puppet/retargeting/native)
+    ${CMAKE_SOURCE_DIR}/include/puppet/retargeting/native
+    ${EMBOSA_INCLUDE_DIR}
+    ${PUPPET_DEFAULT_DEVEL_PREFIX}
+)
+
+# 添加库搜索路径,让链接器能找到其他依赖库
+# 使用 target_link_directories 并设置为 PUBLIC,确保依赖 puppet_cpp_core 的目标也能找到这些库
+target_link_directories(puppet_cpp_core PUBLIC ${EMBOSA_LIBRARY_DIR})
 
 target_link_libraries(puppet_cpp_core
   PUBLIC
@@ -50,6 +103,9 @@ target_link_libraries(puppet_cpp_core
     qpOASES
     pinocchio::pinocchio
     glog::glog
+    puppet_proto::puppet_proto
     ${OROCOS_KDL_LIBRARY}
     ${TRAC_IK_LIBRARY}
-    ${MUJOCO_LIBRARY})
+    ${MUJOCO_LIBRARY}
+    ${EMBOSA_LIBRARIES}
+    )

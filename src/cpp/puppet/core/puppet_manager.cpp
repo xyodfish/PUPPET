@@ -1,11 +1,11 @@
-#include "puppet/runtime/puppet_manager.hpp"
+#include "puppet/core/puppet_manager.hpp"
 
 #include <chrono>
 #include <thread>
 
 #include <glog/logging.h>
 
-#include "puppet/runtime/time_utils.hpp"
+#include "puppet/common/time_utils.hpp"
 
 namespace puppet::runtime {
 
