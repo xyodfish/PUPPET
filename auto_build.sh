@@ -143,3 +143,4 @@ if [[ "${BUILD_PROTO}" == "true" ]]; then
 fi
 
 echo "[auto_build] done."
+"${CURRENT_DIR}/scripts/print_puppet_logo.sh"
