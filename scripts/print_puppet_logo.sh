@@ -13,17 +13,35 @@ else
   GREEN='' ; CYAN='' ; BLUE='' ; YELLOW='' ; MAGENTA='' ; WHITE='' ; NC=''
 fi
 
-echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║${NC} ${CYAN}[ VR / MOCAP ]${NC} ${GREEN}=>${NC} ${YELLOW}[ PRIMITIVE FRAME ]${NC} ${GREEN}=>${NC} ${BLUE}[ RETARGET / WBC ]${NC} ${GREEN}=>${NC} ${MAGENTA}[ ROBOT ]${NC} ${GREEN}║${NC}"
-echo -e "${GREEN}╠══════════════════════════════════════════════════════════════════════════╣${NC}"
-echo -e "${GREEN}║${NC}                                                                          ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}        ${GREEN}____   __  __   ____   ____   _____   ______${NC}                      ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}       ${CYAN}/ __ \\\\ / / / /  / __ \\\\ / __ \\\\ / ____| /_  __/${NC}                      ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}      ${BLUE}/ /_/ // / / /  / /_/ // /_/ // __/    / /${NC}                          ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}     ${MAGENTA}/ ____// /_/ /  / ____// ____// /___   / /${NC}                           ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}    ${YELLOW}/_/     \\\\____/  /_/    /_/    /_____/  /_/${NC}                            ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}                                                                          ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}           ${BLUE}Primitive-based Embodied Teleoperation Platform${NC}                ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}               ${CYAN}[ modular / pluggable / unified ]${NC}                          ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}                                                                          ${GREEN}║${NC}"
-echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
+renderLine() {
+  local line="$1"
+  line="${line//\{G\}/$GREEN}"
+  line="${line//\{C\}/$CYAN}"
+  line="${line//\{B\}/$BLUE}"
+  line="${line//\{Y\}/$YELLOW}"
+  line="${line//\{M\}/$MAGENTA}"
+  line="${line//\{W\}/$WHITE}"
+  line="${line//\{N\}/$NC}"
+  printf '%b\n' "$line"
+}
+
+lines=(
+  "{G}╔══════════════════════════════════════════════════════════════════════════╗{N}"
+  "{G}║{N} {C}[ VR / MOCAP ]{N} {G}=>{N} {Y}[ PRIMITIVE FRAME ]{N} {G}=>{N} {B}[ RETARGET / WBC ]{N} {G}=>{N} {M}[ ROBOT ]{N} {G}║{N}"
+  "{G}╠══════════════════════════════════════════════════════════════════════════╣{N}"
+  "{G}║{N}                                                                          {G}║{N}"
+  "{G}║{N}        {G}____   __  __   ____   ____   _____   ______{N}                      {G}║{N}"
+  "{G}║{N}       {C}/ __ \\\\ / / / /  / __ \\\\ / __ \\\\ / ____| /_  __/{N}                      {G}║{N}"
+  "{G}║{N}      {B}/ /_/ // / / /  / /_/ // /_/ // __/    / /{N}                          {G}║{N}"
+  "{G}║{N}     {M}/ ____// /_/ /  / ____// ____// /___   / /{N}                           {G}║{N}"
+  "{G}║{N}    {Y}/_/     \\\\____/  /_/    /_/    /_____/  /_/{N}                            {G}║{N}"
+  "{G}║{N}                                                                          {G}║{N}"
+  "{G}║{N}           {B}Primitive-based Embodied Teleoperation Platform{N}                {G}║{N}"
+  "{G}║{N}               {C}[ modular / pluggable / unified ]{N}                          {G}║{N}"
+  "{G}║{N}                                                                          {G}║{N}"
+  "{G}╚══════════════════════════════════════════════════════════════════════════╝{N}"
+)
+
+for line in "${lines[@]}"; do
+  renderLine "$line"
+done

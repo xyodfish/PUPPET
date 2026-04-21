@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">PUPPET Logo</title>
+  <desc id="desc">Primitive-based Unified Platform for Pluggable Embodied Teleoperation</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f4f9f6"/>
+      <stop offset="100%" stop-color="#eef7ff"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="360" fill="url(#bg)"/>
+  <rect x="40" y="40" width="1120" height="280" rx="20" fill="#ffffff" stroke="#0f5132" stroke-width="4"/>
+
+  <text x="80" y="118" font-family="'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif" font-size="62" font-weight="800" fill="#0f5132" letter-spacing="2">PUPPET</text>
+  <text x="80" y="158" font-family="'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif" font-size="23" fill="#2f5f5a">
+    Primitive-based Unified Platform for Pluggable Embodied Teleoperation
+  </text>
+
+  <g font-family="'JetBrains Mono', 'Consolas', monospace" font-size="18" font-weight="700" text-anchor="middle">
+    <rect x="80" y="205" width="190" height="52" rx="10" fill="#e8f8ef" stroke="#1d7a50" stroke-width="2"/>
+    <text x="175" y="237" fill="#1d7a50">VR / MOCAP</text>
+
+    <rect x="325" y="205" width="250" height="52" rx="10" fill="#fff7dd" stroke="#c99600" stroke-width="2"/>
+    <text x="450" y="237" fill="#946d00">PRIMITIVE FRAME</text>
+
+    <rect x="630" y="205" width="230" height="52" rx="10" fill="#eaf2ff" stroke="#2e68c9" stroke-width="2"/>
+    <text x="745" y="237" fill="#2e68c9">RETARGET / WBC</text>
+
+    <rect x="915" y="205" width="170" height="52" rx="10" fill="#f9ebff" stroke="#9044b2" stroke-width="2"/>
+    <text x="1000" y="237" fill="#9044b2">ROBOT</text>
+  </g>
+
+  <g stroke="#50796b" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M270 231 H307"/>
+    <path d="M575 231 H612"/>
+    <path d="M860 231 H897"/>
+  </g>
+  <g fill="#50796b">
+    <path d="M307 225 l10 6 -10 6 z"/>
+    <path d="M612 225 l10 6 -10 6 z"/>
+    <path d="M897 225 l10 6 -10 6 z"/>
+  </g>
+</svg>

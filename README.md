@@ -1,4 +1,8 @@
-# 🤖 PUPPET
+<p align="center">
+  <img src="assets/logo.svg" alt="PUPPET Logo" width="900" />
+</p>
+
+# PUPPET
 
 > **P**rimitive-based **U**nified **P**latform for **P**luggable **E**mbodied **T**eleoperation
 
