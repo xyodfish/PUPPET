@@ -1,0 +1,15 @@
+loop_hz: 100
+enable_mock_source: false
+
+runtime_channel:
+  type: zmq
+
+module_configs:
+  sources: modules/demo_single_chain_ik/sources.yaml
+  group_routing: modules/demo_single_chain_ik/group_routing.yaml
+  pipelines: modules/demo_single_chain_ik/pipelines.yaml
+  backends: modules/demo_single_chain_ik/backends.yaml
+  gmr_plugin: modules/demo_single_chain_ik/gmr_plugin.yaml
+  single_chain_ik: modules/demo_single_chain_ik/single_chain_ik.yaml
+  robot_state: modules/demo_single_chain_ik/robot_state.yaml
+  zmq_runtime: modules/demo_single_chain_ik/zmq_runtime.yaml

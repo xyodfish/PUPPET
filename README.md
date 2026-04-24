@@ -108,6 +108,17 @@ cmake --build build -j"$(nproc)"
 - [Embosa PrimitiveFrame 收发 Demo（C++）](test/demos/cpp/README_embosa_proto_demo.md)
 - [Proto Message 构造 Demo（Python）](test/demos/python/README.md)
 
+### 单链 IK 启动脚本
+
+- Embosa（`demo_single_chain_ik_runtime_modular.yaml`）  
+  `./scripts/start_single_chain_ik_modular_embosa.sh`
+- ZMQ（`demo_single_chain_ik_runtime_modular_zmq.yaml`）  
+  `./scripts/start_single_chain_ik_modular_zmq.sh`
+
+### 通信后端接入说明
+
+- [Runtime Channel ZMQ 接入说明](docs/runtime_channel_zmq_接入说明.md)
+
 ---
 
 ## 🛣️ Roadmap

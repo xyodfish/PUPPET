@@ -29,6 +29,8 @@ endif()
 
 set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+set(ZMQ_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include")
+set(ZMQ_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
 set(EMBOSA_LIBRARIES
     embosa
     fastcdr
@@ -83,6 +85,20 @@ target_link_libraries(test_embosa_single_chain_ik_sender
     ${EMBOSA_LIBRARIES}
     pthread)
 
+add_executable(test_zmq_single_chain_ik_sender
+  "${CMAKE_CURRENT_LIST_DIR}/zmq_single_chain_ik_sender.cpp")
+target_include_directories(test_zmq_single_chain_ik_sender
+  PRIVATE
+    "${ZMQ_INCLUDE_DIR}")
+target_link_directories(test_zmq_single_chain_ik_sender
+  PRIVATE
+    "${ZMQ_LIBRARY_DIR}")
+target_link_libraries(test_zmq_single_chain_ik_sender
+  PRIVATE
+    puppet_proto_copy_demo
+    zmq
+    pthread)
+
 add_executable(test_embosa_puppet_proto_receiver
   "${CMAKE_CURRENT_LIST_DIR}/embosa_puppet_proto_receiver.cpp")
 target_include_directories(test_embosa_puppet_proto_receiver
@@ -99,6 +115,7 @@ set_target_properties(
   test_embosa_puppet_proto_sender
   test_embosa_single_chain_ik_sender
   test_embosa_puppet_proto_receiver
+  test_zmq_single_chain_ik_sender
   PROPERTIES
-    BUILD_RPATH "${EMBOSA_LIBRARY_DIR}"
-    INSTALL_RPATH "${EMBOSA_LIBRARY_DIR}")
+    BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}"
+    INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}")

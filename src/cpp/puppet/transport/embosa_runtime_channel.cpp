@@ -8,6 +8,8 @@
 #include "puppet/transport/proto_copy.hpp"
 
 namespace puppet::runtime {
+    EmbosaRuntimeChannel::EmbosaRuntimeChannel(const EmbosaRuntimeConfig& config) : config_(config) {}
+
     EmbosaRuntimeChannel::~EmbosaRuntimeChannel() {
         if (!started_) {
             return;
@@ -15,6 +17,10 @@ namespace puppet::runtime {
         galbot::embosa::WaitForShutdown();
         galbot::embosa::Clear();
         started_ = false;
+    }
+
+    bool EmbosaRuntimeChannel::start(std::string& error) {
+        return start(config_, error);
     }
 
     bool EmbosaRuntimeChannel::start(const EmbosaRuntimeConfig& config, std::string& error) {
@@ -37,6 +43,10 @@ namespace puppet::runtime {
         started_ = true;
         error.clear();
         return true;
+    }
+
+    void EmbosaRuntimeChannel::setConfig(const EmbosaRuntimeConfig& config) {
+        config_ = config;
     }
 
     bool EmbosaRuntimeChannel::isRunning() const {

@@ -24,9 +24,15 @@ endif()
 
 set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+set(ZMQ_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include")
+set(ZMQ_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+set(ZMQ_LIBRARIES
+    ${ZMQ_LIBRARY_DIR}/libzmq.so)
 
 message(STATUS "EMBOSA_INCLUDE_DIR: ${EMBOSA_INCLUDE_DIR}")
 message(STATUS "EMBOSA_LIBRARY_DIR: ${EMBOSA_LIBRARY_DIR}")
+message(STATUS "ZMQ_INCLUDE_DIR: ${ZMQ_INCLUDE_DIR}")
+message(STATUS "ZMQ_LIBRARY_DIR: ${ZMQ_LIBRARY_DIR}")
 
 # 使用完整路径确保链接正确版本的 embosa 核心库
 # 其他依赖库使用名称,由链接器在 EMBOSA_LIBRARY_DIR 中查找
@@ -54,6 +60,8 @@ set(PUPPET_CORE_SOURCES
   puppet/source/source_manager.cpp
   puppet/transport/embosa_runtime_channel.cpp
   puppet/transport/embosa_runtime_config.cpp
+  puppet/transport/zmq_runtime_channel.cpp
+  puppet/transport/zmq_runtime_config.cpp
   puppet/transport/message_snapshot.cpp
   puppet/transport/proto_copy.cpp
   puppet/orchestrator/orchestrator.cpp
@@ -89,12 +97,14 @@ target_include_directories(puppet_cpp_core
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include/puppet/retargeting/native
     ${EMBOSA_INCLUDE_DIR}
+    ${ZMQ_INCLUDE_DIR}
     ${PUPPET_DEFAULT_DEVEL_PREFIX}
 )
 
 # 添加库搜索路径,让链接器能找到其他依赖库
 # 使用 target_link_directories 并设置为 PUBLIC,确保依赖 puppet_cpp_core 的目标也能找到这些库
 target_link_directories(puppet_cpp_core PUBLIC ${EMBOSA_LIBRARY_DIR})
+target_link_directories(puppet_cpp_core PUBLIC ${ZMQ_LIBRARY_DIR})
 
 target_link_libraries(puppet_cpp_core
   PUBLIC
@@ -108,4 +118,5 @@ target_link_libraries(puppet_cpp_core
     ${TRAC_IK_LIBRARY}
     ${MUJOCO_LIBRARY}
     ${EMBOSA_LIBRARIES}
+    ${ZMQ_LIBRARIES}
     )

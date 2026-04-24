@@ -22,7 +22,7 @@ namespace puppet::runtime {
         loopCount_++;
     }
 
-    void RuntimeStateReport::maybeReport(const TeleopRuntime& runtime, const EmbosaRuntimeChannel& channel) {
+    void RuntimeStateReport::maybeReport(const TeleopRuntime& runtime, const IRuntimeChannel& channel) {
         if (reportIntervalLoops_ == 0 || loopCount_ == 0 || (loopCount_ % reportIntervalLoops_) != 0) {
             return;
         }

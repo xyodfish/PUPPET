@@ -7,7 +7,7 @@
 #include "puppet/runtime/robot_state_sync.hpp"
 #include "puppet/runtime/runtime_state_report.hpp"
 #include "puppet/runtime/teleop_runtime.hpp"
-#include "puppet/transport/embosa_runtime_channel.hpp"
+#include "puppet/transport/runtime_channel.hpp"
 
 namespace puppet::runtime {
 
@@ -32,13 +32,14 @@ namespace puppet::runtime {
 
        private:
         bool loadConfig(const std::string& runtimeConfigPath, std::string& error);
+        bool createRuntimeChannel(std::string& error);
         bool initModules(std::string& error);
         bool processOneLoop(std::string& error);
         void setError(const std::string& error);
 
         PuppetConfig config_;
         std::unique_ptr<TeleopRuntime> runtime_;
-        std::unique_ptr<EmbosaRuntimeChannel> channel_;
+        std::unique_ptr<IRuntimeChannel> channel_;
         std::unique_ptr<RuntimeStateReport> report_;
         std::shared_ptr<RobotStateSync> robotStateSync_;
         bool initialized_         = false;

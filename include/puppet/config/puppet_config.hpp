@@ -4,13 +4,16 @@
 
 #include "puppet/runtime/runtime_config.hpp"
 #include "puppet/transport/embosa_runtime_config.hpp"
+#include "puppet/transport/zmq_runtime_config.hpp"
 
 namespace puppet::runtime {
 
     struct PuppetConfig {
         std::string configPath;
+        std::string runtimeChannelType = "embosa";
         RuntimeConfig runtime;
         EmbosaRuntimeConfig embosaRuntime;
+        ZmqRuntimeConfig zmqRuntime;
     };
 
     class PuppetConfigLoader {

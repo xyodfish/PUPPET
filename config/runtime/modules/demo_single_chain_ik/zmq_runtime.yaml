@@ -1,0 +1,25 @@
+io_threads: 1
+recv_hwm: 200
+send_hwm: 200
+idle_sleep_ms: 2
+input_endpoint: tcp://127.0.0.1:16661
+input_topic_name: puppet_demo/primitive_frame
+robot_state_input_endpoint: tcp://127.0.0.1:16662
+robot_state_input_topic_name: puppet_demo/robot_state
+output_control_intent_endpoint: tcp://127.0.0.1:16663
+output_control_intent_topic: puppet_demo/control_intent
+endpoints:
+  inputs:
+    - key: primitive_frame
+      endpoint: tcp://127.0.0.1:16661
+      topic: puppet_demo/primitive_frame
+      enabled: true
+    - key: robot_state_frame
+      endpoint: tcp://127.0.0.1:16662
+      topic: puppet_demo/robot_state
+      enabled: true
+  outputs:
+    - key: control_intent
+      endpoint: tcp://127.0.0.1:16663
+      topic: puppet_demo/control_intent
+      enabled: true

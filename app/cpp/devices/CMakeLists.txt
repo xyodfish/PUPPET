@@ -14,6 +14,8 @@ list(APPEND CMAKE_PREFIX_PATH "${PUPPET_DEFAULT_DEVEL_PREFIX}")
 find_package(puppet_proto CONFIG QUIET)
 set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+set(ZMQ_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include")
+set(ZMQ_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
 # Use full paths for EMBOSA libraries to avoid version conflicts
 set(EMBOSA_LIBRARIES
     embosa
@@ -47,3 +49,19 @@ set_target_properties(static_file_replay_device
     BUILD_RPATH "${EMBOSA_LIBRARY_DIR}"
     INSTALL_RPATH "${EMBOSA_LIBRARY_DIR}")
 
+add_executable(static_file_replay_device_zmq
+  static_file_replay_device_zmq.cpp)
+target_include_directories(static_file_replay_device_zmq
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${ZMQ_INCLUDE_DIR})
+target_link_directories(static_file_replay_device_zmq
+  PRIVATE
+    ${ZMQ_LIBRARY_DIR})
+target_link_libraries(static_file_replay_device_zmq
+  PRIVATE
+    puppet_cpp_core)
+set_target_properties(static_file_replay_device_zmq
+  PROPERTIES
+    BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}"
+    INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}")

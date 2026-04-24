@@ -4,7 +4,7 @@
 #include <string>
 
 #include "puppet/runtime/teleop_runtime.hpp"
-#include "puppet/transport/embosa_runtime_channel.hpp"
+#include "puppet/transport/runtime_channel.hpp"
 
 namespace puppet::runtime {
 
@@ -17,7 +17,7 @@ namespace puppet::runtime {
         void recordPublishFailure(const std::string& error);
         void recordSuccessfulLoop();
 
-        void maybeReport(const TeleopRuntime& runtime, const EmbosaRuntimeChannel& channel);
+        void maybeReport(const TeleopRuntime& runtime, const IRuntimeChannel& channel);
 
        private:
         uint64_t reportIntervalLoops_ = 500;

@@ -23,6 +23,8 @@ find_package(glfw3 QUIET)
 
 set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+set(ZMQ_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include")
+set(ZMQ_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
 # Use full paths for EMBOSA libraries to avoid version conflicts
 set(EMBOSA_LIBRARIES
     embosa
@@ -68,18 +70,33 @@ endif()
 if(MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY)
   add_executable(retargeting_mujoco_visualizer
     retargeting_mujoco_visualizer.cpp)
+  add_executable(retargeting_mujoco_visualizer_zmq
+    retargeting_mujoco_visualizer_zmq.cpp)
 
   target_include_directories(retargeting_mujoco_visualizer
     PRIVATE
       ${CMAKE_SOURCE_DIR}/include
       ${EMBOSA_INCLUDE_DIR}
       ${MUJOCO_INCLUDE_DIR})
+  target_include_directories(retargeting_mujoco_visualizer_zmq
+    PRIVATE
+      ${CMAKE_SOURCE_DIR}/include
+      ${ZMQ_INCLUDE_DIR}
+      ${MUJOCO_INCLUDE_DIR})
 
   target_link_directories(retargeting_mujoco_visualizer
     PRIVATE
       ${EMBOSA_LIBRARY_DIR})
+  target_link_directories(retargeting_mujoco_visualizer_zmq
+    PRIVATE
+      ${ZMQ_LIBRARY_DIR})
 
   target_link_libraries(retargeting_mujoco_visualizer
+    PRIVATE
+      puppet_cpp_core
+      ${MUJOCO_LIBRARY}
+      )
+  target_link_libraries(retargeting_mujoco_visualizer_zmq
     PRIVATE
       puppet_cpp_core
       ${MUJOCO_LIBRARY}
@@ -87,15 +104,21 @@ if(MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY)
 
   if(glfw3_FOUND)
     target_link_libraries(retargeting_mujoco_visualizer PRIVATE glfw)
+    target_link_libraries(retargeting_mujoco_visualizer_zmq PRIVATE glfw)
   else()
     find_library(GLFW_LIBRARY NAMES glfw REQUIRED)
     target_link_libraries(retargeting_mujoco_visualizer PRIVATE ${GLFW_LIBRARY})
+    target_link_libraries(retargeting_mujoco_visualizer_zmq PRIVATE ${GLFW_LIBRARY})
   endif()
 
   set_target_properties(retargeting_mujoco_visualizer
     PROPERTIES
       BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib"
       INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib")
+  set_target_properties(retargeting_mujoco_visualizer_zmq
+    PROPERTIES
+      BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib"
+      INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib")
 else()
   message(WARNING
     "Skip retargeting_mujoco_visualizer: "

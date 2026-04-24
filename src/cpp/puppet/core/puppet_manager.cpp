@@ -6,12 +6,13 @@
 #include <glog/logging.h>
 
 #include "puppet/common/time_utils.hpp"
+#include "puppet/transport/embosa_runtime_channel.hpp"
+#include "puppet/transport/zmq_runtime_channel.hpp"
 
 namespace puppet::runtime {
 
     PuppetManager::PuppetManager() {
         runtime_ = std::make_unique<TeleopRuntime>();
-        channel_ = std::make_unique<EmbosaRuntimeChannel>();
         report_  = std::make_unique<RuntimeStateReport>(500);
     }
 
@@ -72,6 +73,10 @@ namespace puppet::runtime {
     }
 
     bool PuppetManager::initModules(std::string& error) {
+        if (!createRuntimeChannel(error)) {
+            return false;
+        }
+
         robotStateSync_ = std::make_shared<RobotStateSync>();
         runtime_->setRobotStateSync(robotStateSync_);
         channel_->registerRobotStateFrameHandler([this](const model::PrimitiveFrame& frame) {
@@ -84,11 +89,27 @@ namespace puppet::runtime {
             return false;
         }
 
-        if (!channel_->start(config_.embosaRuntime, error)) {
+        if (!channel_->start(error)) {
             return false;
         }
 
         return true;
+    }
+
+    bool PuppetManager::createRuntimeChannel(std::string& error) {
+        if (config_.runtimeChannelType == "embosa") {
+            channel_ = std::make_unique<EmbosaRuntimeChannel>(config_.embosaRuntime);
+            error.clear();
+            return true;
+        }
+        if (config_.runtimeChannelType == "zmq") {
+            channel_ = std::make_unique<ZmqRuntimeChannel>(config_.zmqRuntime);
+            error.clear();
+            return true;
+        }
+
+        error = "unsupported runtime channel type: " + config_.runtimeChannelType;
+        return false;
     }
 
     bool PuppetManager::processOneLoop(std::string& error) {

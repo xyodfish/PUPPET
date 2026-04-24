@@ -17,36 +17,34 @@
 #include "puppet/primitive/primitive_types.hpp"
 #include "puppet/primitive_frame.pb.h"
 #include "puppet/transport/embosa_runtime_config.hpp"
+#include "puppet/transport/runtime_channel.hpp"
 
 namespace puppet::runtime {
 
-    class EmbosaRuntimeChannel {
+    class EmbosaRuntimeChannel : public IRuntimeChannel {
        public:
-        using PrimitiveFrameHandler  = std::function<void(const model::PrimitiveFrame&)>;
-        using RobotStateFrameHandler = std::function<void(const model::PrimitiveFrame&)>;
+        using PrimitiveFrameHandler  = IRuntimeChannel::PrimitiveFrameHandler;
+        using RobotStateFrameHandler = IRuntimeChannel::RobotStateFrameHandler;
         using EndpointBinder         = std::function<bool(const std::string& topicName, std::string& error)>;
-
-        struct RuntimeStats {
-            uint64_t receivedPrimitiveFrameCount  = 0;
-            uint64_t receivedRobotStateFrameCount = 0;
-            uint64_t droppedPrimitiveFrameCount   = 0;
-            uint64_t publishedControlIntentCount  = 0;
-            std::string lastError;
-        };
+        using RuntimeStats           = IRuntimeChannel::RuntimeStats;
 
         EmbosaRuntimeChannel() = default;
-        ~EmbosaRuntimeChannel();
+        explicit EmbosaRuntimeChannel(const EmbosaRuntimeConfig& config);
+        ~EmbosaRuntimeChannel() override;
 
+        bool start(std::string& error) override;
         bool start(const EmbosaRuntimeConfig& config, std::string& error);
-        bool isRunning() const;
+        bool isRunning() const override;
 
-        bool tryPopFrame(model::PrimitiveFrame& frame);
-        bool publishControlIntent(const model::ControlIntent& intent, std::string& error);
-        void registerPrimitiveFrameHandler(PrimitiveFrameHandler handler);
-        void registerRobotStateFrameHandler(RobotStateFrameHandler handler);
+        bool tryPopFrame(model::PrimitiveFrame& frame) override;
+        bool publishControlIntent(const model::ControlIntent& intent, std::string& error) override;
+        void registerPrimitiveFrameHandler(PrimitiveFrameHandler handler) override;
+        void registerRobotStateFrameHandler(RobotStateFrameHandler handler) override;
         void registerInputEndpointBinder(const std::string& key, EndpointBinder binder);
         void registerOutputEndpointBinder(const std::string& key, EndpointBinder binder);
-        RuntimeStats getRuntimeStats() const;
+        RuntimeStats getRuntimeStats() const override;
+        int idleSleepMs() const override { return config_.idleSleepMs; }
+        void setConfig(const EmbosaRuntimeConfig& config);
 
         template <typename ProtoT>
         bool createReader(const std::string& topicName,
@@ -86,8 +84,6 @@ namespace puppet::runtime {
             error.clear();
             return true;
         }
-
-        int idleSleepMs() const { return config_.idleSleepMs; }
 
        private:
         bool initNode(std::string& error);

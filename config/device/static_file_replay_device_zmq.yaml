@@ -1,0 +1,6 @@
+topic_name: puppet_demo/primitive_frame
+output_endpoint: tcp://127.0.0.1:16661
+source_id: demo_sender_single_chain_ik
+human_frame_json: /data2/Documents/lafan1/fight1_subject5_retarget_frame.json
+loop_hz: 30
+loop_playback: true
