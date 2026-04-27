@@ -65,3 +65,22 @@ set_target_properties(static_file_replay_device_zmq
   PROPERTIES
     BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}"
     INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}")
+
+add_executable(device_service
+  device_service_main.cpp)
+target_include_directories(device_service
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${EMBOSA_INCLUDE_DIR}
+    ${ZMQ_INCLUDE_DIR})
+target_link_directories(device_service
+  PRIVATE
+    ${EMBOSA_LIBRARY_DIR}
+    ${ZMQ_LIBRARY_DIR})
+target_link_libraries(device_service
+  PRIVATE
+    puppet_cpp_core)
+set_target_properties(device_service
+  PROPERTIES
+    BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}"
+    INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}")

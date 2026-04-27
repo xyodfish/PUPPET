@@ -1,0 +1,17 @@
+node_name: puppet_device_service_static_file_embosa
+topic_name: puppet_demo/primitive_frame
+source_id: static_file_device
+frame_id: world
+loop_hz: 30
+
+channel:
+  type: embosa
+
+device:
+  type: static_file_replay
+  human_frame_json: /data2/Documents/lafan1/fight1_subject5_retarget_frame.json
+  loop_hz: 30
+  loop_playback: true
+  semantic_context: human_frame_replay
+  mode: gmr
+  pipeline_id: gmr_pipeline

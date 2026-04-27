@@ -28,11 +28,22 @@ set(ZMQ_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include")
 set(ZMQ_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
 set(ZMQ_LIBRARIES
     ${ZMQ_LIBRARY_DIR}/libzmq.so)
+set(SCALED_DEVICE_SDK_ROOT "${CMAKE_SOURCE_DIR}/third_party/galbot_remote_operate"
+    CACHE PATH "Path to scaled device SDK root that contains include/ and lib/")
+set(SCALED_DEVICE_SDK_INCLUDE_DIR "${SCALED_DEVICE_SDK_ROOT}/include")
+set(SCALED_DEVICE_SDK_LIBRARY_DIR "${SCALED_DEVICE_SDK_ROOT}/lib")
+if (NOT EXISTS "${SCALED_DEVICE_SDK_INCLUDE_DIR}/GalbotRemoteOperate/RemoteOperate.h")
+  message(FATAL_ERROR "Scaled device SDK header not found: ${SCALED_DEVICE_SDK_INCLUDE_DIR}/GalbotRemoteOperate/RemoteOperate.h")
+endif()
+if (NOT EXISTS "${SCALED_DEVICE_SDK_LIBRARY_DIR}/libgalbotRemoteOperate.so")
+  message(FATAL_ERROR "Scaled device SDK library not found: ${SCALED_DEVICE_SDK_LIBRARY_DIR}/libgalbotRemoteOperate.so")
+endif()
 
 message(STATUS "EMBOSA_INCLUDE_DIR: ${EMBOSA_INCLUDE_DIR}")
 message(STATUS "EMBOSA_LIBRARY_DIR: ${EMBOSA_LIBRARY_DIR}")
 message(STATUS "ZMQ_INCLUDE_DIR: ${ZMQ_INCLUDE_DIR}")
 message(STATUS "ZMQ_LIBRARY_DIR: ${ZMQ_LIBRARY_DIR}")
+message(STATUS "SCALED_DEVICE_SDK_ROOT: ${SCALED_DEVICE_SDK_ROOT}")
 
 # 使用完整路径确保链接正确版本的 embosa 核心库
 # 其他依赖库使用名称,由链接器在 EMBOSA_LIBRARY_DIR 中查找
@@ -53,13 +64,22 @@ set(EMBOSA_LIBRARIES
 
 
 set(PUPPET_CORE_SOURCES
+  puppet/device/device_service_config.cpp
+  puppet/device/device_service.cpp
+  puppet/device/device_provider_factory.cpp
+  puppet/device/static_file_replay/static_file_replay_device_provider.cpp
+  puppet/device/single_chain_ik/single_chain_ik_sender_device_provider.cpp
+  puppet/device/scaled/scaled_device_provider.cpp
   puppet/runtime/robot_state_sync.cpp
   puppet/runtime/runtime_config.cpp
   puppet/runtime/teleop_runtime.cpp
   puppet/runtime/runtime_state_report.cpp
   puppet/source/source_manager.cpp
+  puppet/transport/device_output_channel_factory.cpp
+  puppet/transport/embosa_device_output_channel.cpp
   puppet/transport/embosa_runtime_channel.cpp
   puppet/transport/embosa_runtime_config.cpp
+  puppet/transport/zmq_device_output_channel.cpp
   puppet/transport/zmq_runtime_channel.cpp
   puppet/transport/zmq_runtime_config.cpp
   puppet/transport/message_snapshot.cpp
@@ -101,6 +121,9 @@ target_include_directories(puppet_cpp_core
     ${PUPPET_DEFAULT_DEVEL_PREFIX}
 )
 
+target_include_directories(puppet_cpp_core PUBLIC ${SCALED_DEVICE_SDK_INCLUDE_DIR})
+target_link_directories(puppet_cpp_core PUBLIC ${SCALED_DEVICE_SDK_LIBRARY_DIR})
+
 # 添加库搜索路径,让链接器能找到其他依赖库
 # 使用 target_link_directories 并设置为 PUBLIC,确保依赖 puppet_cpp_core 的目标也能找到这些库
 target_link_directories(puppet_cpp_core PUBLIC ${EMBOSA_LIBRARY_DIR})
@@ -120,3 +143,11 @@ target_link_libraries(puppet_cpp_core
     ${EMBOSA_LIBRARIES}
     ${ZMQ_LIBRARIES}
     )
+
+target_link_libraries(puppet_cpp_core
+  PUBLIC
+    ${SCALED_DEVICE_SDK_LIBRARY_DIR}/libgalbotRemoteOperate.so
+    ${SCALED_DEVICE_SDK_LIBRARY_DIR}/libgalbotSystem.so
+    ${SCALED_DEVICE_SDK_LIBRARY_DIR}/libgalbotSerialPort.so
+    ${SCALED_DEVICE_SDK_LIBRARY_DIR}/libgalbotDataProtocol.so
+    ${SCALED_DEVICE_SDK_LIBRARY_DIR}/libgalbotLog.so)

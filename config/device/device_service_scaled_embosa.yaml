@@ -1,0 +1,90 @@
+node_name: puppet_device_service_scaled_embosa
+topic_name: puppet_demo/primitive_frame
+source_id: scaled_device
+frame_id: torso_link
+loop_hz: 200
+
+channel:
+  type: embosa
+
+device:
+  type: scaled_device
+  device_name: /dev/galbotV1RemoteOperate
+  loop_hz: 200
+  trigger_threshold: 5.0
+  offline_timeout_sec: 0.5
+  reconnect_interval_sec: 0.05
+  semantic_context: scaled_device_joint_state
+  mode: joint_state_sync
+  pipeline_id: scaled_device_pipeline
+
+  threshold:
+    joy_left_x_axis_threshold: 0.2
+    joy_left_y_axis_threshold: 0.2
+    joy_right_x_axis_threshold: 0.2
+    joy_right_y_axis_threshold: 0.2
+    joy_left_trigger_axis_threshold: 5.0
+    joy_right_trigger_axis_threshold: 5.0
+
+  dead_zone:
+    joy_left_x_axis_dead_zone: 0.05
+    joy_left_y_axis_dead_zone: 0.05
+    joy_right_x_axis_dead_zone: 0.05
+    joy_right_y_axis_dead_zone: 0.05
+    joy_left_trigger_axis_dead_zone: 0.005
+    joy_right_trigger_axis_dead_zone: 0.005
+
+  command_params:
+    chassis_vel:
+      apml: [0.5, 0.5, 0.5]
+      ub: [0.6, 0.6, 0.6]
+
+  buttons:
+    key1L: { alias: left_combo }
+    key3L: { alias: left_takeover_switch }
+    key5L: { alias: left_arm_sync }
+    key7L: { alias: left_stop }
+    key8L: { alias: left_takeover }
+    key1R: { alias: right_combo }
+    key3R: { alias: right_takeover_switch }
+    key5R: { alias: right_arm_sync }
+    key7R: { alias: right_stop }
+    key8R: { alias: right_takeover }
+
+  left_arm:
+    enabled: true
+    body_group: left_arm
+    state_name: left_arm_master_joint_state
+    joint_names:
+      - left_arm_joint1
+      - left_arm_joint2
+      - left_arm_joint3
+      - left_arm_joint4
+      - left_arm_joint5
+      - left_arm_joint6
+      - left_arm_joint7
+    init_angle: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    scale_value: [1.0, -1.0, 1.0, 1.0, 1.0, -1.0, -1.0]
+
+  right_arm:
+    enabled: true
+    body_group: right_arm
+    state_name: right_arm_master_joint_state
+    joint_names:
+      - right_arm_joint1
+      - right_arm_joint2
+      - right_arm_joint3
+      - right_arm_joint4
+      - right_arm_joint5
+      - right_arm_joint6
+      - right_arm_joint7
+    init_angle: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    scale_value: [1.0, -1.0, 1.0, 1.0, 1.0, -1.0, -1.0]
+
+  left_gripper:
+    enabled: true
+    joint_name: left_gripper_joint1
+
+  right_gripper:
+    enabled: true
+    joint_name: right_gripper_joint1

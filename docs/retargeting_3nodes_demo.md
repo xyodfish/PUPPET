@@ -3,7 +3,7 @@
 这个 demo 用 3 个进程串起一条最小可运行链路：
 
 ```text
-static_file_replay_device
+device_service(static_file_replay)
   -> (PrimitiveFrame)
 teleop_runtime_embosa_main
   -> (ControlIntent)
@@ -64,7 +64,8 @@ cmake --build build -j"$(nproc)"
    读取 runtime 配置，消费 `PrimitiveFrame`，执行 retargeting/pipeline，发布 `ControlIntent`。
 
 2. `static_file_replay_device`  
-   从 JSON 回放 human frame，发布 `PrimitiveFrame`。
+   从 JSON 回放 human frame，发布 `PrimitiveFrame`。  
+   当前脚本默认使用统一入口 `device_service` + `device_service_static_file_embosa.yaml`。
 
 3. `retargeting_mujoco_visualizer`  
    订阅并渲染机器人动作（可选本地 retarget 模式），同时绘制 human overlay。
@@ -72,7 +73,7 @@ cmake --build build -j"$(nproc)"
 脚本会把日志写到：
 
 - `bin/log/teleop_runtime_embosa_main.log`
-- `bin/log/static_file_replay_device.log`
+- `bin/log/device_service_static_file_embosa.log`
 - `bin/log/retargeting_mujoco_visualizer.log`
 
 按 `Ctrl+C` 可一次性停止全部节点。
@@ -115,4 +116,3 @@ cmake --build build -j"$(nproc)"
 ### 运行时动作与本地 retarget 不同步
 
 - 使用 `robot_qpos_source: local_retarget`，避免 `ControlIntent` 通信链路延迟导致的相位差。
-

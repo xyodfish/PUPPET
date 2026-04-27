@@ -23,6 +23,220 @@ namespace puppet::transport {
         dst->assign(src.begin(), src.end());
     }
 
+    namespace {
+
+        template <typename SrcMap, typename DstMap>
+        void CopyToProtoMap(const SrcMap& src, DstMap* dst) {
+            dst->clear();
+            for (const auto& kv : src) {
+                (*dst)[kv.first] = kv.second;
+            }
+        }
+
+        void CopyToProto(const model::Timestamp& src, ::puppet::puppet_proto::Timestamp* dst) {
+            dst->set_sec(src.sec);
+            dst->set_nanosec(src.nanosec);
+        }
+
+        void CopyToProto(const model::Header& src, ::puppet::puppet_proto::Header* dst) {
+            CopyToProto(src.timestamp, dst->mutable_timestamp());
+            dst->set_frame_id(src.frameId);
+        }
+
+        void CopyToProto(const model::Point& src, ::puppet::puppet_proto::Point* dst) {
+            dst->set_x(src.x);
+            dst->set_y(src.y);
+            dst->set_z(src.z);
+        }
+
+        void CopyToProto(const model::Vector3& src, ::puppet::puppet_proto::Vector3* dst) {
+            dst->set_x(src.x);
+            dst->set_y(src.y);
+            dst->set_z(src.z);
+        }
+
+        void CopyToProto(const model::Quaternion& src, ::puppet::puppet_proto::Quaternion* dst) {
+            dst->set_x(src.x);
+            dst->set_y(src.y);
+            dst->set_z(src.z);
+            dst->set_w(src.w);
+        }
+
+        void CopyToProto(const model::Pose& src, ::puppet::puppet_proto::Pose* dst) {
+            CopyToProto(src.position, dst->mutable_position());
+            CopyToProto(src.orientation, dst->mutable_orientation());
+        }
+
+        void CopyToProto(const model::Twist& src, ::puppet::puppet_proto::Twist* dst) {
+            CopyToProto(src.linear, dst->mutable_linear());
+            CopyToProto(src.angular, dst->mutable_angular());
+        }
+
+        void CopyToProto(const model::FrameContext& src, ::puppet::puppet_proto::FrameContext* dst) {
+            dst->set_source_id(src.sourceId);
+            dst->set_source_type(static_cast<::puppet::puppet_proto::SourceType>(src.sourceType));
+            dst->set_semantic_context(src.semanticContext);
+            dst->set_mode(src.mode);
+            dst->set_robot_id(src.robotId);
+            dst->set_pipeline_id(src.pipelineId);
+            CopyToProtoMap(src.tags, dst->mutable_tags());
+        }
+
+        void CopyToProto(const model::PrimitiveMeta& src, ::puppet::puppet_proto::PrimitiveMeta* dst) {
+            dst->set_name(src.name);
+            dst->set_entity(src.entity);
+            dst->set_body_group(static_cast<::puppet::puppet_proto::BodyGroup>(src.bodyGroup));
+            dst->set_frame_id(src.frameId);
+            dst->set_reference_frame_id(src.referenceFrameId);
+            CopyToProto(src.timestamp, dst->mutable_timestamp());
+            dst->set_confidence(src.confidence);
+            dst->set_valid(src.valid);
+            CopyToProtoMap(src.tags, dst->mutable_tags());
+        }
+
+        uint32_t BuildIsRelativeFlags(const std::array<bool, 5>& flags) {
+            uint32_t out = 0;
+            for (size_t i = 0; i < flags.size(); ++i) {
+                if (flags[i]) {
+                    out |= (1u << i);
+                }
+            }
+            return out;
+        }
+
+    }  // namespace
+
+    bool copyToProto(const model::PrimitiveFrame& src, ::puppet::puppet_proto::PrimitiveFrame* dst) {
+        if (dst == nullptr) {
+            return false;
+        }
+
+        dst->Clear();
+        CopyToProto(src.header, dst->mutable_header());
+        CopyToProto(src.context, dst->mutable_context());
+        dst->set_sequence_id(src.sequenceId);
+
+        for (const auto& pose : src.poses) {
+            auto* out = dst->add_poses();
+            CopyToProto(pose.meta, out->mutable_meta());
+            CopyToProto(pose.pose, out->mutable_pose());
+            out->set_is_relative(pose.isRelative);
+            out->set_target_frame_id(pose.targetFrameId);
+        }
+
+        for (const auto& twist : src.twists) {
+            auto* out = dst->add_twists();
+            CopyToProto(twist.meta, out->mutable_meta());
+            CopyToProto(twist.twist, out->mutable_twist());
+            out->set_is_relative(twist.isRelative);
+            out->set_body_frame_id(twist.bodyFrameId);
+            out->set_reference_frame_id(twist.referenceFrameId);
+        }
+
+        for (const auto& jointState : src.jointStates) {
+            auto* out = dst->add_joint_states();
+            CopyToProto(jointState.meta, out->mutable_meta());
+            for (const auto& name : jointState.jointNames)
+                out->add_joint_names(name);
+            for (const auto value : jointState.position)
+                out->add_position(value);
+            for (const auto value : jointState.velocity)
+                out->add_velocity(value);
+            for (const auto value : jointState.acceleration)
+                out->add_acceleration(value);
+            for (const auto value : jointState.effort)
+                out->add_effort(value);
+            for (const auto value : jointState.current)
+                out->add_current(value);
+            out->set_is_relative_flags(BuildIsRelativeFlags(jointState.isRelatived));
+        }
+
+        for (const auto& jointCommand : src.jointCommands) {
+            auto* out = dst->add_joint_commands();
+            CopyToProto(jointCommand.meta, out->mutable_meta());
+            out->set_mode(static_cast<::puppet::puppet_proto::JointCommandPrimitive_JointCommandMode>(jointCommand.mode));
+            for (const auto& name : jointCommand.jointNames)
+                out->add_joint_names(name);
+            for (const auto value : jointCommand.position)
+                out->add_position(value);
+            for (const auto value : jointCommand.velocity)
+                out->add_velocity(value);
+            for (const auto value : jointCommand.acceleration)
+                out->add_acceleration(value);
+            for (const auto value : jointCommand.effort)
+                out->add_effort(value);
+            for (const auto value : jointCommand.stiffness)
+                out->add_stiffness(value);
+            for (const auto value : jointCommand.damping)
+                out->add_damping(value);
+            out->set_is_relative_flags(BuildIsRelativeFlags(jointCommand.isRelatived));
+        }
+
+        for (const auto& scalar : src.scalars) {
+            auto* out = dst->add_scalars();
+            CopyToProto(scalar.meta, out->mutable_meta());
+            out->set_value(scalar.value);
+            out->set_min_value(scalar.minValue);
+            out->set_max_value(scalar.maxValue);
+            out->set_scale_value(scalar.scaleValue);
+            out->set_offset_value(scalar.offsetValue);
+        }
+
+        for (const auto& booleanValue : src.booleans) {
+            auto* out = dst->add_booleans();
+            CopyToProto(booleanValue.meta, out->mutable_meta());
+            out->set_value(booleanValue.value);
+        }
+
+        for (const auto& mode : src.modes) {
+            auto* out = dst->add_modes();
+            CopyToProto(mode.meta, out->mutable_meta());
+            out->set_mode_name(mode.modeName);
+            out->set_mode_id(mode.modeId);
+            out->set_sticky(mode.sticky);
+        }
+
+        for (const auto& planarMotion : src.planarMotions) {
+            auto* out = dst->add_planar_motions();
+            CopyToProto(planarMotion.meta, out->mutable_meta());
+            out->set_vx(planarMotion.vx);
+            out->set_vy(planarMotion.vy);
+            out->set_wz(planarMotion.wz);
+            out->set_reference_frame_id(planarMotion.referenceFrameId);
+        }
+
+        for (const auto& skeleton : src.skeletons) {
+            auto* out = dst->add_skeletons();
+            CopyToProto(skeleton.meta, out->mutable_meta());
+            out->set_skeleton_name(skeleton.skeletonName);
+            out->set_reference_frame_id(skeleton.referenceFrameId);
+            for (const auto& joint : skeleton.joints) {
+                auto* outJoint = out->add_joints();
+                outJoint->set_name(joint.name);
+                outJoint->set_parent_index(joint.parentIndex);
+                CopyToProto(joint.pose, outJoint->mutable_pose());
+                outJoint->set_confidence(joint.confidence);
+            }
+        }
+
+        for (const auto& landmarkSet : src.landmarkSets) {
+            auto* out = dst->add_landmark_sets();
+            CopyToProto(landmarkSet.meta, out->mutable_meta());
+            out->set_set_name(landmarkSet.setName);
+            out->set_reference_frame_id(landmarkSet.referenceFrameId);
+            for (const auto& landmark : landmarkSet.landmarks) {
+                auto* outLandmark = out->add_landmarks();
+                outLandmark->set_name(landmark.name);
+                CopyToProto(landmark.position, outLandmark->mutable_position());
+                outLandmark->set_confidence(landmark.confidence);
+                outLandmark->set_visibility(landmark.visibility);
+            }
+        }
+
+        CopyToProtoMap(src.tags, dst->mutable_tags());
+        return true;
+    }
+
     bool copyFromProto(const ::puppet::puppet_proto::Timestamp& src, model::Timestamp* dst) {
         if (dst == nullptr)
             return false;

@@ -1,0 +1,16 @@
+node_name: puppet_device_service_single_chain_ik_embosa
+topic_name: puppet_demo/primitive_frame
+source_id: demo_sender_single_chain_ik
+frame_id: torso_link
+loop_hz: 50
+
+channel:
+  type: embosa
+
+device:
+  type: single_chain_ik_sender
+  loop_hz: 50
+  semantic_context: single_chain_ik_demo
+  mode: cart_pose_to_joint
+  pipeline_id: single_chain_ik_pipeline
+  robot_id: unitree_g1

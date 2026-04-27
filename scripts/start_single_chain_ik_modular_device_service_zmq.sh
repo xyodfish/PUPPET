@@ -5,8 +5,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-${REPO_ROOT}/build}"
 
 RUNTIME_CFG="${1:-${REPO_ROOT}/config/runtime/demo_single_chain_ik_runtime_modular_zmq.yaml}"
-DEVICE_CFG="${2:-${REPO_ROOT}/config/device/device_service_static_file_zmq.yaml}"
-VIEWER_CFG="${3:-${REPO_ROOT}/config/tools/retargeting_mujoco_visualizer_zmq.yaml}"
+DEVICE_CFG="${2:-${REPO_ROOT}/config/device/device_service_single_chain_ik_zmq.yaml}"
+VIEWER_CFG="${3:-${REPO_ROOT}/config/tools/demo_single_chain_ik_visualizer_zmq.yaml}"
 
 RUNTIME_BIN="${BUILD_DIR}/app/cpp/runtime/teleop_runtime_embosa_main"
 DEVICE_BIN="${BUILD_DIR}/app/cpp/devices/device_service"
@@ -14,20 +14,20 @@ VIEWER_BIN="${BUILD_DIR}/app/cpp/tools/retargeting_mujoco_visualizer_zmq"
 
 for f in "${RUNTIME_BIN}" "${DEVICE_BIN}" "${VIEWER_BIN}"; do
   if [[ ! -x "${f}" ]]; then
-    echo "[start_retargeting_3nodes_zmq] missing executable: ${f}" >&2
+    echo "[start_single_chain_ik_modular_device_service_zmq] missing executable: ${f}" >&2
     echo "Build first: cmake -S . -B build && cmake --build build -j\$(nproc)" >&2
     exit 1
   fi
 done
 
 mkdir -p "${REPO_ROOT}/bin/log"
-RUNTIME_LOG="${REPO_ROOT}/bin/log/teleop_runtime_zmq.log"
-DEVICE_LOG="${REPO_ROOT}/bin/log/device_service_static_file_zmq.log"
-VIEWER_LOG="${REPO_ROOT}/bin/log/retargeting_mujoco_visualizer_zmq.log"
+RUNTIME_LOG="${REPO_ROOT}/bin/log/single_chain_ik_runtime_modular_zmq.log"
+DEVICE_LOG="${REPO_ROOT}/bin/log/single_chain_ik_device_service_zmq.log"
+VIEWER_LOG="${REPO_ROOT}/bin/log/single_chain_ik_viewer_zmq.log"
 
 pids=()
 cleanup() {
-  echo "[start_retargeting_3nodes_zmq] stopping nodes..."
+  echo "[start_single_chain_ik_modular_device_service_zmq] stopping nodes..."
   for pid in "${pids[@]:-}"; do
     if kill -0 "${pid}" 2>/dev/null; then
       kill "${pid}" 2>/dev/null || true
@@ -37,21 +37,21 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-echo "[start_retargeting_3nodes_zmq] start runtime"
+echo "[start_single_chain_ik_modular_device_service_zmq] start runtime"
 "${RUNTIME_BIN}" "${RUNTIME_CFG}" >"${RUNTIME_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
 
-echo "[start_retargeting_3nodes_zmq] start device service (static_file_replay + zmq)"
+echo "[start_single_chain_ik_modular_device_service_zmq] start device service"
 "${DEVICE_BIN}" "${DEVICE_CFG}" >"${DEVICE_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
 
-echo "[start_retargeting_3nodes_zmq] start zmq viewer"
+echo "[start_single_chain_ik_modular_device_service_zmq] start viewer"
 "${VIEWER_BIN}" "${VIEWER_CFG}" >"${VIEWER_LOG}" 2>&1 &
 pids+=("$!")
 
-echo "[start_retargeting_3nodes_zmq] running"
+echo "[start_single_chain_ik_modular_device_service_zmq] running"
 echo "  runtime log: ${RUNTIME_LOG}"
 echo "  device  log: ${DEVICE_LOG}"
 echo "  viewer  log: ${VIEWER_LOG}"

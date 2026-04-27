@@ -105,6 +105,7 @@ cmake --build build -j"$(nproc)"
 ## 📚 Demo 列表
 
 - [Retargeting 3-Nodes Demo](docs/retargeting_3nodes_demo.md)
+- [Device Service（三方库接入与源码迁移记录）](docs/device_service_三方库接入与源码迁移记录.md)
 - [Embosa PrimitiveFrame 收发 Demo（C++）](test/demos/cpp/README_embosa_proto_demo.md)
 - [Proto Message 构造 Demo（Python）](test/demos/python/README.md)
 
@@ -114,10 +115,29 @@ cmake --build build -j"$(nproc)"
   `./scripts/start_single_chain_ik_modular_embosa.sh`
 - ZMQ（`demo_single_chain_ik_runtime_modular_zmq.yaml`）  
   `./scripts/start_single_chain_ik_modular_zmq.sh`
+- Embosa + 统一 Device Service（`demo_single_chain_ik_runtime_modular.yaml`）  
+  `./scripts/start_single_chain_ik_modular_device_service_embosa.sh`
+- ZMQ + 统一 Device Service（`demo_single_chain_ik_runtime_modular_zmq.yaml`）  
+  `./scripts/start_single_chain_ik_modular_device_service_zmq.sh`
 
 ### 通信后端接入说明
 
 - [Runtime Channel ZMQ 接入说明](docs/runtime_channel_zmq_接入说明.md)
+
+### Device Service 当前约定
+
+- `provider` 放在 `include/src/cpp/puppet/device/providers/*`
+- `device output channel` 放在 `include/src/cpp/puppet/transport/*`
+- `provider::nextFrame` 只更新 `model::PrimitiveFrame`，protobuf 封装在 channel 层完成
+
+### 近期读者可见变化
+
+- `scaled_device` 配置中的示例关节名已替换为 `galbot_one_golf` 实机命名：
+  - 左臂：`left_arm_joint1..left_arm_joint7`
+  - 右臂：`right_arm_joint1..right_arm_joint7`
+  - 夹爪：`left_gripper_joint1`、`right_gripper_joint1`
+- `scaled_device` SDK 默认必需（构建时检查），不再通过 `PUPPET_WITH_SCALED_DEVICE_SDK` 条件启用
+- `third_party/galbot_remote_operate` 仅保留 Galbot SDK 相关内容，`yaml-cpp` 继续走本地 `find_package(yaml-cpp)`
 
 ---
 
