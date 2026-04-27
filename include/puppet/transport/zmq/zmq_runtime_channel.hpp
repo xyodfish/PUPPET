@@ -2,32 +2,31 @@
 
 #include <cstdint>
 #include <deque>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
 
-#include <netinet/in.h>
-
 #include "puppet/control_intent.pb.h"
 #include "puppet/primitive_frame.pb.h"
 #include "puppet/transport/runtime_channel.hpp"
-#include "puppet/transport/udp_runtime_config.hpp"
+#include "puppet/transport/zmq/zmq_runtime_config.hpp"
 
 namespace puppet::runtime {
 
-    class UdpRuntimeChannel : public IRuntimeChannel {
+    class ZmqRuntimeChannel : public IRuntimeChannel {
        public:
         using PrimitiveFrameHandler  = IRuntimeChannel::PrimitiveFrameHandler;
         using RobotStateFrameHandler = IRuntimeChannel::RobotStateFrameHandler;
         using RuntimeStats           = IRuntimeChannel::RuntimeStats;
 
-        UdpRuntimeChannel() = default;
-        explicit UdpRuntimeChannel(const UdpRuntimeConfig& config);
-        ~UdpRuntimeChannel() override;
+        ZmqRuntimeChannel() = default;
+        explicit ZmqRuntimeChannel(const ZmqRuntimeConfig& config);
+        ~ZmqRuntimeChannel() override;
 
         bool start(std::string& error) override;
-        bool start(const UdpRuntimeConfig& config, std::string& error);
+        bool start(const ZmqRuntimeConfig& config, std::string& error);
         bool isRunning() const override;
         bool tryPopFrame(model::PrimitiveFrame& frame) override;
         bool publishControlIntent(const model::ControlIntent& intent, std::string& error) override;
@@ -35,23 +34,25 @@ namespace puppet::runtime {
         void registerRobotStateFrameHandler(RobotStateFrameHandler handler) override;
         RuntimeStats getRuntimeStats() const override;
         int idleSleepMs() const override { return config_.idleSleepMs; }
-        void setConfig(const UdpRuntimeConfig& config);
+        void setConfig(const ZmqRuntimeConfig& config);
 
        private:
+        bool initContext(std::string& error);
         bool initDefaultEndpoints(std::string& error);
-        bool initBuiltInInputEndpoint(const UdpRuntimeConfig::InputEndpointConfig& endpoint, std::string& error);
-        bool initBuiltInOutputEndpoint(const UdpRuntimeConfig::OutputEndpointConfig& endpoint, std::string& error);
-        bool createReceiverSocket(const std::string& bindHost, uint16_t bindPort, int& fd, std::string& error);
-        bool createSenderSocket(const std::string& remoteHost, uint16_t remotePort, int& fd, sockaddr_in& remoteAddr, std::string& error);
-        bool setNonBlocking(int fd, std::string& error) const;
-        bool receiveAndDispatchInput(int fd, const std::string& endpointKey, bool pushToQueue, std::string& error);
-        bool handleIncomingPayload(const std::string& endpointKey, const uint8_t* data, size_t size, bool pushToQueue);
+        bool initBuiltInInputEndpoint(const ZmqRuntimeConfig::EndpointConfig& endpoint, std::string& error);
+        bool initBuiltInOutputEndpoint(const ZmqRuntimeConfig::EndpointConfig& endpoint, std::string& error);
+        bool createSubscriber(const std::string& endpoint, const std::string& topic, void*& socket, std::string& error);
+        bool createPublisher(const std::string& endpoint, void*& socket, std::string& error);
+        bool tryReceiveMessage(void* socket, std::string& topic, std::string& payload, bool& gotMessage, std::string& error) const;
+        bool onInputMessage(void* socket, const std::string& endpointKey, bool pushToQueue);
         void pollInputs();
-        void closeSocket(int& fd) noexcept;
+        void closeSocket(void*& socket) noexcept;
+        void destroyContext() noexcept;
         void setLastError(const std::string& error);
+
         ::puppet::puppet_proto::ControlIntent toProto(const model::ControlIntent& src) const;
 
-        UdpRuntimeConfig config_;
+        ZmqRuntimeConfig config_;
         bool started_ = false;
 
         mutable std::mutex queueMutex_;
@@ -64,11 +65,13 @@ namespace puppet::runtime {
 
         mutable std::mutex statsMutex_;
         RuntimeStats stats_;
+        std::map<std::string, size_t> readerEndpointCounts_;
+        std::map<std::string, size_t> writerEndpointCounts_;
 
-        int frameInputFd_    = -1;
-        int robotInputFd_    = -1;
-        int controlOutputFd_ = -1;
-        sockaddr_in controlRemoteAddr_{};
+        void* zmqContext_       = nullptr;
+        void* frameSubscriber_  = nullptr;
+        void* robotSubscriber_  = nullptr;
+        void* controlPublisher_ = nullptr;
     };
 
 }  // namespace puppet::runtime

@@ -1,4 +1,4 @@
-#include "puppet/transport/embosa_runtime_channel.hpp"
+#include "puppet/transport/embosa/embosa_runtime_channel.hpp"
 
 #include <functional>
 

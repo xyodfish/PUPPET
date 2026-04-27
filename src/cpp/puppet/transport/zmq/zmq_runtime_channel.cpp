@@ -1,4 +1,4 @@
-#include "puppet/transport/zmq_runtime_channel.hpp"
+#include "puppet/transport/zmq/zmq_runtime_channel.hpp"
 
 #include <cerrno>
 #include <cstring>

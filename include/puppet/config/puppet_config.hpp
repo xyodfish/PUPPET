@@ -3,10 +3,10 @@
 #include <string>
 
 #include "puppet/runtime/runtime_config.hpp"
-#include "puppet/transport/embosa_runtime_config.hpp"
-#include "puppet/transport/tcp_runtime_config.hpp"
-#include "puppet/transport/udp_runtime_config.hpp"
-#include "puppet/transport/zmq_runtime_config.hpp"
+#include "puppet/transport/embosa/embosa_runtime_config.hpp"
+#include "puppet/transport/tcp/tcp_runtime_config.hpp"
+#include "puppet/transport/udp/udp_runtime_config.hpp"
+#include "puppet/transport/zmq/zmq_runtime_config.hpp"
 
 namespace puppet::runtime {
 

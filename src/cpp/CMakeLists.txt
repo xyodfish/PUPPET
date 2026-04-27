@@ -28,8 +28,8 @@ set(ZMQ_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include")
 set(ZMQ_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
 set(ZMQ_LIBRARIES
     ${ZMQ_LIBRARY_DIR}/libzmq.so)
-set(SCALED_DEVICE_SDK_ROOT "${CMAKE_SOURCE_DIR}/third_party/galbot_remote_operate"
-    CACHE PATH "Path to scaled device SDK root that contains include/ and lib/")
+
+set(SCALED_DEVICE_SDK_ROOT "${CMAKE_SOURCE_DIR}/third_party/cpp/galbot_remote_operate")
 set(SCALED_DEVICE_SDK_INCLUDE_DIR "${SCALED_DEVICE_SDK_ROOT}/include")
 set(SCALED_DEVICE_SDK_LIBRARY_DIR "${SCALED_DEVICE_SDK_ROOT}/lib")
 if (NOT EXISTS "${SCALED_DEVICE_SDK_INCLUDE_DIR}/GalbotRemoteOperate/RemoteOperate.h")
@@ -67,25 +67,32 @@ set(PUPPET_CORE_SOURCES
   puppet/device/device_service_config.cpp
   puppet/device/device_service.cpp
   puppet/device/device_provider_factory.cpp
+
   puppet/device/static_file_replay/static_file_replay_device_provider.cpp
   puppet/device/single_chain_ik/single_chain_ik_sender_device_provider.cpp
   puppet/device/scaled/scaled_device_provider.cpp
+
   puppet/runtime/robot_state_sync.cpp
   puppet/runtime/runtime_config.cpp
   puppet/runtime/teleop_runtime.cpp
   puppet/runtime/runtime_state_report.cpp
   puppet/source/source_manager.cpp
   puppet/transport/device_output_channel_factory.cpp
-  puppet/transport/embosa_device_output_channel.cpp
-  puppet/transport/embosa_runtime_channel.cpp
-  puppet/transport/embosa_runtime_config.cpp
-  puppet/transport/zmq_device_output_channel.cpp
-  puppet/transport/zmq_runtime_channel.cpp
-  puppet/transport/zmq_runtime_config.cpp
-  puppet/transport/tcp_runtime_channel.cpp
-  puppet/transport/tcp_runtime_config.cpp
-  puppet/transport/udp_runtime_channel.cpp
-  puppet/transport/udp_runtime_config.cpp
+
+  puppet/transport/embosa/embosa_device_output_channel.cpp
+  puppet/transport/embosa/embosa_runtime_channel.cpp
+  puppet/transport/embosa/embosa_runtime_config.cpp
+
+  puppet/transport/zmq/zmq_device_output_channel.cpp
+  puppet/transport/zmq/zmq_runtime_channel.cpp
+  puppet/transport/zmq/zmq_runtime_config.cpp
+
+  puppet/transport/tcp/tcp_runtime_channel.cpp
+  puppet/transport/tcp/tcp_runtime_config.cpp
+
+  puppet/transport/udp/udp_runtime_channel.cpp
+  puppet/transport/udp/udp_runtime_config.cpp
+
   puppet/transport/message_snapshot.cpp
   puppet/transport/proto_copy.cpp
   puppet/orchestrator/orchestrator.cpp

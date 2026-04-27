@@ -1,4 +1,4 @@
-#include "puppet/transport/udp_runtime_channel.hpp"
+#include "puppet/transport/tcp/tcp_runtime_channel.hpp"
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -21,27 +21,27 @@ namespace puppet::runtime {
         constexpr int kSelectTimeoutUsec = 0;
     }
 
-    UdpRuntimeChannel::UdpRuntimeChannel(const UdpRuntimeConfig& config) : config_(config) {}
+    TcpRuntimeChannel::TcpRuntimeChannel(const TcpRuntimeConfig& config) : config_(config) {}
 
-    UdpRuntimeChannel::~UdpRuntimeChannel() {
+    TcpRuntimeChannel::~TcpRuntimeChannel() {
         closeSocket(frameInputFd_);
         closeSocket(robotInputFd_);
         closeSocket(controlOutputFd_);
         started_ = false;
     }
 
-    bool UdpRuntimeChannel::start(std::string& error) {
+    bool TcpRuntimeChannel::start(std::string& error) {
         return start(config_, error);
     }
 
-    bool UdpRuntimeChannel::start(const UdpRuntimeConfig& config, std::string& error) {
+    bool TcpRuntimeChannel::start(const TcpRuntimeConfig& config, std::string& error) {
         config_ = config;
-        LOG(INFO) << "UdpRuntimeChannel start input_bind=" << config_.inputBindHost << ":" << config_.inputBindPort
-                  << " output_remote=" << config_.outputRemoteHost << ":" << config_.outputControlIntentPort;
+        LOG(INFO) << "TcpRuntimeChannel start input=" << config_.inputHost << ":" << config_.inputPort
+                  << " output=" << config_.outputControlHost << ":" << config_.outputControlIntentPort;
 
         if (!initDefaultEndpoints(error)) {
             setLastError(error);
-            LOG(ERROR) << "UdpRuntimeChannel initDefaultEndpoints failed: " << error;
+            LOG(ERROR) << "TcpRuntimeChannel initDefaultEndpoints failed: " << error;
             return false;
         }
 
@@ -50,11 +50,11 @@ namespace puppet::runtime {
         return true;
     }
 
-    bool UdpRuntimeChannel::isRunning() const {
+    bool TcpRuntimeChannel::isRunning() const {
         return started_;
     }
 
-    bool UdpRuntimeChannel::tryPopFrame(model::PrimitiveFrame& frame) {
+    bool TcpRuntimeChannel::tryPopFrame(model::PrimitiveFrame& frame) {
         pollInputs();
 
         std::lock_guard<std::mutex> lock(queueMutex_);
@@ -66,9 +66,9 @@ namespace puppet::runtime {
         return true;
     }
 
-    bool UdpRuntimeChannel::publishControlIntent(const model::ControlIntent& intent, std::string& error) {
+    bool TcpRuntimeChannel::publishControlIntent(const model::ControlIntent& intent, std::string& error) {
         if (controlOutputFd_ < 0) {
-            error = "control intent udp socket is invalid";
+            error = "control intent tcp socket is invalid";
             setLastError(error);
             return false;
         }
@@ -81,10 +81,15 @@ namespace puppet::runtime {
             return false;
         }
 
-        const ssize_t rc = sendto(controlOutputFd_, payload.data(), payload.size(), 0,
-                                  reinterpret_cast<const sockaddr*>(&controlRemoteAddr_), sizeof(controlRemoteAddr_));
-        if (rc < 0) {
-            error = std::string("udp sendto failed: ") + std::strerror(errno);
+        if (config_.useLengthPrefix) {
+            uint32_t msgLen = htonl(static_cast<uint32_t>(payload.size()));
+            if (!sendAll(controlOutputFd_, reinterpret_cast<const uint8_t*>(&msgLen), sizeof(msgLen), error)) {
+                setLastError(error);
+                return false;
+            }
+        }
+
+        if (!sendAll(controlOutputFd_, reinterpret_cast<const uint8_t*>(payload.data()), payload.size(), error)) {
             setLastError(error);
             return false;
         }
@@ -97,26 +102,26 @@ namespace puppet::runtime {
         return true;
     }
 
-    void UdpRuntimeChannel::registerPrimitiveFrameHandler(PrimitiveFrameHandler handler) {
+    void TcpRuntimeChannel::registerPrimitiveFrameHandler(PrimitiveFrameHandler handler) {
         std::lock_guard<std::mutex> lock(handlerMutex_);
         primitiveFrameHandlers_.push_back(std::move(handler));
     }
 
-    void UdpRuntimeChannel::registerRobotStateFrameHandler(RobotStateFrameHandler handler) {
+    void TcpRuntimeChannel::registerRobotStateFrameHandler(RobotStateFrameHandler handler) {
         std::lock_guard<std::mutex> lock(handlerMutex_);
         robotStateFrameHandlers_.push_back(std::move(handler));
     }
 
-    UdpRuntimeChannel::RuntimeStats UdpRuntimeChannel::getRuntimeStats() const {
+    TcpRuntimeChannel::RuntimeStats TcpRuntimeChannel::getRuntimeStats() const {
         std::lock_guard<std::mutex> lock(statsMutex_);
         return stats_;
     }
 
-    void UdpRuntimeChannel::setConfig(const UdpRuntimeConfig& config) {
+    void TcpRuntimeChannel::setConfig(const TcpRuntimeConfig& config) {
         config_ = config;
     }
 
-    bool UdpRuntimeChannel::initDefaultEndpoints(std::string& error) {
+    bool TcpRuntimeChannel::initDefaultEndpoints(std::string& error) {
         for (const auto& endpoint : config_.inputEndpoints) {
             if (!endpoint.enabled) {
                 continue;
@@ -145,50 +150,47 @@ namespace puppet::runtime {
         return true;
     }
 
-    bool UdpRuntimeChannel::initBuiltInInputEndpoint(const UdpRuntimeConfig::InputEndpointConfig& endpoint, std::string& error) {
+    bool TcpRuntimeChannel::initBuiltInInputEndpoint(const TcpRuntimeConfig::EndpointConfig& endpoint, std::string& error) {
         if (endpoint.key == "primitive_frame") {
-            config_.inputBindHost = endpoint.bindHost;
-            config_.inputBindPort = endpoint.bindPort;
-            return createReceiverSocket(endpoint.bindHost, endpoint.bindPort, frameInputFd_, error);
+            config_.inputHost = endpoint.host;
+            config_.inputPort = endpoint.port;
+            return createClientSocket(endpoint.host, endpoint.port, frameInputFd_, error);
         }
         if (endpoint.key == "robot_state_frame") {
-            config_.robotStateInputBindHost = endpoint.bindHost;
-            config_.robotStateInputBindPort = endpoint.bindPort;
-            return createReceiverSocket(endpoint.bindHost, endpoint.bindPort, robotInputFd_, error);
+            config_.robotStateInputHost = endpoint.host;
+            config_.robotStateInputPort = endpoint.port;
+            return createClientSocket(endpoint.host, endpoint.port, robotInputFd_, error);
         }
         return false;
     }
 
-    bool UdpRuntimeChannel::initBuiltInOutputEndpoint(const UdpRuntimeConfig::OutputEndpointConfig& endpoint, std::string& error) {
+    bool TcpRuntimeChannel::initBuiltInOutputEndpoint(const TcpRuntimeConfig::EndpointConfig& endpoint, std::string& error) {
         if (endpoint.key != "control_intent") {
             return false;
         }
-        config_.outputRemoteHost        = endpoint.remoteHost;
-        config_.outputControlIntentPort = endpoint.remotePort;
-        return createSenderSocket(endpoint.remoteHost, endpoint.remotePort, controlOutputFd_, controlRemoteAddr_, error);
+        config_.outputControlHost       = endpoint.host;
+        config_.outputControlIntentPort = endpoint.port;
+        return createClientSocket(endpoint.host, endpoint.port, controlOutputFd_, error);
     }
 
-    bool UdpRuntimeChannel::createReceiverSocket(const std::string& bindHost, uint16_t bindPort, int& fd, std::string& error) {
-        int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    bool TcpRuntimeChannel::createClientSocket(const std::string& host, uint16_t port, int& fd, std::string& error) {
+        int sockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (sockfd < 0) {
-            error = std::string("create udp receiver socket failed: ") + std::strerror(errno);
+            error = std::string("create tcp socket failed: ") + std::strerror(errno);
             return false;
         }
 
         sockaddr_in addr{};
         addr.sin_family = AF_INET;
-        addr.sin_port   = htons(bindPort);
-        if (inet_pton(AF_INET, bindHost.c_str(), &addr.sin_addr) != 1) {
-            error = "invalid bind ipv4 address: " + bindHost;
+        addr.sin_port   = htons(port);
+        if (inet_pton(AF_INET, host.c_str(), &addr.sin_addr) != 1) {
+            error = "invalid ipv4 address: " + host;
             close(sockfd);
             return false;
         }
 
-        const int enableReuse = 1;
-        setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enableReuse, sizeof(enableReuse));
-
-        if (bind(sockfd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) != 0) {
-            error = std::string("udp bind failed: ") + std::strerror(errno);
+        if (connect(sockfd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) != 0) {
+            error = std::string("tcp connect failed: ") + std::strerror(errno);
             close(sockfd);
             return false;
         }
@@ -202,28 +204,7 @@ namespace puppet::runtime {
         return true;
     }
 
-    bool UdpRuntimeChannel::createSenderSocket(const std::string& remoteHost, uint16_t remotePort, int& fd, sockaddr_in& remoteAddr,
-                                               std::string& error) {
-        int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-        if (sockfd < 0) {
-            error = std::string("create udp sender socket failed: ") + std::strerror(errno);
-            return false;
-        }
-
-        remoteAddr            = {};
-        remoteAddr.sin_family = AF_INET;
-        remoteAddr.sin_port   = htons(remotePort);
-        if (inet_pton(AF_INET, remoteHost.c_str(), &remoteAddr.sin_addr) != 1) {
-            error = "invalid remote ipv4 address: " + remoteHost;
-            close(sockfd);
-            return false;
-        }
-
-        fd = sockfd;
-        return true;
-    }
-
-    bool UdpRuntimeChannel::setNonBlocking(int fd, std::string& error) const {
+    bool TcpRuntimeChannel::setNonBlocking(int fd, std::string& error) const {
         const int flags = fcntl(fd, F_GETFL, 0);
         if (flags < 0) {
             error = std::string("fcntl(F_GETFL) failed: ") + std::strerror(errno);
@@ -236,32 +217,27 @@ namespace puppet::runtime {
         return true;
     }
 
-    bool UdpRuntimeChannel::receiveAndDispatchInput(int fd, const std::string& endpointKey, bool pushToQueue, std::string& error) {
-        std::vector<uint8_t> recvBuf(static_cast<size_t>(std::max(512, config_.recvBufferSize)));
-        while (true) {
-            sockaddr_in peer{};
-            socklen_t peerLen = sizeof(peer);
-            const ssize_t rc  = recvfrom(fd, recvBuf.data(), recvBuf.size(), 0, reinterpret_cast<sockaddr*>(&peer), &peerLen);
+    bool TcpRuntimeChannel::sendAll(int fd, const uint8_t* data, size_t size, std::string& error) const {
+        size_t sent = 0;
+        while (sent < size) {
+            const ssize_t rc = send(fd, data + sent, size - sent, 0);
             if (rc < 0) {
                 if (errno == EINTR) {
                     continue;
                 }
-                if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                    error.clear();
-                    return true;
-                }
-                error = std::string("udp recvfrom failed: ") + std::strerror(errno);
+                error = std::string("tcp send failed: ") + std::strerror(errno);
                 return false;
             }
             if (rc == 0) {
-                continue;
+                error = "tcp send returned 0";
+                return false;
             }
-
-            handleIncomingPayload(endpointKey, recvBuf.data(), static_cast<size_t>(rc), pushToQueue);
+            sent += static_cast<size_t>(rc);
         }
+        return true;
     }
 
-    bool UdpRuntimeChannel::handleIncomingPayload(const std::string& endpointKey, const uint8_t* data, size_t size, bool pushToQueue) {
+    bool TcpRuntimeChannel::handleIncomingPayload(const std::string& endpointKey, const uint8_t* data, size_t size, bool pushToQueue) {
         ::puppet::puppet_proto::PrimitiveFrame framePb;
         if (!framePb.ParseFromArray(data, static_cast<int>(size))) {
             std::lock_guard<std::mutex> lock(statsMutex_);
@@ -318,7 +294,67 @@ namespace puppet::runtime {
         return false;
     }
 
-    void UdpRuntimeChannel::pollInputs() {
+    bool TcpRuntimeChannel::readAndDispatchInput(int fd, const std::string& endpointKey, bool pushToQueue, std::string& error) {
+        std::vector<uint8_t> recvBuf(static_cast<size_t>(std::max(256, config_.recvBufferSize)));
+        bool receivedAnyData = false;
+        while (true) {
+            const ssize_t rc = recv(fd, recvBuf.data(), recvBuf.size(), 0);
+            if (rc < 0) {
+                if (errno == EINTR) {
+                    continue;
+                }
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    break;
+                }
+                error = std::string("tcp recv failed: ") + std::strerror(errno);
+                return false;
+            }
+            if (rc == 0) {
+                error = "tcp peer closed connection";
+                return false;
+            }
+
+            receivedAnyData = true;
+            if (!config_.useLengthPrefix) {
+                handleIncomingPayload(endpointKey, recvBuf.data(), static_cast<size_t>(rc), pushToQueue);
+                continue;
+            }
+
+            auto& staging = inputBuffers_[fd];
+            staging.insert(staging.end(), recvBuf.begin(), recvBuf.begin() + rc);
+            std::vector<uint8_t> payload;
+            while (tryExtractFramedMessage(staging, payload)) {
+                handleIncomingPayload(endpointKey, payload.data(), payload.size(), pushToQueue);
+                payload.clear();
+            }
+        }
+
+        (void)receivedAnyData;
+        error.clear();
+        return true;
+    }
+
+    bool TcpRuntimeChannel::tryExtractFramedMessage(std::vector<uint8_t>& buffer, std::vector<uint8_t>& payload) const {
+        if (buffer.size() < sizeof(uint32_t)) {
+            return false;
+        }
+
+        uint32_t netLength = 0;
+        std::memcpy(&netLength, buffer.data(), sizeof(uint32_t));
+        const uint32_t msgLen = ntohl(netLength);
+        if (msgLen == 0 || msgLen > 32U * 1024U * 1024U) {
+            return false;
+        }
+        if (buffer.size() < sizeof(uint32_t) + msgLen) {
+            return false;
+        }
+
+        payload.assign(buffer.begin() + sizeof(uint32_t), buffer.begin() + sizeof(uint32_t) + msgLen);
+        buffer.erase(buffer.begin(), buffer.begin() + sizeof(uint32_t) + msgLen);
+        return true;
+    }
+
+    void TcpRuntimeChannel::pollInputs() {
         fd_set readSet;
         FD_ZERO(&readSet);
 
@@ -345,32 +381,32 @@ namespace puppet::runtime {
 
         std::string error;
         if (frameInputFd_ >= 0 && FD_ISSET(frameInputFd_, &readSet)) {
-            if (!receiveAndDispatchInput(frameInputFd_, "primitive_frame", true, error)) {
+            if (!readAndDispatchInput(frameInputFd_, "primitive_frame", true, error)) {
                 setLastError(error);
-                LOG(ERROR) << "UdpRuntimeChannel read primitive_frame failed: " << error;
+                LOG(ERROR) << "TcpRuntimeChannel read primitive_frame failed: " << error;
             }
         }
         if (robotInputFd_ >= 0 && FD_ISSET(robotInputFd_, &readSet)) {
-            if (!receiveAndDispatchInput(robotInputFd_, "robot_state_frame", false, error)) {
+            if (!readAndDispatchInput(robotInputFd_, "robot_state_frame", false, error)) {
                 setLastError(error);
-                LOG(ERROR) << "UdpRuntimeChannel read robot_state_frame failed: " << error;
+                LOG(ERROR) << "TcpRuntimeChannel read robot_state_frame failed: " << error;
             }
         }
     }
 
-    void UdpRuntimeChannel::closeSocket(int& fd) noexcept {
+    void TcpRuntimeChannel::closeSocket(int& fd) noexcept {
         if (fd >= 0) {
             close(fd);
             fd = -1;
         }
     }
 
-    void UdpRuntimeChannel::setLastError(const std::string& error) {
+    void TcpRuntimeChannel::setLastError(const std::string& error) {
         std::lock_guard<std::mutex> lock(statsMutex_);
         stats_.lastError = error;
     }
 
-    ::puppet::puppet_proto::ControlIntent UdpRuntimeChannel::toProto(const model::ControlIntent& src) const {
+    ::puppet::puppet_proto::ControlIntent TcpRuntimeChannel::toProto(const model::ControlIntent& src) const {
         ::puppet::puppet_proto::ControlIntent dst;
         dst.set_sequence_id(src.sequenceId);
         dst.mutable_context()->set_source_id(src.context.sourceId);

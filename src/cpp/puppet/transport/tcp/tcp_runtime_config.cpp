@@ -1,4 +1,4 @@
-#include "puppet/transport/tcp_runtime_config.hpp"
+#include "puppet/transport/tcp/tcp_runtime_config.hpp"
 
 #include <filesystem>
 #include <utility>

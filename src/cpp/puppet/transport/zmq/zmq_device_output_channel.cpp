@@ -1,4 +1,4 @@
-#include "puppet/transport/zmq_device_output_channel.hpp"
+#include "puppet/transport/zmq/zmq_device_output_channel.hpp"
 
 #include <cerrno>
 

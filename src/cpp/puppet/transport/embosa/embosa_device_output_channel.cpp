@@ -1,4 +1,4 @@
-#include "puppet/transport/embosa_device_output_channel.hpp"
+#include "puppet/transport/embosa/embosa_device_output_channel.hpp"
 
 #include "puppet/transport/proto_copy.hpp"
 

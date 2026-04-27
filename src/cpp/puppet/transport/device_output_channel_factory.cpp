@@ -1,7 +1,7 @@
 #include "puppet/transport/device_output_channel.hpp"
 
-#include "puppet/transport/embosa_device_output_channel.hpp"
-#include "puppet/transport/zmq_device_output_channel.hpp"
+#include "puppet/transport/embosa/embosa_device_output_channel.hpp"
+#include "puppet/transport/zmq/zmq_device_output_channel.hpp"
 
 namespace puppet::transport {
 

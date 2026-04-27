@@ -6,10 +6,10 @@
 #include <glog/logging.h>
 
 #include "puppet/common/time_utils.hpp"
-#include "puppet/transport/embosa_runtime_channel.hpp"
-#include "puppet/transport/tcp_runtime_channel.hpp"
-#include "puppet/transport/udp_runtime_channel.hpp"
-#include "puppet/transport/zmq_runtime_channel.hpp"
+#include "puppet/transport/embosa/embosa_runtime_channel.hpp"
+#include "puppet/transport/tcp/tcp_runtime_channel.hpp"
+#include "puppet/transport/udp/udp_runtime_channel.hpp"
+#include "puppet/transport/zmq/zmq_runtime_channel.hpp"
 
 namespace puppet::runtime {
 

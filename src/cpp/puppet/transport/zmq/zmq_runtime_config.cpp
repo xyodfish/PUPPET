@@ -1,4 +1,4 @@
-#include "puppet/transport/zmq_runtime_config.hpp"
+#include "puppet/transport/zmq/zmq_runtime_config.hpp"
 
 #include <filesystem>
 #include <utility>
