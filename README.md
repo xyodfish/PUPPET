@@ -6,138 +6,198 @@
 
 > **P**rimitive-based **U**nified **P**latform for **P**luggable **E**mbodied **T**eleoperation
 
-欢迎来到 **PUPPET** 🎉  
+<p align="center">
+  <a href="docs/README.md">Documentation</a> •
+  <a href="docs/developer_guide.md">中文文档</a> •
+  <a href="docs/developer_guide_en.md">English Guide</a> •
+  <a href="#-快速开始">Quick Start</a> •
+  <a href="#-运行示例">Demos</a>
+</p>
+
+欢迎来到 **PUPPET** 🎉
+
 这是一个面向多关节机器人的通用遥操作运行框架。你可以把它理解成：
 
-- 把各种输入设备（VR、动捕、手柄、外部消息）统一接进来 🧩
-- 用统一中间层表达控制语义（`PrimitiveFrame`）
-- 经过编排 + Retargeting + 后端求解，输出机器人可执行控制目标 ⚙️
+- 把 VR、动捕、主从臂、手柄、文件回放或外部消息统一接进来 🧩
+- 用 `PrimitiveFrame` 表达设备侧控制语义 🧠
+- 经过 runtime 编排、Retargeting 和机器人后端映射，输出 `ControlIntent` / final target ⚙️
 
 ---
 
 ## ✨ PUPPET 想解决什么问题？
 
-传统遥操作系统常见痛点：
+传统遥操作系统很容易遇到这些痛点：
 
 - 设备和机器人强耦合，换设备就要重写 😵
-- 多输入源并存时难以统一调度
-- 算法模块（视觉/动捕/手势）难插拔
-- IK / WBC / 优化能力分散，工程维护困难
+- 多输入源并存时，控制权和 body group 路由难管理 🧭
+- 算法模块、通信模块、app 入口容易混在一起 🧱
+- IK / GMR / WBC / 约束等能力分散，工程维护成本高 🔧
 
-PUPPET 的目标是做一套**清晰、统一、可扩展、可工程落地**的框架骨架 ✅
+PUPPET 的目标是做一套**清晰、统一、可扩展、可工程落地**的遥操作 runtime 骨架 ✅
 
 ---
 
 ## 🧠 核心理念
 
-PUPPET 最关键的一层是：`PrimitiveFrame`
+PUPPET 最关键的一层是：`PrimitiveFrame`。
 
-它不是让设备直接输出某机器人 target，而是先输出统一“控制语义”，再通过后续模块映射到具体机器人执行语义。
-
-主链路如下：
+设备不直接输出某台机器人的 target，而是先输出“带控制语义的一帧输入”。后续 runtime 再按配置把它路由到对应 pipeline 和 backend。
 
 ```text
 Device / Source
   -> PrimitiveFrame
+  -> RuntimeChannel (Embosa / ZMQ)
+  -> SourceManager
   -> Orchestrator
-  -> Retargeting Pipeline
-  -> Control Intent
+  -> RetargetingPipeline
+  -> ControlIntent
   -> Robot Backend
   -> Final Target
 ```
 
+当前仓库已经包含：
+
+- C++ runtime 主链路 🚀
+- Device Service 与 provider 抽象 🕹️
+- Embosa / ZMQ 两套通信通路 📡
+- `PrimitiveFrame` / `ControlIntent` 等 proto 消息 📦
+- 单链 IK / GMR retargeting 相关实现 🤖
+- MuJoCo visualizer 工具 👀
+
+部分测试目录仍是占位，当前更可靠的验证方式是运行 `test/demos` 和 `scripts/` 下的启动脚本。
+
 ---
 
-## 🗂️ 仓库结构（新手友好版）
+## 🗂️ 仓库结构
 
 ```text
 PUPPET/
-  include/puppet/        # 对外头文件（稳定接口）
-  src/cpp/puppet/        # C++ 核心实现（runtime / orchestration / backend）
-  src/python/            # Python 公共逻辑与算法节点支撑
-  app/cpp/               # C++ 入口程序（runtime / devices / demos / tools）
-  app/python/            # Python 入口 demo / 节点
-  config/                # 机器人、pipeline、运行时配置
-  proto/                 # PrimitiveFrame / ControlIntent 等消息定义
-  test/                  # unit / integration / demos（支持小 demo）
-  docs/                  # 架构与开发文档
-  scripts/               # 构建、开发、发布脚本
-  third_party/           # 显式管理的三方依赖
-  bin/                   # 本地二进制输出目录（保留骨架，内容默认忽略）
+  include/puppet/        # 对外 C++ 头文件与稳定接口
+  src/cpp/puppet/        # C++ 核心实现：runtime、device、transport、retargeting、backend
+  app/cpp/               # C++ 可执行入口：runtime、devices、tools
+  config/                # runtime、device、tools 的 YAML 配置
+  proto/                 # PrimitiveFrame、ControlIntent、trajectory 等 proto 定义与生成工程
+  test/                  # unit/integration 占位与 demo 验证程序
+  docs/                  # 架构、接入、通信和开发文档
+  scripts/               # 常用启动脚本
+  third_party/           # 显式纳入仓库的三方 SDK
+  devel/                 # 本地安装前缀，常用于 puppet_proto
 ```
+
+---
+
+## 🧰 环境依赖
+
+基础工具链：
+
+- CMake 3.20+
+- C++17 编译器
+- `protoc` / Protobuf（构建 `proto/` 时需要）
+
+主工程依赖：
+
+- `yaml-cpp`
+- `Eigen3`
+- `glog`
+- `pinocchio`
+- `qpOASES`
+- `orocos-kdl`
+- `trac_ik`
+- `puppet_proto`
+- Embosa / FastDDS 相关库
+- ZMQ
+- Galbot Scaled Device SDK（默认路径 `third_party/galbot_remote_operate`）
+
+默认三方安装前缀约定为 `/opt/robot/devel/<arch-os-compiler-version>`，可通过 CMake 变量 `ROOT_DEVEL_ARCH_PATH` 覆盖。`puppet_proto` 默认会在 `devel/<arch>-Linux-GNU-<compiler-version>` 下查找。
 
 ---
 
 ## 🚀 快速开始
 
-> 当前仓库处于骨架初始化阶段，先保证结构可扩展，再逐步填充实现。
+推荐先构建并安装 proto，再构建主工程：
 
-### 1) 配置与编译
+```bash
+./auto_build.sh --proto-only --install-proto
+./auto_build.sh --main-only
+```
+
+也可以使用基础构建脚本：
+
+```bash
+./build.sh
+```
+
+或直接调用 CMake：
 
 ```bash
 cmake -S . -B build
 cmake --build build -j"$(nproc)"
 ```
 
-也可以直接：
+常用选项：
 
-```bash
-./build.sh
-```
+- `-DPUPPET_BUILD_CPP_APPS=ON|OFF`：是否构建 C++ app，默认 `ON`
+- `-DPUPPET_BUILD_TESTS=ON|OFF`：是否进入 `test/` 子工程，默认 `ON`
+- `-DROOT_DEVEL_ARCH_PATH=/path/to/devel`：覆盖 Embosa/ZMQ 等依赖前缀
+- `-DSCALED_DEVICE_SDK_ROOT=/path/to/galbot_remote_operate`：覆盖 scaled device SDK 路径
 
-### 2) 目录约定速记
-
-- 正式入口程序放 `app/*`
-- 可复用实现放 `src/*`
-- 验证性小 demo 可以放 `test/demos/*` 🧪
 ---
 
-## 🧪 测试与 Demo 约定
+## 🎮 运行示例
 
-`test/` 已按用途拆分：
+单链 IK modular demo：
 
-- `test/unit/`：单元测试
-- `test/integration/`：集成测试
-- `test/demos/`：轻量验证 demo（快速试想法非常合适）
+```bash
+./scripts/start_single_chain_ik_modular_embosa.sh
+./scripts/start_single_chain_ik_modular_zmq.sh
+```
 
-如果是对外展示或长期维护的 demo，建议放到 `app/*/demos`。
+统一 Device Service 版本：
 
-## 📚 Demo 列表
+```bash
+./scripts/start_single_chain_ik_modular_device_service_embosa.sh
+./scripts/start_single_chain_ik_modular_device_service_zmq.sh
+```
 
-- [Retargeting 3-Nodes Demo](docs/retargeting_3nodes_demo.md)
-- [Device Service（三方库接入与源码迁移记录）](docs/device_service_三方库接入与源码迁移记录.md)
-- [Embosa PrimitiveFrame 收发 Demo（C++）](test/demos/cpp/README_embosa_proto_demo.md)
-- [Proto Message 构造 Demo（Python）](test/demos/python/README.md)
+Retargeting 三节点 demo：
 
-### 单链 IK 启动脚本
+```bash
+./scripts/start_retargeting_3nodes.sh
+./scripts/start_retargeting_3nodes_zmq.sh
+```
 
-- Embosa（`demo_single_chain_ik_runtime_modular.yaml`）  
-  `./scripts/start_single_chain_ik_modular_embosa.sh`
-- ZMQ（`demo_single_chain_ik_runtime_modular_zmq.yaml`）  
-  `./scripts/start_single_chain_ik_modular_zmq.sh`
-- Embosa + 统一 Device Service（`demo_single_chain_ik_runtime_modular.yaml`）  
-  `./scripts/start_single_chain_ik_modular_device_service_embosa.sh`
-- ZMQ + 统一 Device Service（`demo_single_chain_ik_runtime_modular_zmq.yaml`）  
-  `./scripts/start_single_chain_ik_modular_device_service_zmq.sh`
+脚本通常会拉起 runtime、sender/device service 和 visualizer，日志输出到 `bin/log/`。运行前请确认相关配置文件、端口和三方动态库路径可用。
 
-### 通信后端接入说明
+---
 
+## 📚 文档入口
+
+- [Documentation / 文档总览](docs/README.md)
+- [开发者指南（中文）](docs/developer_guide.md)
+- [Developer Guide (English)](docs/developer_guide_en.md)
+- [Proto Overview](docs/proto_overview.md)
 - [Runtime Channel ZMQ 接入说明](docs/runtime_channel_zmq_接入说明.md)
+- [Device Service 接入与迁移记录](docs/device_service_三方库接入与源码迁移记录.md)
+- [Retargeting 3-Nodes Demo](docs/retargeting_3nodes_demo.md)
+- [Embosa PrimitiveFrame 收发 Demo](test/demos/cpp/README_embosa_proto_demo.md)
+- [Proto Python Demo](test/demos/python/README.md)
 
-### Device Service 当前约定
+---
 
-- `provider` 放在 `include/src/cpp/puppet/device/providers/*`
-- `device output channel` 放在 `include/src/cpp/puppet/transport/*`
-- `provider::nextFrame` 只更新 `model::PrimitiveFrame`，protobuf 封装在 channel 层完成
+## 🛠️ 开发约定
 
-### 近期读者可见变化
+- 核心 runtime、device、transport、retargeting、backend 边界不要混放。
+- 新设备优先接入 `DeviceService` provider，只在 channel 层处理 protobuf/通信封装。
+- 新 retargeting 能力优先实现为 pipeline plugin，并通过 YAML 配置挂接。
+- 公共接口放 `include/puppet/`，实现放 `src/cpp/puppet/`，应用拼装放 `app/cpp/`。
+- 修改 C++ 后使用仓库 `.clang-format` 格式化，可参考 `format_cpp.sh`。
+- 更完整的命名、分层和风格约束见 `AGENTS.md`。
 
-- `scaled_device` 配置中的示例关节名已替换为 `galbot_one_golf` 实机命名：
-  - 左臂：`left_arm_joint1..left_arm_joint7`
-  - 右臂：`right_arm_joint1..right_arm_joint7`
-  - 夹爪：`left_gripper_joint1`、`right_gripper_joint1`
-- `scaled_device` SDK 默认必需（构建时检查），不再通过 `PUPPET_WITH_SCALED_DEVICE_SDK` 条件启用
-- `third_party/galbot_remote_operate` 仅保留 Galbot SDK 相关内容，`yaml-cpp` 继续走本地 `find_package(yaml-cpp)`
+---
+
+## 🧪 测试状态
+
+`test/unit` 和 `test/integration` 目前主要是结构占位，仓库内尚未接入实际 `add_test` / gtest 用例。当前更可靠的回归方式是构建主工程和 proto，并运行 `test/demos/cpp` 中的通信/retargeting demo 或对应脚本。
 
 ---
 
@@ -146,16 +206,12 @@ cmake --build build -j"$(nproc)"
 - [X] 定义 `primitive_frame.proto`
 - [X] 定义 `control_intent.proto`
 - [X] 搭建 `teleop_runtime` 主循环
-- [ ] 实现 SourceManager 与 freshness 管理
-- [ ] 实现 body-group ownership / routing
-- [ ] 搭建基础 RetargetingPipeline
-- [ ] 实现 DirectMappingBackend
-- [X] 接入一个简单 VR / external source demo
-- [X] 增加 Recorder / Visualizer
-- [ ] 增加 IK backend
-- [X] 增加 GMR backend
-- [ ] 增加 TSID / WBC backend
-- [ ] 增加 collision / constraint interface
+- [X] 接入 Embosa / ZMQ runtime channel
+- [X] 增加 Device Service 与 provider 抽象
+- [X] 增加 Recorder / Visualizer 相关工具
+- [X] 增加 GMR backend / plugin 相关实现
+- [ ] 补齐单元测试与集成测试用例
+- [ ] 继续完善 IK / TSID / WBC / collision / constraint interface
 
 ---
 
@@ -165,21 +221,10 @@ cmake --build build -j"$(nproc)"
 
 你可以从这些小任务开始：
 
-- 补 `proto` 定义
-- 增加一个 `test/demos` 小 demo
-- 给 `docs/` 补一页架构说明
-
----
-
-## ❓FAQ
-
-### 为什么有很多 `.gitkeep`？
-
-因为 Git 默认不跟踪空目录。用 `.gitkeep` 可以让目录骨架同步到远端仓库。
-
-### `bin/` 为什么目录在仓库里但内容默认忽略？
-
-这是为了保留结构，同时避免把本地二进制产物提交到 Git。
+- 补一个 `test/demos` 可复现 demo 🧪
+- 给新设备增加一个 `DeviceService` provider 🕹️
+- 给 `docs/` 补一页接入说明或排障记录 📝
+- 为核心 runtime / retargeting 链路补单元测试 ✅
 
 ---
 

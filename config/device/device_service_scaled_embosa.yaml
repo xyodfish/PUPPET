@@ -38,6 +38,16 @@ device:
     chassis_vel:
       apml: [0.5, 0.5, 0.5]
       ub: [0.6, 0.6, 0.6]
+    leg_delta:
+      cmd_speed_x: 0.001
+      cmd_speed_z: 0.001
+    waist_yaw_delta:
+      joint_name: leg_joint4
+      cmd_speed_yaw: 2.5
+    head_delta:
+      joint_names: [head_joint1, head_joint2]
+      cmd_speed_head_yaw: 0.001
+      cmd_speed_head_pitch: 0.001
 
   buttons:
     key1L: { alias: left_combo }

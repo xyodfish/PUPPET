@@ -5,6 +5,10 @@
 #include <cmath>
 #include <cstring>
 
+#include <glog/logging.h>
+
+#include "puppet/common/puppetEnumUtils.h"
+
 namespace puppet::device {
 
     namespace scaled_device_provider_detail {
@@ -165,6 +169,72 @@ namespace puppet::device {
         return std::clamp(value * amplify, -absBound, absBound);
     }
 
+    bool ScaledDeviceProvider::isDeviceOnline() const {
+        const auto now       = std::chrono::steady_clock::now();
+        const double idleSec = std::chrono::duration<double>(now - lastDataTime_).count();
+        return idleSec < offlineTimeoutSec_;
+    }
+
+    void ScaledDeviceProvider::setChassisTargetZero() {
+        joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb]  = 0.0;
+        joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr]  = 0.0;
+        joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot] = 0.0;
+        chassisMotion_.moveTranslate                                      = false;
+        chassisMotion_.moveRotate                                         = false;
+    }
+
+    void ScaledDeviceProvider::triggerChassisZeroCommand(ChassisStopReason reason) {
+        LOG(INFO) << "Chassis stop detected, set zero command, reason: " << EnumUtils::toString(reason);
+        chassisMotion_.zeroCommandActive = true;
+        chassisMotion_.stopCommandCount  = 0;
+        chassisMotion_.stopReason        = reason;
+    }
+
+    void ScaledDeviceProvider::handleChassisMotionCommand() {
+        const bool comboPressed = leftComboLongPressed_ || rightComboLongPressed_;
+        const bool softStop     = leftSoftEmergencyStop_ || rightSoftEmergencyStop_;
+        const bool deviceOnline = isDeviceOnline();
+
+        if (comboPressed) {
+            setChassisTargetZero();
+            if (chassisMotion_.lastCommandActive && !chassisMotion_.zeroCommandActive) {
+                triggerChassisZeroCommand(ChassisStopReason::detect_combo_pressed);
+            }
+        }
+
+        if (!softStop && (chassisMotion_.moveRotate || chassisMotion_.moveTranslate)) {
+            chassisMotion_.stopCommandCount  = 0;
+            chassisMotion_.lastCommandActive = true;
+            chassisMotion_.zeroCommandActive = false;
+            chassisMotion_.stopReason        = ChassisStopReason::none;
+        } else {
+            if (softStop && !lastSoftEmergencyStop_ && !chassisMotion_.zeroCommandActive) {
+                triggerChassisZeroCommand(ChassisStopReason::detect_soft_emergency_stop);
+            } else if (chassisMotion_.lastCommandActive && !chassisMotion_.zeroCommandActive) {
+                triggerChassisZeroCommand(ChassisStopReason::detect_joy_stop);
+            } else if (chassisMotion_.lastDeviceOnline && !deviceOnline && !chassisMotion_.zeroCommandActive) {
+                triggerChassisZeroCommand(ChassisStopReason::detect_device_offline);
+            }
+
+            if (chassisMotion_.zeroCommandActive) {
+                LOG(INFO) << "Chassis set zero count: " << chassisMotion_.stopCommandCount + 1
+                          << " reason: " << EnumUtils::toString(chassisMotion_.stopReason);
+
+                setChassisTargetZero();
+                chassisMotionUpdated_ = true;
+                if (++chassisMotion_.stopCommandCount >= kChassisStopCommandMaxCount) {
+                    LOG(INFO) << "Chassis stop confirmed, reason: " << EnumUtils::toString(chassisMotion_.stopReason);
+                    chassisMotion_.zeroCommandActive = false;
+                    chassisMotion_.stopCommandCount  = 0;
+                }
+                chassisMotion_.lastCommandActive = false;
+            }
+        }
+
+        chassisMotion_.lastDeviceOnline = deviceOnline;
+        lastSoftEmergencyStop_          = softStop;
+    }
+
     void ScaledDeviceProvider::updateArmSyncMode(bool forceEmit) {
         auto calcMode = [](const ArmControlState& state) {
             if (state.directSync) {
@@ -204,17 +274,22 @@ namespace puppet::device {
                     amplifyAndClamp(applyDeadZone(mapJoyAxis(fb, rXThreshold), rXDeadZone), chassisVelAmpl_[0], chassisVelUb_[0]);
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr] =
                     amplifyAndClamp(applyDeadZone(mapJoyAxis(lr, rYThreshold), rYDeadZone), chassisVelAmpl_[1], chassisVelUb_[1]);
+                chassisMotion_.moveTranslate = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb] != 0.0 ||
+                                               joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr] != 0.0;
             } else if (std::fabs(fb) >= rXThreshold) {
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb] =
                     amplifyAndClamp(applyDeadZone(mapJoyAxis(fb, rXThreshold), rXDeadZone), chassisVelAmpl_[0], chassisVelUb_[0]);
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr] = 0.0;
+                chassisMotion_.moveTranslate = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb] != 0.0;
             } else if (std::fabs(lr) >= rYThreshold) {
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb] = 0.0;
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr] =
                     amplifyAndClamp(applyDeadZone(mapJoyAxis(lr, rYThreshold), rYDeadZone), chassisVelAmpl_[1], chassisVelUb_[1]);
+                chassisMotion_.moveTranslate = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr] != 0.0;
             } else {
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb] = 0.0;
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr] = 0.0;
+                chassisMotion_.moveTranslate                                     = false;
             }
 
             joyAxesState_[scaled_device_provider_detail::kJoyStateHeadYaw]   = 0.0;
@@ -224,16 +299,15 @@ namespace puppet::device {
                 (std::abs(lr) < rYThreshold) ? 0.0 : mapJoyAxis(lr, rYThreshold);
             joyAxesState_[scaled_device_provider_detail::kJoyStateHeadPitch] =
                 (std::abs(fb) < rXThreshold) ? 0.0 : mapJoyAxis(-fb, rXThreshold);
+            chassisMotion_.moveTranslate = false;
         }
 
         if (leftComboLongPressed_ || rightComboLongPressed_) {
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb]  = 0.0;
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr]  = 0.0;
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot] = 0.0;
+            setChassisTargetZero();
         }
 
         chassisMotionUpdated_ = true;
-        joyScalarUpdated_     = true;
+        joyCommandUpdated_    = true;
         lastDataTime_         = std::chrono::steady_clock::now();
     }
 
@@ -249,9 +323,11 @@ namespace puppet::device {
         if (!rightComboLongPressed_) {
             if (std::abs(lr) < lYThreshold) {
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot] = 0.0;
+                chassisMotion_.moveRotate                                         = false;
             } else {
                 joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot] =
                     amplifyAndClamp(applyDeadZone(mapJoyAxis(lr, lYThreshold), lYDeadZone), chassisVelAmpl_[2], chassisVelUb_[2]);
+                chassisMotion_.moveRotate = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot] != 0.0;
             }
 
             joyAxesState_[scaled_device_provider_detail::kJoyStateLegUd] =
@@ -264,16 +340,15 @@ namespace puppet::device {
             joyAxesState_[scaled_device_provider_detail::kJoyStateWaistFbTran] =
                 (std::fabs(fb) >= lXThreshold) ? applyDeadZone(mapJoyAxis(fb, lXThreshold), lXDeadZone) : 0.0;
             joyAxesState_[scaled_device_provider_detail::kJoyStateLegUd] = 0.0;
+            chassisMotion_.moveRotate                                    = false;
         }
 
         if (leftComboLongPressed_ || rightComboLongPressed_) {
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb]  = 0.0;
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr]  = 0.0;
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot] = 0.0;
+            setChassisTargetZero();
         }
 
         chassisMotionUpdated_ = true;
-        joyScalarUpdated_     = true;
+        joyCommandUpdated_    = true;
         lastDataTime_         = std::chrono::steady_clock::now();
     }
 
@@ -367,6 +442,35 @@ namespace puppet::device {
             chassisVelAmpl_ = {0.5, 0.5, 0.5};
         if (chassisVelUb_.size() < 3)
             chassisVelUb_ = {0.6, 0.6, 0.6};
+
+        if (configNode["command_params"]) {
+            const YAML::Node commandNode = configNode["command_params"];
+            if (commandNode["leg_delta"]) {
+                const YAML::Node legNode = commandNode["leg_delta"];
+                if (legNode["cmd_speed_x"])
+                    legCmdSpeedX_ = legNode["cmd_speed_x"].as<double>();
+                if (legNode["cmd_speed_z"])
+                    legCmdSpeedZ_ = legNode["cmd_speed_z"].as<double>();
+            }
+            if (commandNode["waist_yaw_delta"]) {
+                const YAML::Node waistNode = commandNode["waist_yaw_delta"];
+                if (waistNode["joint_name"])
+                    waistYawJointName_ = waistNode["joint_name"].as<std::string>();
+                if (waistNode["cmd_speed_yaw"])
+                    waistCmdSpeedYaw_ = waistNode["cmd_speed_yaw"].as<double>();
+            }
+            if (commandNode["head_delta"]) {
+                const YAML::Node headNode = commandNode["head_delta"];
+                headJointNames_           = scaled_device_provider_detail::readStringVector(headNode, "joint_names", headJointNames_);
+                if (headJointNames_.size() < 2) {
+                    headJointNames_ = {"head_joint1", "head_joint2"};
+                }
+                if (headNode["cmd_speed_head_yaw"])
+                    headCmdSpeedYaw_ = headNode["cmd_speed_head_yaw"].as<double>();
+                if (headNode["cmd_speed_head_pitch"])
+                    headCmdSpeedPitch_ = headNode["cmd_speed_head_pitch"].as<double>();
+            }
+        }
 
         if (configNode["buttons"] && configNode["buttons"].IsMap()) {
             for (const auto& item : configNode["buttons"]) {
@@ -513,10 +617,8 @@ namespace puppet::device {
         updateArmSyncMode();
 
         if (leftComboLongPressed_ || rightComboLongPressed_) {
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb]  = 0.0;
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr]  = 0.0;
-            joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot] = 0.0;
-            chassisMotionUpdated_                                             = true;
+            setChassisTargetZero();
+            chassisMotionUpdated_ = true;
         }
     }
 
@@ -598,17 +700,75 @@ namespace puppet::device {
         }
     }
 
-    bool ScaledDeviceProvider::nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string* error) {
-        std::lock_guard<std::mutex> lock(dataMutex_);
-        tryReconnect();
+    void ScaledDeviceProvider::appendJoyRelativeCommands(model::PrimitiveFrame* frame) {
+        const double legUd     = joyAxesState_[scaled_device_provider_detail::kJoyStateLegUd];
+        const double waistFb   = joyAxesState_[scaled_device_provider_detail::kJoyStateWaistFbTran];
+        const double waistYaw  = joyAxesState_[scaled_device_provider_detail::kJoyStateWaistLrRot];
+        const double headYaw   = joyAxesState_[scaled_device_provider_detail::kJoyStateHeadYaw];
+        const double headPitch = joyAxesState_[scaled_device_provider_detail::kJoyStateHeadPitch];
 
+        if (std::fabs(legUd) > 0.0 || std::fabs(waistFb) > 0.0) {
+            model::PosePrimitive pose;
+            pose.meta.name             = "leg_delta_pose";
+            pose.meta.entity           = "leg";
+            pose.meta.bodyGroup        = model::BodyGroup::kLowerBody;
+            pose.meta.frameId          = frameId_;
+            pose.meta.referenceFrameId = frameId_;
+            pose.meta.confidence       = 1.0F;
+            pose.meta.valid            = true;
+            pose.pose.position.x       = legCmdSpeedX_ * waistFb;
+            pose.pose.position.y       = 0.0;
+            pose.pose.position.z       = legCmdSpeedZ_ * legUd;
+            pose.pose.orientation.w    = 1.0;
+            pose.isRelative            = true;
+            pose.targetFrameId         = "leg";
+            frame->poses.push_back(std::move(pose));
+        }
+
+        if (std::fabs(waistYaw) > 0.0) {
+            model::JointCommandPrimitive command;
+            command.meta.name             = "waist_yaw_delta";
+            command.meta.entity           = "leg";
+            command.meta.bodyGroup        = model::BodyGroup::kTorso;
+            command.meta.frameId          = frameId_;
+            command.meta.referenceFrameId = frameId_;
+            command.meta.confidence       = 1.0F;
+            command.meta.valid            = true;
+            command.mode                  = model::JointCommandMode::kPosition;
+            command.jointNames.push_back(waistYawJointName_);
+            command.position.push_back(waistCmdSpeedYaw_ * waistYaw);
+            command.isRelatived = {true, false, false, false, false};
+            frame->jointCommands.push_back(std::move(command));
+        }
+
+        if (std::fabs(headYaw) > 0.0 || std::fabs(headPitch) > 0.0) {
+            model::JointCommandPrimitive command;
+            command.meta.name             = "head_delta";
+            command.meta.entity           = "head";
+            command.meta.bodyGroup        = model::BodyGroup::kHead;
+            command.meta.frameId          = frameId_;
+            command.meta.referenceFrameId = frameId_;
+            command.meta.confidence       = 1.0F;
+            command.meta.valid            = true;
+            command.mode                  = model::JointCommandMode::kPosition;
+            command.jointNames.push_back(headJointNames_[0]);
+            command.jointNames.push_back(headJointNames_[1]);
+            command.position.push_back(headCmdSpeedYaw_ * headYaw);
+            command.position.push_back(headCmdSpeedPitch_ * headPitch);
+            command.isRelatived = {true, false, false, false, false};
+            frame->jointCommands.push_back(std::move(command));
+        }
+    }
+
+    bool ScaledDeviceProvider::hasPendingFrame() const {
         const bool hasArmUpdate     = (leftArm_.enabled && leftArm_.updated) || (rightArm_.enabled && rightArm_.updated);
         const bool hasGripperUpdate = (leftGripperEnabled_ && leftGripperUpdated_) || (rightGripperEnabled_ && rightGripperUpdated_);
         const bool hasModeUpdate    = leftArmControl_.modeUpdated || rightArmControl_.modeUpdated || softEmergencyStopUpdated_;
-        if (!hasArmUpdate && !hasGripperUpdate && !chassisMotionUpdated_ && !joyScalarUpdated_ && !hasModeUpdate) {
-            error->clear();
-            return false;
-        }
+        return hasArmUpdate || hasGripperUpdate || chassisMotionUpdated_ || joyCommandUpdated_ || hasModeUpdate ||
+               chassisMotion_.zeroCommandActive;
+    }
+
+    void ScaledDeviceProvider::initializeFrame(uint64_t sequenceId, model::PrimitiveFrame* frame) {
         const auto now  = std::chrono::system_clock::now().time_since_epoch();
         const auto sec  = std::chrono::duration_cast<std::chrono::seconds>(now).count();
         const auto nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(now).count() - sec * 1000000000LL;
@@ -633,157 +793,163 @@ namespace puppet::device {
         frame->skeletons.clear();
         frame->landmarkSets.clear();
         frame->tags.clear();
+    }
 
-        auto appendArmJointState = [&](const ArmRuntimeState& armState) {
-            if (!armState.enabled || !armState.updated) {
-                return;
-            }
-            model::JointStatePrimitive jointState;
-            jointState.meta.name             = armState.stateName;
-            jointState.meta.entity           = armState.armName;
-            jointState.meta.bodyGroup        = armState.bodyGroup;
-            jointState.meta.frameId          = frameId_;
-            jointState.meta.referenceFrameId = frameId_;
-            jointState.meta.confidence       = 1.0F;
-            jointState.meta.valid            = true;
-            jointState.jointNames.reserve(armState.jointNames.size());
-            jointState.position.reserve(armState.jointNames.size());
-            jointState.velocity.reserve(armState.jointNames.size());
-            jointState.effort.reserve(armState.jointNames.size());
-
-            for (size_t index = 0; index < armState.jointNames.size(); ++index) {
-                jointState.jointNames.push_back(armState.jointNames[index]);
-                jointState.position.push_back(armState.positions[index]);
-                jointState.velocity.push_back(armState.velocities[index]);
-                jointState.effort.push_back(armState.efforts[index]);
-            }
-            frame->jointStates.push_back(std::move(jointState));
-        };
-        appendArmJointState(leftArm_);
-        appendArmJointState(rightArm_);
-
-        if (leftGripperEnabled_ && leftGripperUpdated_) {
-            model::JointStatePrimitive jointState;
-            jointState.meta.name             = "left_gripper_state";
-            jointState.meta.entity           = "left_gripper";
-            jointState.meta.bodyGroup        = model::BodyGroup::kLeftGripper;
-            jointState.meta.frameId          = frameId_;
-            jointState.meta.referenceFrameId = frameId_;
-            jointState.meta.confidence       = 1.0F;
-            jointState.meta.valid            = true;
-            jointState.jointNames.push_back(leftGripperJointName_);
-            jointState.position.push_back(leftGripperPos_);
-            frame->jointStates.push_back(std::move(jointState));
+    void ScaledDeviceProvider::appendArmJointState(const ArmRuntimeState& armState, model::PrimitiveFrame* frame) {
+        if (!armState.enabled || !armState.updated) {
+            return;
         }
 
-        if (rightGripperEnabled_ && rightGripperUpdated_) {
-            model::JointStatePrimitive jointState;
-            jointState.meta.name             = "right_gripper_state";
-            jointState.meta.entity           = "right_gripper";
-            jointState.meta.bodyGroup        = model::BodyGroup::kRightGripper;
-            jointState.meta.frameId          = frameId_;
-            jointState.meta.referenceFrameId = frameId_;
-            jointState.meta.confidence       = 1.0F;
-            jointState.meta.valid            = true;
-            jointState.jointNames.push_back(rightGripperJointName_);
-            jointState.position.push_back(rightGripperPos_);
-            frame->jointStates.push_back(std::move(jointState));
+        model::JointStatePrimitive jointState;
+        jointState.meta.name             = armState.stateName;
+        jointState.meta.entity           = armState.armName;
+        jointState.meta.bodyGroup        = armState.bodyGroup;
+        jointState.meta.frameId          = frameId_;
+        jointState.meta.referenceFrameId = frameId_;
+        jointState.meta.confidence       = 1.0F;
+        jointState.meta.valid            = true;
+        jointState.jointNames.reserve(armState.jointNames.size());
+        jointState.position.reserve(armState.jointNames.size());
+        jointState.velocity.reserve(armState.jointNames.size());
+        jointState.effort.reserve(armState.jointNames.size());
+
+        for (size_t index = 0; index < armState.jointNames.size(); ++index) {
+            jointState.jointNames.push_back(armState.jointNames[index]);
+            jointState.position.push_back(armState.positions[index]);
+            jointState.velocity.push_back(armState.velocities[index]);
+            jointState.effort.push_back(armState.efforts[index]);
+        }
+        frame->jointStates.push_back(std::move(jointState));
+    }
+
+    void ScaledDeviceProvider::appendGripperJointState(const std::string& name, const std::string& entity, model::BodyGroup bodyGroup,
+                                                       const std::string& jointName, double position, model::PrimitiveFrame* frame) {
+        model::JointStatePrimitive jointState;
+        jointState.meta.name             = name;
+        jointState.meta.entity           = entity;
+        jointState.meta.bodyGroup        = bodyGroup;
+        jointState.meta.frameId          = frameId_;
+        jointState.meta.referenceFrameId = frameId_;
+        jointState.meta.confidence       = 1.0F;
+        jointState.meta.valid            = true;
+        jointState.jointNames.push_back(jointName);
+        jointState.position.push_back(position);
+        frame->jointStates.push_back(std::move(jointState));
+    }
+
+    void ScaledDeviceProvider::appendChassisMotion(model::PrimitiveFrame* frame) {
+        model::PlanarMotionPrimitive planar;
+        planar.meta.name             = "scaled_device_chassis_motion";
+        planar.meta.entity           = "chassis";
+        planar.meta.bodyGroup        = model::BodyGroup::kBase;
+        planar.meta.frameId          = frameId_;
+        planar.meta.referenceFrameId = frameId_;
+        planar.meta.confidence       = 1.0F;
+        planar.meta.valid            = true;
+        planar.vx                    = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb];
+        planar.vy                    = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr];
+        planar.wz                    = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot];
+        planar.referenceFrameId      = frameId_;
+        frame->planarMotions.push_back(std::move(planar));
+    }
+
+    void ScaledDeviceProvider::appendArmMode(const std::string& name, const std::string& entity, ArmSyncMode modeValue, bool modeUpdated,
+                                             model::PrimitiveFrame* frame) {
+        if (!modeUpdated) {
+            return;
         }
 
-        if (chassisMotionUpdated_) {
-            model::PlanarMotionPrimitive planar;
-            planar.meta.name             = "scaled_device_chassis_motion";
-            planar.meta.entity           = "chassis";
-            planar.meta.bodyGroup        = model::BodyGroup::kBase;
-            planar.meta.frameId          = frameId_;
-            planar.meta.referenceFrameId = frameId_;
-            planar.meta.confidence       = 1.0F;
-            planar.meta.valid            = true;
-            planar.vx                    = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisFb];
-            planar.vy                    = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisLr];
-            planar.wz                    = joyAxesState_[scaled_device_provider_detail::kJoyStateChassisRot];
-            planar.referenceFrameId      = frameId_;
-            frame->planarMotions.push_back(std::move(planar));
+        model::ModePrimitive mode;
+        mode.meta.name             = name;
+        mode.meta.entity           = entity;
+        mode.meta.bodyGroup        = entity == "left_arm" ? model::BodyGroup::kLeftArm : model::BodyGroup::kRightArm;
+        mode.meta.frameId          = frameId_;
+        mode.meta.referenceFrameId = frameId_;
+        mode.meta.confidence       = 1.0F;
+        mode.meta.valid            = true;
+        mode.modeId                = static_cast<int32_t>(modeValue);
+        switch (modeValue) {
+            case ArmSyncMode::DirectSync:
+                mode.modeName = "direct_sync";
+                break;
+            case ArmSyncMode::JointSpaceIncremental:
+                mode.modeName = "joint_space_incremental_sync";
+                break;
+            case ArmSyncMode::CartesianSpaceIncremental:
+                mode.modeName = "cartesian_space_incremental_sync";
+                break;
+            default:
+                mode.modeName = "none";
+                break;
+        }
+        frame->modes.push_back(std::move(mode));
+    }
+
+    void ScaledDeviceProvider::appendSoftEmergencyStop(model::PrimitiveFrame* frame) {
+        if (!softEmergencyStopUpdated_) {
+            return;
         }
 
-        if (joyScalarUpdated_) {
-            auto addScalar = [&](const std::string& name, model::BodyGroup group, double value) {
-                model::ScalarPrimitive scalar;
-                scalar.meta.name             = name;
-                scalar.meta.entity           = name;
-                scalar.meta.bodyGroup        = group;
-                scalar.meta.frameId          = frameId_;
-                scalar.meta.referenceFrameId = frameId_;
-                scalar.meta.confidence       = 1.0F;
-                scalar.meta.valid            = true;
-                scalar.value                 = value;
-                scalar.minValue              = -1.0;
-                scalar.maxValue              = 1.0;
-                frame->scalars.push_back(std::move(scalar));
-            };
+        model::BooleanPrimitive stopFlag;
+        stopFlag.meta.name             = "soft_emergency_stop";
+        stopFlag.meta.entity           = "scaled_device";
+        stopFlag.meta.bodyGroup        = model::BodyGroup::kWholeBody;
+        stopFlag.meta.frameId          = frameId_;
+        stopFlag.meta.referenceFrameId = frameId_;
+        stopFlag.meta.confidence       = 1.0F;
+        stopFlag.meta.valid            = true;
+        stopFlag.value                 = leftSoftEmergencyStop_ || rightSoftEmergencyStop_;
+        frame->booleans.push_back(std::move(stopFlag));
+    }
 
-            addScalar("leg_ud", model::BodyGroup::kLowerBody, joyAxesState_[scaled_device_provider_detail::kJoyStateLegUd]);
-            addScalar("waist_lr_rot", model::BodyGroup::kTorso, joyAxesState_[scaled_device_provider_detail::kJoyStateWaistLrRot]);
-            addScalar("waist_fb_tran", model::BodyGroup::kTorso, joyAxesState_[scaled_device_provider_detail::kJoyStateWaistFbTran]);
-            addScalar("head_yaw", model::BodyGroup::kHead, joyAxesState_[scaled_device_provider_detail::kJoyStateHeadYaw]);
-            addScalar("head_pitch", model::BodyGroup::kHead, joyAxesState_[scaled_device_provider_detail::kJoyStateHeadPitch]);
-        }
-
-        auto appendMode = [&](const std::string& name, const std::string& entity, ArmSyncMode modeValue, bool modeUpdated) {
-            if (!modeUpdated) {
-                return;
-            }
-            model::ModePrimitive mode;
-            mode.meta.name             = name;
-            mode.meta.entity           = entity;
-            mode.meta.bodyGroup        = entity == "left_arm" ? model::BodyGroup::kLeftArm : model::BodyGroup::kRightArm;
-            mode.meta.frameId          = frameId_;
-            mode.meta.referenceFrameId = frameId_;
-            mode.meta.confidence       = 1.0F;
-            mode.meta.valid            = true;
-            mode.modeId                = static_cast<int32_t>(modeValue);
-            switch (modeValue) {
-                case ArmSyncMode::DirectSync:
-                    mode.modeName = "direct_sync";
-                    break;
-                case ArmSyncMode::JointSpaceIncremental:
-                    mode.modeName = "joint_space_incremental_sync";
-                    break;
-                case ArmSyncMode::CartesianSpaceIncremental:
-                    mode.modeName = "cartesian_space_incremental_sync";
-                    break;
-                default:
-                    mode.modeName = "none";
-                    break;
-            }
-            frame->modes.push_back(std::move(mode));
-        };
-
-        appendMode("left_arm_sync_mode", "left_arm", leftArmControl_.effectiveMode, leftArmControl_.modeUpdated);
-        appendMode("right_arm_sync_mode", "right_arm", rightArmControl_.effectiveMode, rightArmControl_.modeUpdated);
-
-        if (softEmergencyStopUpdated_) {
-            model::BooleanPrimitive stopFlag;
-            stopFlag.meta.name             = "soft_emergency_stop";
-            stopFlag.meta.entity           = "scaled_device";
-            stopFlag.meta.bodyGroup        = model::BodyGroup::kWholeBody;
-            stopFlag.meta.frameId          = frameId_;
-            stopFlag.meta.referenceFrameId = frameId_;
-            stopFlag.meta.confidence       = 1.0F;
-            stopFlag.meta.valid            = true;
-            stopFlag.value                 = leftSoftEmergencyStop_ || rightSoftEmergencyStop_;
-            frame->booleans.push_back(std::move(stopFlag));
-        }
-
+    void ScaledDeviceProvider::resetUpdateFlags() {
         leftArm_.updated             = false;
         rightArm_.updated            = false;
         leftGripperUpdated_          = false;
         rightGripperUpdated_         = false;
         chassisMotionUpdated_        = false;
-        joyScalarUpdated_            = false;
+        joyCommandUpdated_           = false;
         leftArmControl_.modeUpdated  = false;
         rightArmControl_.modeUpdated = false;
         softEmergencyStopUpdated_    = false;
+    }
+
+    bool ScaledDeviceProvider::nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string* error) {
+        std::lock_guard<std::mutex> lock(dataMutex_);
+        tryReconnect();
+        handleChassisMotionCommand();
+
+        if (!hasPendingFrame()) {
+            error->clear();
+            return false;
+        }
+
+        initializeFrame(sequenceId, frame);
+        appendArmJointState(leftArm_, frame);
+        appendArmJointState(rightArm_, frame);
+
+        if (leftGripperEnabled_ && leftGripperUpdated_) {
+            appendGripperJointState("left_gripper_state", "left_gripper", model::BodyGroup::kLeftGripper, leftGripperJointName_,
+                                    leftGripperPos_, frame);
+        }
+
+        if (rightGripperEnabled_ && rightGripperUpdated_) {
+            appendGripperJointState("right_gripper_state", "right_gripper", model::BodyGroup::kRightGripper, rightGripperJointName_,
+                                    rightGripperPos_, frame);
+        }
+
+        if (chassisMotionUpdated_) {
+            appendChassisMotion(frame);
+        }
+
+        if (joyCommandUpdated_) {
+            appendJoyRelativeCommands(frame);
+        }
+
+        appendArmMode("left_arm_sync_mode", "left_arm", leftArmControl_.effectiveMode, leftArmControl_.modeUpdated, frame);
+        appendArmMode("right_arm_sync_mode", "right_arm", rightArmControl_.effectiveMode, rightArmControl_.modeUpdated, frame);
+        appendSoftEmergencyStop(frame);
+        resetUpdateFlags();
         return true;
     }
 
