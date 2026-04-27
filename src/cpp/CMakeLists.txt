@@ -82,6 +82,10 @@ set(PUPPET_CORE_SOURCES
   puppet/transport/zmq_device_output_channel.cpp
   puppet/transport/zmq_runtime_channel.cpp
   puppet/transport/zmq_runtime_config.cpp
+  puppet/transport/tcp_runtime_channel.cpp
+  puppet/transport/tcp_runtime_config.cpp
+  puppet/transport/udp_runtime_channel.cpp
+  puppet/transport/udp_runtime_config.cpp
   puppet/transport/message_snapshot.cpp
   puppet/transport/proto_copy.cpp
   puppet/orchestrator/orchestrator.cpp

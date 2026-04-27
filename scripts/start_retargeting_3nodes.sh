@@ -37,19 +37,36 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+check_started() {
+  local pid="$1"
+  local name="$2"
+  local log_file="$3"
+  if ! kill -0 "${pid}" 2>/dev/null; then
+    echo "[start_retargeting_3nodes] ${name} exited during startup, see log: ${log_file}" >&2
+    if [[ -f "${log_file}" ]]; then
+      sed -n '1,120p' "${log_file}" >&2 || true
+    fi
+    exit 1
+  fi
+}
+
 echo "[start_retargeting_3nodes] start runtime"
 "${RUNTIME_BIN}" "${RUNTIME_CFG}" >"${RUNTIME_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
+check_started "${pids[$((${#pids[@]} - 1))]}" "runtime" "${RUNTIME_LOG}"
 
 echo "[start_retargeting_3nodes] start device service (static_file_replay + embosa)"
 "${DEVICE_BIN}" "${DEVICE_CFG}" >"${DEVICE_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
+check_started "${pids[$((${#pids[@]} - 1))]}" "device service" "${DEVICE_LOG}"
 
 echo "[start_retargeting_3nodes] start viewer"
 "${VIEWER_BIN}" "${VIEWER_CFG}" >"${VIEWER_LOG}" 2>&1 &
 pids+=("$!")
+sleep 1
+check_started "${pids[$((${#pids[@]} - 1))]}" "viewer" "${VIEWER_LOG}"
 
 echo "[start_retargeting_3nodes] running"
 echo "  runtime log: ${RUNTIME_LOG}"

@@ -1,0 +1,24 @@
+use_length_prefix: true
+idle_sleep_ms: 2
+recv_buffer_size: 4096
+input_host: 127.0.0.1
+input_port: 16661
+robot_state_input_host: 127.0.0.1
+robot_state_input_port: 16662
+output_control_intent_host: 127.0.0.1
+output_control_intent_port: 16663
+endpoints:
+  inputs:
+    - key: primitive_frame
+      host: 127.0.0.1
+      port: 16661
+      enabled: true
+    - key: robot_state_frame
+      host: 127.0.0.1
+      port: 16662
+      enabled: false
+  outputs:
+    - key: control_intent
+      host: 127.0.0.1
+      port: 16663
+      enabled: true

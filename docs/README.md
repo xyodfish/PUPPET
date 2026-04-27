@@ -8,7 +8,7 @@ PUPPET documentation is organized around quick start, developer extension, commu
 
 - [开发者指南](developer_guide.md)：模块分层、runtime 数据流、配置结构、构建依赖、扩展方式和排查建议。
 - [Proto Overview](proto_overview.md)：`PrimitiveFrame`、`ControlIntent`、trajectory 等 proto 语义。
-- [Runtime Channel ZMQ 接入说明](runtime_channel_zmq_接入说明.md)：ZMQ runtime channel、配置和 demo 说明。
+- [Runtime Channel 多传输接入说明](runtime_channel_zmq_接入说明.md)：embosa/zmq/tcp/udp runtime channel、配置和 demo 说明。
 - [Device Service 接入与迁移记录](device_service_三方库接入与源码迁移记录.md)：统一 device service、provider 和 scaled device SDK 接入。
 - [Retargeting 3-Nodes Demo](retargeting_3nodes_demo.md)：runtime、sender、visualizer 三节点示例。
 - [Runtime Dispatch Capability-first Design](runtime_dispatch_capability_first_design.md)：runtime dispatch 设计记录。

@@ -7,6 +7,8 @@
 
 #include "puppet/common/time_utils.hpp"
 #include "puppet/transport/embosa_runtime_channel.hpp"
+#include "puppet/transport/tcp_runtime_channel.hpp"
+#include "puppet/transport/udp_runtime_channel.hpp"
 #include "puppet/transport/zmq_runtime_channel.hpp"
 
 namespace puppet::runtime {
@@ -104,6 +106,16 @@ namespace puppet::runtime {
         }
         if (config_.runtimeChannelType == "zmq") {
             channel_ = std::make_unique<ZmqRuntimeChannel>(config_.zmqRuntime);
+            error.clear();
+            return true;
+        }
+        if (config_.runtimeChannelType == "tcp") {
+            channel_ = std::make_unique<TcpRuntimeChannel>(config_.tcpRuntime);
+            error.clear();
+            return true;
+        }
+        if (config_.runtimeChannelType == "udp") {
+            channel_ = std::make_unique<UdpRuntimeChannel>(config_.udpRuntime);
             error.clear();
             return true;
         }

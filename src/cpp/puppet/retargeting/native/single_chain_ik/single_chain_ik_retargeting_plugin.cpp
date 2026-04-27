@@ -7,12 +7,14 @@
 #include <trac_ik/trac_ik.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <random>
 #include <utility>
 
 namespace puppet::retargeting {
 
     namespace single_chain_ik_internal {
+        constexpr uint32_t kMaxConsecutiveIkFailuresBeforeSeedReset = 5;
 
         model::BodyGroup toBodyGroup(const std::string& bodyGroup) {
             if (bodyGroup == "left_arm") {
@@ -67,6 +69,24 @@ namespace puppet::retargeting {
                 }
             }
             return has_any;
+        }
+
+        double findNearestEquivalent(double value, double reference, double lower, double upper) {
+            const double kTwoPi = 2.0 * KDL::PI;
+            double best         = std::min(upper, std::max(lower, value));
+            double bestDistance = std::abs(best - reference);
+            for (int k = -2; k <= 2; ++k) {
+                const double candidate = value + static_cast<double>(k) * kTwoPi;
+                if (candidate < lower || candidate > upper) {
+                    continue;
+                }
+                const double distance = std::abs(candidate - reference);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best         = candidate;
+                }
+            }
+            return best;
         }
 
     }  // namespace single_chain_ik_internal
@@ -132,6 +152,115 @@ namespace puppet::retargeting {
         return true;
     }
 
+    const model::PosePrimitive* SingleChainIkRetargetingPlugin::selectTargetPose(const model::PrimitiveFrame& input,
+                                                                                 const std::string& bodyGroup,
+                                                                                 const ChainContext& chainCtx) const {
+        const model::PosePrimitive* selectedPose = nullptr;
+        if (!chainCtx.config.eeEntity.empty()) {
+            for (const auto& pose : input.poses) {
+                if (pose.meta.entity == chainCtx.config.eeEntity) {
+                    selectedPose = &pose;
+                    break;
+                }
+            }
+        }
+        if (selectedPose == nullptr) {
+            const auto targetBodyGroup = single_chain_ik_internal::toBodyGroup(bodyGroup);
+            for (const auto& pose : input.poses) {
+                if (pose.meta.bodyGroup == targetBodyGroup) {
+                    selectedPose = &pose;
+                    break;
+                }
+            }
+        }
+        if (selectedPose == nullptr && !input.poses.empty()) {
+            selectedPose = &input.poses.front();
+        }
+        return selectedPose;
+    }
+
+    KDL::JntArray SingleChainIkRetargetingPlugin::makeIkSeed(const ChainContext& chainCtx) const {
+        const size_t jointN = static_cast<size_t>(chainCtx.chain.getNrOfJoints());
+        KDL::JntArray seed  = chainCtx.hasLastSolution ? chainCtx.lastSolution : chainCtx.seedJoints;
+        for (size_t i = 0; i < jointN; ++i) {
+            seed(i) = std::min(chainCtx.upperLimit(i), std::max(chainCtx.lowerLimit(i), seed(i)));
+        }
+        return seed;
+    }
+
+    bool SingleChainIkRetargetingPlugin::solveIkWithPerturbation(const ChainContext& chainCtx, const KDL::JntArray& seed,
+                                                                 const KDL::Frame& targetPose, KDL::JntArray* solution) const {
+        if (solution == nullptr) {
+            return false;
+        }
+        bool solved = chainCtx.solver->CartToJnt(seed, targetPose, *solution) >= 0;
+        if (solved) {
+            return true;
+        }
+
+        std::mt19937 generator(std::random_device{}());
+        std::uniform_real_distribution<double> posDis(-chainCtx.config.perturbationPositionRange,
+                                                      chainCtx.config.perturbationPositionRange);
+        std::uniform_real_distribution<double> angleDis(-chainCtx.config.perturbationAngleDegRange * KDL::deg2rad,
+                                                        chainCtx.config.perturbationAngleDegRange * KDL::deg2rad);
+        for (int32_t i = 0; i < chainCtx.config.perturbationMaxAttempts; ++i) {
+            KDL::Frame perturbed = targetPose;
+            perturbed.p.x(targetPose.p.x() + posDis(generator));
+            perturbed.p.y(targetPose.p.y() + posDis(generator));
+            perturbed.p.z(targetPose.p.z() + posDis(generator));
+            const KDL::Rotation rotOffset = KDL::Rotation::RPY(angleDis(generator), angleDis(generator), angleDis(generator));
+            perturbed.M                   = targetPose.M * rotOffset;
+
+            if (chainCtx.solver->CartToJnt(seed, perturbed, *solution) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void SingleChainIkRetargetingPlugin::handleSolveFailure(ChainContext* chainCtx) const {
+        if (chainCtx == nullptr) {
+            return;
+        }
+        chainCtx->consecutiveFailureCount++;
+        if (chainCtx->consecutiveFailureCount >= single_chain_ik_internal::kMaxConsecutiveIkFailuresBeforeSeedReset) {
+            chainCtx->hasLastSolution         = false;
+            chainCtx->consecutiveFailureCount = 0;
+        }
+    }
+
+    model::JointCommandIntent SingleChainIkRetargetingPlugin::buildJointCommandIntent(const std::string& bodyGroup, ChainContext* chainCtx,
+                                                                                      const KDL::JntArray& solutionBeforeClamp) const {
+        const size_t jointN                  = static_cast<size_t>(chainCtx->chain.getNrOfJoints());
+        const bool hadLastSolution           = chainCtx->hasLastSolution;
+        const KDL::JntArray previousSolution = chainCtx->lastSolution;
+        KDL::JntArray finalSolution          = solutionBeforeClamp;
+
+        model::JointCommandIntent jointIntent;
+        jointIntent.bodyGroup  = single_chain_ik_internal::toBodyGroup(bodyGroup);
+        jointIntent.mode       = model::JointCommandIntent::Mode::kPosition;
+        jointIntent.jointNames = chainCtx->config.jointNames;
+        jointIntent.position.resize(jointN, 0.0);
+        jointIntent.weight = 1.0;
+
+        for (size_t i = 0; i < jointN; ++i) {
+            double value = finalSolution(i);
+            if (i < chainCtx->config.minPositionLimit.size() && i < chainCtx->config.maxPositionLimit.size()) {
+                value = std::min(chainCtx->config.maxPositionLimit[i], std::max(chainCtx->config.minPositionLimit[i], value));
+            }
+            if (hadLastSolution) {
+                value = single_chain_ik_internal::findNearestEquivalent(value, previousSolution(i), chainCtx->lowerLimit(i),
+                                                                        chainCtx->upperLimit(i));
+            }
+            jointIntent.position[i] = value;
+            finalSolution(i)        = value;
+        }
+
+        chainCtx->lastSolution    = finalSolution;
+        chainCtx->hasLastSolution = true;
+        return jointIntent;
+    }
+
     bool SingleChainIkRetargetingPlugin::process(const model::PrimitiveFrame& input, const std::string& bodyGroup,
                                                  model::GroupControlIntent* output, std::string* error) {
         if (output == nullptr) {
@@ -140,7 +269,6 @@ namespace puppet::retargeting {
             }
             return false;
         }
-
         if (!enabled_) {
             if (error != nullptr) {
                 *error = "single_chain_ik plugin is disabled";
@@ -148,40 +276,17 @@ namespace puppet::retargeting {
             return false;
         }
 
-        const auto chainIt = chainContextMap_.find(bodyGroup);
+        auto chainIt = chainContextMap_.find(bodyGroup);
         if (chainIt == chainContextMap_.end()) {
             if (error != nullptr) {
                 *error = "single_chain_ik chain config not found for body_group: " + bodyGroup;
             }
             return false;
         }
-        auto& chainCtx    = chainIt->second;
-        const auto& chain = chainCtx.config;
-        const auto jointN = static_cast<size_t>(chainCtx.chain.getNrOfJoints());
+        ChainContext& chainCtx = chainIt->second;
 
         const model::PrimitiveFrame runtimeInput = preprocessToPoseFrame(input, bodyGroup);
-        const model::PosePrimitive* selectedPose = nullptr;
-        if (!chain.eeEntity.empty()) {
-            for (const auto& pose : runtimeInput.poses) {
-                if (pose.meta.entity == chain.eeEntity) {
-                    selectedPose = &pose;
-                    break;
-                }
-            }
-        }
-        if (selectedPose == nullptr) {
-            const auto targetBodyGroup = single_chain_ik_internal::toBodyGroup(bodyGroup);
-            for (const auto& pose : runtimeInput.poses) {
-                if (pose.meta.bodyGroup == targetBodyGroup) {
-                    selectedPose = &pose;
-                    break;
-                }
-            }
-        }
-        if (selectedPose == nullptr && !runtimeInput.poses.empty()) {
-            selectedPose = &runtimeInput.poses.front();
-        }
-
+        const model::PosePrimitive* selectedPose = selectTargetPose(runtimeInput, bodyGroup, chainCtx);
         if (selectedPose == nullptr) {
             if (error != nullptr) {
                 *error = "single_chain_ik input poses is empty";
@@ -189,74 +294,24 @@ namespace puppet::retargeting {
             return false;
         }
 
-        KDL::JntArray seed = chainCtx.seedJoints;
-        if (chainCtx.hasLastSolution) {
-            seed = chainCtx.lastSolution;
-        }
-        const bool hasInputSeed = single_chain_ik_internal::findSeedFromInput(runtimeInput, chain.jointNames, &seed);
-        if (hasInputSeed) {
-            for (size_t i = 0; i < jointN; ++i) {
-                seed(i) = std::min(chainCtx.upperLimit(i), std::max(chainCtx.lowerLimit(i), seed(i)));
-            }
-        }
-
+        const KDL::JntArray seed    = makeIkSeed(chainCtx);
         const KDL::Frame targetPose = single_chain_ik_internal::poseToKdlFrame(selectedPose->pose);
-        KDL::JntArray solution(jointN);
-
-        bool solved = chainCtx.solver->CartToJnt(seed, targetPose, solution) >= 0;
-        if (!solved) {
-            std::mt19937 generator(std::random_device{}());
-            std::uniform_real_distribution<double> posDis(-chain.perturbationPositionRange, chain.perturbationPositionRange);
-            std::uniform_real_distribution<double> angleDis(-chain.perturbationAngleDegRange * KDL::deg2rad,
-                                                            chain.perturbationAngleDegRange * KDL::deg2rad);
-
-            for (int32_t i = 0; i < chain.perturbationMaxAttempts; ++i) {
-                KDL::Frame perturbed = targetPose;
-                perturbed.p.x(targetPose.p.x() + posDis(generator));
-                perturbed.p.y(targetPose.p.y() + posDis(generator));
-                perturbed.p.z(targetPose.p.z() + posDis(generator));
-
-                const KDL::Rotation rotOffset = KDL::Rotation::RPY(angleDis(generator), angleDis(generator), angleDis(generator));
-                perturbed.M                   = targetPose.M * rotOffset;
-
-                if (chainCtx.solver->CartToJnt(seed, perturbed, solution) >= 0) {
-                    solved = true;
-                    break;
-                }
-            }
-        }
-
-        if (!solved) {
+        KDL::JntArray ikSolution(static_cast<size_t>(chainCtx.chain.getNrOfJoints()));
+        if (!solveIkWithPerturbation(chainCtx, seed, targetPose, &ikSolution)) {
+            handleSolveFailure(&chainCtx);
             if (error != nullptr) {
                 *error = "single_chain_ik trac_ik solve failed for body_group: " + bodyGroup;
             }
             return false;
         }
+        chainCtx.consecutiveFailureCount = 0;
 
-        chainCtx.lastSolution    = solution;
-        chainCtx.hasLastSolution = true;
-
-        model::JointCommandIntent jointIntent;
-        jointIntent.bodyGroup  = single_chain_ik_internal::toBodyGroup(bodyGroup);
-        jointIntent.mode       = model::JointCommandIntent::Mode::kPosition;
-        jointIntent.jointNames = chain.jointNames;
-        jointIntent.position.resize(jointN, 0.0);
-        jointIntent.weight = 1.0;
-
-        for (size_t i = 0; i < jointN; ++i) {
-            double value = solution(i);
-            if (i < chain.minPositionLimit.size() && i < chain.maxPositionLimit.size()) {
-                value = std::min(chain.maxPositionLimit[i], std::max(chain.minPositionLimit[i], value));
-            }
-            jointIntent.position[i] = value;
-        }
-
-        output->bodyGroup     = jointIntent.bodyGroup;
-        output->ownerSourceId = input.context.sourceId;
-        output->mode          = "single_chain_ik";
-        output->enabled       = true;
+        model::JointCommandIntent jointIntent = buildJointCommandIntent(bodyGroup, &chainCtx, ikSolution);
+        output->bodyGroup                     = jointIntent.bodyGroup;
+        output->ownerSourceId                 = input.context.sourceId;
+        output->mode                          = "single_chain_ik";
+        output->enabled                       = true;
         output->jointCommandIntents.push_back(std::move(jointIntent));
-
         if (error != nullptr) {
             error->clear();
         }

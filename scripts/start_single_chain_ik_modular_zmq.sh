@@ -39,19 +39,36 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+check_started() {
+  local pid="$1"
+  local name="$2"
+  local log_file="$3"
+  if ! kill -0 "${pid}" 2>/dev/null; then
+    echo "[start_single_chain_ik_modular_zmq] ${name} exited during startup, see log: ${log_file}" >&2
+    if [[ -f "${log_file}" ]]; then
+      sed -n '1,120p' "${log_file}" >&2 || true
+    fi
+    exit 1
+  fi
+}
+
 echo "[start_single_chain_ik_modular_zmq] start runtime (modular zmq config)"
 "${RUNTIME_BIN}" "${RUNTIME_CFG}" >"${RUNTIME_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
+check_started "${pids[$((${#pids[@]} - 1))]}" "runtime" "${RUNTIME_LOG}"
 
 echo "[start_single_chain_ik_modular_zmq] start sender (test_zmq_single_chain_ik_sender)"
 "${SENDER_BIN}" "${SENDER_ENDPOINT}" "puppet_demo/primitive_frame" >"${SENDER_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
+check_started "${pids[$((${#pids[@]} - 1))]}" "sender" "${SENDER_LOG}"
 
 echo "[start_single_chain_ik_modular_zmq] start viewer (zmq)"
 "${VIEWER_BIN}" "${VIEWER_CFG}" >"${VIEWER_LOG}" 2>&1 &
 pids+=("$!")
+sleep 1
+check_started "${pids[$((${#pids[@]} - 1))]}" "viewer" "${VIEWER_LOG}"
 
 echo "[start_single_chain_ik_modular_zmq] running"
 echo "  runtime log: ${RUNTIME_LOG}"

@@ -4,6 +4,7 @@
 #include <kdl/jntarray.hpp>
 #include <trac_ik/trac_ik.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <unordered_map>
 
@@ -19,6 +20,17 @@ namespace puppet::retargeting {
                      std::string* error) override;
 
        private:
+        struct ChainContext;
+
+        const model::PosePrimitive* selectTargetPose(const model::PrimitiveFrame& input, const std::string& bodyGroup,
+                                                     const ChainContext& chainCtx) const;
+        KDL::JntArray makeIkSeed(const ChainContext& chainCtx) const;
+        bool solveIkWithPerturbation(const ChainContext& chainCtx, const KDL::JntArray& seed, const KDL::Frame& targetPose,
+                                     KDL::JntArray* solution) const;
+        void handleSolveFailure(ChainContext* chainCtx) const;
+        model::JointCommandIntent buildJointCommandIntent(const std::string& bodyGroup, ChainContext* chainCtx,
+                                                          const KDL::JntArray& solutionBeforeClamp) const;
+
         model::PrimitiveFrame preprocessToPoseFrame(const model::PrimitiveFrame& input, const std::string& bodyGroup) const;
         bool seedPoseStateFromRobotJointState(const model::PrimitiveFrame& input, const std::string& bodyGroup,
                                               const std::string& entity) const;
@@ -32,7 +44,8 @@ namespace puppet::retargeting {
             KDL::JntArray upperLimit;
             KDL::JntArray seedJoints;
             KDL::JntArray lastSolution;
-            bool hasLastSolution = false;
+            bool hasLastSolution             = false;
+            uint32_t consecutiveFailureCount = 0;
         };
 
         std::unordered_map<std::string, ChainContext> chainContextMap_;

@@ -38,6 +38,18 @@ namespace puppet::runtime {
             return false;
         }
 
+        std::string tcpError;
+        if (!loadTcpRuntimeConfig(path, config.tcpRuntime, tcpError)) {
+            error = "load tcp runtime config failed: " + tcpError;
+            return false;
+        }
+
+        std::string udpError;
+        if (!loadUdpRuntimeConfig(path, config.udpRuntime, udpError)) {
+            error = "load udp runtime config failed: " + udpError;
+            return false;
+        }
+
         error.clear();
         return true;
     }

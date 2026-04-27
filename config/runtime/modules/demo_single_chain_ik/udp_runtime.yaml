@@ -1,0 +1,23 @@
+idle_sleep_ms: 2
+recv_buffer_size: 65536
+input_bind_host: 0.0.0.0
+input_bind_port: 16661
+robot_state_input_bind_host: 0.0.0.0
+robot_state_input_bind_port: 16662
+output_remote_host: 127.0.0.1
+output_control_intent_port: 16663
+endpoints:
+  inputs:
+    - key: primitive_frame
+      bind_host: 0.0.0.0
+      bind_port: 16661
+      enabled: true
+    - key: robot_state_frame
+      bind_host: 0.0.0.0
+      bind_port: 16662
+      enabled: false
+  outputs:
+    - key: control_intent
+      remote_host: 127.0.0.1
+      remote_port: 16663
+      enabled: true

@@ -99,6 +99,34 @@ target_link_libraries(test_zmq_single_chain_ik_sender
     zmq
     pthread)
 
+add_executable(test_tcp_single_chain_ik_sender
+  "${CMAKE_CURRENT_LIST_DIR}/tcp_single_chain_ik_sender.cpp")
+target_link_libraries(test_tcp_single_chain_ik_sender
+  PRIVATE
+    puppet_proto_copy_demo
+    pthread)
+
+add_executable(test_tcp_control_intent_receiver
+  "${CMAKE_CURRENT_LIST_DIR}/tcp_control_intent_receiver.cpp")
+target_link_libraries(test_tcp_control_intent_receiver
+  PRIVATE
+    puppet_proto_copy_demo
+    pthread)
+
+add_executable(test_udp_single_chain_ik_sender
+  "${CMAKE_CURRENT_LIST_DIR}/udp_single_chain_ik_sender.cpp")
+target_link_libraries(test_udp_single_chain_ik_sender
+  PRIVATE
+    puppet_proto_copy_demo
+    pthread)
+
+add_executable(test_udp_control_intent_receiver
+  "${CMAKE_CURRENT_LIST_DIR}/udp_control_intent_receiver.cpp")
+target_link_libraries(test_udp_control_intent_receiver
+  PRIVATE
+    puppet_proto_copy_demo
+    pthread)
+
 add_executable(test_embosa_puppet_proto_receiver
   "${CMAKE_CURRENT_LIST_DIR}/embosa_puppet_proto_receiver.cpp")
 target_include_directories(test_embosa_puppet_proto_receiver
@@ -116,6 +144,10 @@ set_target_properties(
   test_embosa_single_chain_ik_sender
   test_embosa_puppet_proto_receiver
   test_zmq_single_chain_ik_sender
+  test_tcp_single_chain_ik_sender
+  test_tcp_control_intent_receiver
+  test_udp_single_chain_ik_sender
+  test_udp_control_intent_receiver
   PROPERTIES
     BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}"
     INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR}")

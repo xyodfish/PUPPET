@@ -4,6 +4,8 @@
 
 #include "puppet/runtime/runtime_config.hpp"
 #include "puppet/transport/embosa_runtime_config.hpp"
+#include "puppet/transport/tcp_runtime_config.hpp"
+#include "puppet/transport/udp_runtime_config.hpp"
 #include "puppet/transport/zmq_runtime_config.hpp"
 
 namespace puppet::runtime {
@@ -14,6 +16,8 @@ namespace puppet::runtime {
         RuntimeConfig runtime;
         EmbosaRuntimeConfig embosaRuntime;
         ZmqRuntimeConfig zmqRuntime;
+        TcpRuntimeConfig tcpRuntime;
+        UdpRuntimeConfig udpRuntime;
     };
 
     class PuppetConfigLoader {

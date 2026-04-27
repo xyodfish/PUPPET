@@ -72,6 +72,10 @@ if(MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY)
     retargeting_mujoco_visualizer.cpp)
   add_executable(retargeting_mujoco_visualizer_zmq
     retargeting_mujoco_visualizer_zmq.cpp)
+  add_executable(retargeting_mujoco_visualizer_tcp
+    retargeting_mujoco_visualizer_tcp.cpp)
+  add_executable(retargeting_mujoco_visualizer_udp
+    retargeting_mujoco_visualizer_udp.cpp)
 
   target_include_directories(retargeting_mujoco_visualizer
     PRIVATE
@@ -82,6 +86,14 @@ if(MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY)
     PRIVATE
       ${CMAKE_SOURCE_DIR}/include
       ${ZMQ_INCLUDE_DIR}
+      ${MUJOCO_INCLUDE_DIR})
+  target_include_directories(retargeting_mujoco_visualizer_tcp
+    PRIVATE
+      ${CMAKE_SOURCE_DIR}/include
+      ${MUJOCO_INCLUDE_DIR})
+  target_include_directories(retargeting_mujoco_visualizer_udp
+    PRIVATE
+      ${CMAKE_SOURCE_DIR}/include
       ${MUJOCO_INCLUDE_DIR})
 
   target_link_directories(retargeting_mujoco_visualizer
@@ -101,14 +113,28 @@ if(MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY)
       puppet_cpp_core
       ${MUJOCO_LIBRARY}
       )
+  target_link_libraries(retargeting_mujoco_visualizer_tcp
+    PRIVATE
+      puppet_cpp_core
+      ${MUJOCO_LIBRARY}
+      )
+  target_link_libraries(retargeting_mujoco_visualizer_udp
+    PRIVATE
+      puppet_cpp_core
+      ${MUJOCO_LIBRARY}
+      )
 
   if(glfw3_FOUND)
     target_link_libraries(retargeting_mujoco_visualizer PRIVATE glfw)
     target_link_libraries(retargeting_mujoco_visualizer_zmq PRIVATE glfw)
+    target_link_libraries(retargeting_mujoco_visualizer_tcp PRIVATE glfw)
+    target_link_libraries(retargeting_mujoco_visualizer_udp PRIVATE glfw)
   else()
     find_library(GLFW_LIBRARY NAMES glfw REQUIRED)
     target_link_libraries(retargeting_mujoco_visualizer PRIVATE ${GLFW_LIBRARY})
     target_link_libraries(retargeting_mujoco_visualizer_zmq PRIVATE ${GLFW_LIBRARY})
+    target_link_libraries(retargeting_mujoco_visualizer_tcp PRIVATE ${GLFW_LIBRARY})
+    target_link_libraries(retargeting_mujoco_visualizer_udp PRIVATE ${GLFW_LIBRARY})
   endif()
 
   set_target_properties(retargeting_mujoco_visualizer
@@ -119,6 +145,14 @@ if(MUJOCO_INCLUDE_DIR AND MUJOCO_LIBRARY)
     PROPERTIES
       BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib"
       INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${ZMQ_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib")
+  set_target_properties(retargeting_mujoco_visualizer_tcp
+    PROPERTIES
+      BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib"
+      INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib")
+  set_target_properties(retargeting_mujoco_visualizer_udp
+    PROPERTIES
+      BUILD_RPATH "${EMBOSA_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib"
+      INSTALL_RPATH "${EMBOSA_LIBRARY_DIR};${GMR_THIRDPARTY_PREFIX}/lib;${GMR_MUJOCO_PREFIX}/lib")
 else()
   message(WARNING
     "Skip retargeting_mujoco_visualizer: "
