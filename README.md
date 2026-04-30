@@ -1,8 +1,7 @@
-<p align="center">
-  <img src="assets/logo.svg" alt="PUPPET Logo" width="900" />
-</p>
 
-# PUPPET
+<p align="center">
+  <img src="assets/logo_new.png" alt="PUPPET Logo" width="900" />
+</p>
 
 > **P**rimitive-based **U**nified **P**latform for **P**luggable **E**mbodied **T**eleoperation
 
@@ -13,6 +12,9 @@
   <a href="#-快速开始">Quick Start</a> •
   <a href="#-运行示例">Demos</a>
 </p>
+
+
+
 
 欢迎来到 **PUPPET** 🎉
 
