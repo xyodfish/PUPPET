@@ -9,7 +9,7 @@ channel:
 
 device:
   type: static_file_replay
-  human_frame_json: /data2/Documents/lafan1/fight1_subject5_retarget_frame.json
+  human_frame_json: /data2/Documents/lafan1/fight1_subject5_retarget_frame.json # walk3_subject1_retarget_frame.json  fight1_subject5_retarget_frame
   loop_hz: 30
   loop_playback: true
   semantic_context: human_frame_replay

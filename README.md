@@ -168,6 +168,8 @@ Retargeting 三节点 demo：
 ./scripts/start_retargeting_3nodes_zmq.sh
 ```
 
+**演示动图：** [查看演示动图](docs/demo_gifs.md)
+
 脚本通常会拉起 runtime、sender/device service 和 visualizer，日志输出到 `bin/log/`。运行前请确认相关配置文件、端口和三方动态库路径可用。
 
 ---
@@ -181,6 +183,7 @@ Retargeting 三节点 demo：
 - [Runtime Channel ZMQ 接入说明](docs/runtime_channel_zmq_接入说明.md)
 - [Device Service 接入与迁移记录](docs/device_service_三方库接入与源码迁移记录.md)
 - [Retargeting 3-Nodes Demo](docs/retargeting_3nodes_demo.md)
+- [演示动图](docs/demo_gifs.md)
 - [Embosa PrimitiveFrame 收发 Demo](test/demos/cpp/README_embosa_proto_demo.md)
 - [Proto Python Demo](test/demos/python/README.md)
 

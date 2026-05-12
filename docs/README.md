@@ -6,6 +6,7 @@ PUPPET documentation is organized around quick start, developer extension, commu
 
 ## 中文文档
 
+- [演示动图](demo_gifs.md)：单链 IK 与 GMR 等运行效果动图。
 - [开发者指南](developer_guide.md)：模块分层、runtime 数据流、配置结构、构建依赖、扩展方式和排查建议。
 - [Proto Overview](proto_overview.md)：`PrimitiveFrame`、`ControlIntent`、trajectory 等 proto 语义。
 - [Runtime Channel 多传输接入说明](runtime_channel_zmq_接入说明.md)：embosa/zmq/tcp/udp runtime channel、配置和 demo 说明。
