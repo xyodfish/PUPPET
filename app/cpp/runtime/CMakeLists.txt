@@ -22,7 +22,6 @@ set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
 
 
 find_package(puppet_proto CONFIG QUIET)
-find_package(glog REQUIRED)
 
 
 if(puppet_proto_FOUND AND EXISTS "${EMBOSA_INCLUDE_DIR}/embosa.hpp" AND EXISTS "${EMBOSA_LIBRARY_DIR}")
@@ -32,6 +31,7 @@ if(puppet_proto_FOUND AND EXISTS "${EMBOSA_INCLUDE_DIR}/embosa.hpp" AND EXISTS "
   target_include_directories(teleop_runtime_embosa_main
     PRIVATE
       ${CMAKE_SOURCE_DIR}/include
+      ${ROOT_DEVEL_ARCH_PATH}/include
       ${EMBOSA_INCLUDE_DIR})
 
   target_link_directories(teleop_runtime_embosa_main

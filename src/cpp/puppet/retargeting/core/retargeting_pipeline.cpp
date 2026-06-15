@@ -109,47 +109,48 @@ namespace puppet::retargeting {
         return true;
     }
 
-    bool RetargetingPipeline::requiresRobotState(const std::string& pipelineId, const std::string& controlSemantics) const {
-        const auto it = pipelineTypes_.find(pipelineId);
+    bool RetargetingPipeline::requiresRobotState(const orchestrator::GroupExecutionPlan& plan) const {
+        const auto it = pipelineTypes_.find(plan.pipelineId);
         if (it == pipelineTypes_.end()) {
             return false;
         }
         const std::string& pluginType = it->second;
-        if (pluginType == "single_chain_ik" && controlSemantics == "cartesian_delta") {
+        if (pluginType == "single_chain_ik" && plan.controlSemantics == "cartesian_delta") {
             return true;
         }
-        if (pluginType == "single_chain_ik" && controlSemantics == "cartesian_velocity") {
+        if (pluginType == "single_chain_ik" && plan.controlSemantics == "cartesian_velocity") {
             return true;
         }
-        const auto pluginIt = plugins_.find(pipelineId);
+        const auto pluginIt = plugins_.find(plan.pipelineId);
         if (pluginIt == plugins_.end()) {
             return false;
         }
         return pluginIt->second->requiresRobotState();
     }
 
-    bool RetargetingPipeline::run(const std::string& pipelineId, const model::PrimitiveFrame& frame, const std::string& bodyGroup,
-                                  const std::string& controlSemantics, model::GroupControlIntent* output, std::string& error) const {
-        const auto pluginIt = plugins_.find(pipelineId);
+    bool RetargetingPipeline::run(const orchestrator::GroupExecutionPlan& plan, const model::PrimitiveFrame& frame,
+                                  model::GroupControlIntent* output, std::string& error) const {
+        const auto pluginIt = plugins_.find(plan.pipelineId);
         if (pluginIt == plugins_.end()) {
-            return common::Fail(error, "pipeline not found: " + pipelineId);
+            return common::Fail(error, "pipeline not found: " + plan.pipelineId);
         }
-        const auto typeIt = pipelineTypes_.find(pipelineId);
+        const auto typeIt = pipelineTypes_.find(plan.pipelineId);
         if (typeIt == pipelineTypes_.end()) {
-            return common::Fail(error, "pipeline type not found: " + pipelineId);
+            return common::Fail(error, "pipeline type not found: " + plan.pipelineId);
         }
         const std::string& pluginType = typeIt->second;
         PUPPET_VLOG(2, "plugin_dispatch", "retargeting_pipeline", "run")
-            << " pipeline_id=" << pipelineId << " plugin_type=" << pluginType << " body_group=" << bodyGroup
-            << " control_semantics=" << controlSemantics;
-        if (!supportsGroup(pluginType, bodyGroup)) {
-            return common::Fail(error, "pipeline " + pipelineId + " plugin " + pluginType + " does not support body_group: " + bodyGroup);
-        }
-        if (!supportsSemantics(pluginType, controlSemantics)) {
+            << " pipeline_id=" << plan.pipelineId << " plugin_type=" << pluginType << " body_group=" << plan.bodyGroup
+            << " control_semantics=" << plan.controlSemantics;
+        if (!supportsGroup(pluginType, plan.bodyGroup)) {
             return common::Fail(
-                error, "pipeline " + pipelineId + " plugin " + pluginType + " does not support control_semantics: " + controlSemantics);
+                error, "pipeline " + plan.pipelineId + " plugin " + pluginType + " does not support body_group: " + plan.bodyGroup);
         }
-        return pluginIt->second->process(frame, bodyGroup, output, error);
+        if (!supportsSemantics(pluginType, plan.controlSemantics)) {
+            return common::Fail(error, "pipeline " + plan.pipelineId + " plugin " + pluginType +
+                                           " does not support control_semantics: " + plan.controlSemantics);
+        }
+        return pluginIt->second->process(frame, plan.bodyGroup, output, error);
     }
 
 }  // namespace puppet::retargeting

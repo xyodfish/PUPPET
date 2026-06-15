@@ -20,11 +20,11 @@ namespace puppet::device {
         return 0.0;
     }
 
-    bool SingleChainIkSenderDeviceProvider::initialize(const YAML::Node& configNode, const std::string& frameId,
-                                                       const std::string& sourceId, std::string& error) {
+    bool SingleChainIkSenderDeviceProvider::initialize(const DeviceServiceConfig& config, std::string& error) {
         (void)error;
-        frameId_  = frameId;
-        sourceId_ = sourceId;
+        frameId_                     = config.frameId;
+        sourceId_                    = config.sourceId;
+        const YAML::Node& configNode = config.deviceNode;
 
         if (configNode["loop_hz"]) {
             loopHz_ = configNode["loop_hz"].as<int>();

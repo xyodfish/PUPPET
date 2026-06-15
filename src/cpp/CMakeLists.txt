@@ -8,7 +8,6 @@ find_package(urdfdom REQUIRED)
 find_package(pinocchio REQUIRED)
 find_package(glog REQUIRED)
 
-
 set(PUPPET_REPO_ROOT ${CMAKE_SOURCE_DIR})
 set(PUPPET_DEFAULT_DEVEL_PREFIX
     "${PUPPET_REPO_ROOT}/devel/${CMAKE_SYSTEM_PROCESSOR}-Linux-GNU-${CMAKE_CXX_COMPILER_VERSION}")
@@ -25,6 +24,14 @@ endif()
 set(PUPPET_CONTROL_DEVEL_PREFIX "/opt/galbot/devel_control/${ARCH_FREFIX}")
 list(APPEND CMAKE_PREFIX_PATH "${ROOT_DEVEL_ARCH_PATH}")
 list(APPEND CMAKE_PREFIX_PATH "${PUPPET_CONTROL_DEVEL_PREFIX}")
+
+find_library(PUPPET_GLOG_SHARED_LIBRARY
+  NAMES glog
+  HINTS "${ROOT_DEVEL_ARCH_PATH}/lib" "${PUPPET_CONTROL_DEVEL_PREFIX}/lib"
+  REQUIRED)
+if (PUPPET_GLOG_SHARED_LIBRARY MATCHES "\\.a$")
+  message(FATAL_ERROR "glog must be linked as a shared library, got: ${PUPPET_GLOG_SHARED_LIBRARY}")
+endif()
 
 if (EXISTS "${PUPPET_CONTROL_DEVEL_PREFIX}/lib/cmake/urdfdom/urdfdom-config.cmake")
   set(urdfdom_DIR "${PUPPET_CONTROL_DEVEL_PREFIX}/lib/cmake/urdfdom")
@@ -156,7 +163,7 @@ target_link_libraries(puppet_cpp_core
     Eigen3::Eigen
     qpOASES
     pinocchio::pinocchio
-    glog::glog
+    ${PUPPET_GLOG_SHARED_LIBRARY}
     puppet_proto::puppet_proto
     ${OROCOS_KDL_LIBRARY}
     ${TRAC_IK_LIBRARY}

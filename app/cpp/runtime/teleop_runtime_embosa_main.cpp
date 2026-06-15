@@ -2,7 +2,6 @@
 #include <string>
 
 #include <glog/logging.h>
-#include <spdlog/spdlog.h>
 
 #include "puppet/core/puppet_manager.hpp"
 
@@ -22,7 +21,7 @@ int main(int argc, char** argv) {
     std::string error;
     if (!manager.init(runtimeConfig, error)) {
         std::cerr << "[teleop_runtime_embosa] init failed: " << error << std::endl;
-        LOG(ERROR) << "teleop runtime embosa init failed: " << error;
+        LOG(ERROR) << "teleop_runtime_embosa_main init failed: " << error;
         google::ShutdownGoogleLogging();
         return 1;
     }
@@ -30,7 +29,7 @@ int main(int argc, char** argv) {
     manager.run(error);
     if (!error.empty()) {
         std::cerr << "[teleop_runtime_embosa] run failed: " << error << std::endl;
-        LOG(ERROR) << "teleop runtime embosa run failed: " << error;
+        LOG(ERROR) << "teleop_runtime_embosa_main run failed: " << error;
         google::ShutdownGoogleLogging();
         return 2;
     }

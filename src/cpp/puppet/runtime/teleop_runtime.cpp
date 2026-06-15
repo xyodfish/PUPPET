@@ -54,7 +54,7 @@ namespace puppet::runtime {
             groupIntent.mode                   = plan.mode;
             groupIntent.backendHint            = plan.backendId;
             model::PrimitiveFrame runtimeFrame = *frame;
-            if (pipeline_.requiresRobotState(plan.pipelineId, plan.controlSemantics)) {
+            if (pipeline_.requiresRobotState(plan)) {
                 const bool hasFreshRobotState =
                     (robotStateSync_ != nullptr) && robotStateSync_->hasFreshState(config_.robotState.freshnessTimeoutMs);
                 if (!hasFreshRobotState) {
@@ -75,7 +75,7 @@ namespace puppet::runtime {
             PUPPET_VLOG(2, "pipeline_dispatch", "teleop_runtime", "run_once")
                 << " pipeline_id=" << plan.pipelineId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId
                 << " seq=" << controlIntent.sequenceId;
-            if (!pipeline_.run(plan.pipelineId, runtimeFrame, plan.bodyGroup, plan.controlSemantics, &groupIntent, pipelineError)) {
+            if (!pipeline_.run(plan, runtimeFrame, &groupIntent, pipelineError)) {
                 error = pipelineError;
                 PUPPET_LOG(ERROR, "pipeline_run_failed", "teleop_runtime", "run_once")
                     << " pipeline_id=" << plan.pipelineId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId

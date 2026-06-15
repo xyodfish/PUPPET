@@ -5,10 +5,10 @@
 
 namespace puppet::device {
 
-    bool StaticFileReplayDeviceProvider::initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId,
-                                                    std::string& error) {
-        frameId_  = frameId;
-        sourceId_ = sourceId;
+    bool StaticFileReplayDeviceProvider::initialize(const DeviceServiceConfig& config, std::string& error) {
+        frameId_                     = config.frameId;
+        sourceId_                    = config.sourceId;
+        const YAML::Node& configNode = config.deviceNode;
 
         std::string humanFrameJson;
         if (configNode["human_frame_json"]) {

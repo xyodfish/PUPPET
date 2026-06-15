@@ -6,6 +6,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "puppet/device/device_service_config.hpp"
 #include "puppet/primitive/primitive_types.hpp"
 
 namespace puppet::device {
@@ -14,8 +15,7 @@ namespace puppet::device {
        public:
         virtual ~IDeviceProvider() = default;
 
-        virtual bool initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId,
-                                std::string& error) = 0;
+        virtual bool initialize(const DeviceServiceConfig& config, std::string& error) = 0;
 
         virtual bool nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string& error) = 0;
 

@@ -8,12 +8,8 @@
 
 namespace puppet::transport {
 
-    bool ZmqDeviceOutputChannel::initialize(const std::string& nodeName, const std::string& topicName, const std::string& outputEndpoint,
-                                            const YAML::Node& configNode, std::string& error) {
-        (void)nodeName;
-        (void)configNode;
-
-        topicName_ = topicName;
+    bool ZmqDeviceOutputChannel::initialize(const DeviceOutputChannelConfig& config, std::string& error) {
+        topicName_ = config.topicName;
         context_   = zmq_ctx_new();
         if (context_ == nullptr) {
             error = std::string("create zmq context failed: ") + zmq_strerror(errno);
@@ -27,7 +23,7 @@ namespace puppet::transport {
             return false;
         }
 
-        if (zmq_bind(publisher_, outputEndpoint.c_str()) != 0) {
+        if (zmq_bind(publisher_, config.outputEndpoint.c_str()) != 0) {
             error = std::string("bind zmq publisher failed: ") + zmq_strerror(errno);
             shutdown();
             return false;

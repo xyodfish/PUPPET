@@ -4,19 +4,15 @@
 
 namespace puppet::transport {
 
-    bool EmbosaDeviceOutputChannel::initialize(const std::string& nodeName, const std::string& topicName, const std::string& outputEndpoint,
-                                               const YAML::Node& configNode, std::string& error) {
-        (void)outputEndpoint;
-        (void)configNode;
-
+    bool EmbosaDeviceOutputChannel::initialize(const DeviceOutputChannelConfig& config, std::string& error) {
         galbot::embosa::EmbosaInit();
-        node_ = galbot::embosa::CreateNode(nodeName);
+        node_ = galbot::embosa::CreateNode(config.nodeName);
         if (node_ == nullptr) {
             error = "create embosa node failed";
             return false;
         }
 
-        writer_ = node_->CreateWriter<::puppet::puppet_proto::PrimitiveFrame>(topicName);
+        writer_ = node_->CreateWriter<::puppet::puppet_proto::PrimitiveFrame>(config.topicName);
         if (writer_ == nullptr) {
             error = "create embosa writer failed";
             return false;

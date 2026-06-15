@@ -9,12 +9,18 @@
 
 namespace puppet::transport {
 
+    struct DeviceOutputChannelConfig {
+        std::string nodeName;
+        std::string topicName;
+        std::string outputEndpoint;
+        YAML::Node channelNode;
+    };
+
     class IDeviceOutputChannel {
        public:
         virtual ~IDeviceOutputChannel() = default;
 
-        virtual bool initialize(const std::string& nodeName, const std::string& topicName, const std::string& outputEndpoint,
-                                const YAML::Node& configNode, std::string& error) = 0;
+        virtual bool initialize(const DeviceOutputChannelConfig& config, std::string& error) = 0;
 
         virtual bool publish(const model::PrimitiveFrame& frame, std::string& error) = 0;
 

@@ -14,7 +14,7 @@ namespace puppet::device {
             return false;
         }
 
-        if (!provider_->initialize(config_.deviceNode, config_.frameId, config_.sourceId, error)) {
+        if (!provider_->initialize(config_, error)) {
             return false;
         }
 
@@ -23,7 +23,12 @@ namespace puppet::device {
             return false;
         }
 
-        if (!channel_->initialize(config_.nodeName, config_.topicName, config_.outputEndpoint, config_.channelNode, error)) {
+        transport::DeviceOutputChannelConfig channelConfig;
+        channelConfig.nodeName       = config_.nodeName;
+        channelConfig.topicName      = config_.topicName;
+        channelConfig.outputEndpoint = config_.outputEndpoint;
+        channelConfig.channelNode    = config_.channelNode;
+        if (!channel_->initialize(channelConfig, error)) {
             return false;
         }
 

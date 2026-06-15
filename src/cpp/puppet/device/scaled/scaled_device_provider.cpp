@@ -352,10 +352,10 @@ namespace puppet::device {
         lastDataTime_         = std::chrono::steady_clock::now();
     }
 
-    bool ScaledDeviceProvider::initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId,
-                                          std::string& error) {
-        frameId_  = frameId;
-        sourceId_ = sourceId;
+    bool ScaledDeviceProvider::initialize(const DeviceServiceConfig& config, std::string& error) {
+        frameId_                     = config.frameId;
+        sourceId_                    = config.sourceId;
+        const YAML::Node& configNode = config.deviceNode;
 
         if (configNode["bus_name"]) {
             busName_ = configNode["bus_name"].as<std::string>();
