@@ -2,6 +2,10 @@
 
 #include <unordered_map>
 
+#include <glog/logging.h>
+
+#include "puppet/common/logging.hpp"
+
 namespace puppet::orchestrator {
 
     void Orchestrator::configure(const std::vector<runtime::GroupRoutingConfig>& groupRouting) {
@@ -37,6 +41,10 @@ namespace puppet::orchestrator {
         std::vector<GroupExecutionPlan> plans;
         plans.reserve(selectedPlans.size());
         for (auto& kv : selectedPlans) {
+            PUPPET_VLOG(1, "plan_resolved", "orchestrator", "resolve_plans")
+                << " body_group=" << kv.second.bodyGroup << " source_id=" << kv.second.ownerSourceId
+                << " pipeline_id=" << kv.second.pipelineId << " backend=" << kv.second.backendId << " priority=" << kv.second.priority
+                << " mode=" << kv.second.mode << " control_semantics=" << kv.second.controlSemantics;
             plans.push_back(std::move(kv.second));
         }
         return plans;

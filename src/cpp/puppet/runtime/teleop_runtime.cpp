@@ -4,13 +4,15 @@
 
 #include <glog/logging.h>
 
+#include "puppet/common/logging.hpp"
+
 namespace puppet::runtime {
 
     bool TeleopRuntime::init(const std::string& configPath, std::string& error) {
         std::string configError;
         if (!RuntimeConfigLoader::loadFromYamlFile(configPath, config_, configError)) {
-            error = "load runtime config failed: " + configError;
-            return false;
+            error = configError;
+            return common::WrapError(error, "load runtime config failed: ");
         }
 
         return init(config_, error);
@@ -23,12 +25,15 @@ namespace puppet::runtime {
         orchestrator_.configure(config_.groupRouting);
 
         std::string pipelineError;
-        if (!pipeline_.configure(config_, &pipelineError)) {
-            error = "configure retargeting pipeline failed: " + pipelineError;
-            return false;
+        if (!pipeline_.configure(config_, pipelineError)) {
+            error = pipelineError;
+            return common::WrapError(error, "configure retargeting pipeline failed: ");
         }
 
-        error.clear();
+        common::ClearError(error);
+        PUPPET_LOG(INFO, "runtime_configured", "teleop_runtime", "init")
+            << " sources=" << config_.sources.size() << " routes=" << config_.groupRouting.size()
+            << " pipelines=" << config_.pipelines.size() << " backends=" << config_.backends.size();
         return true;
     }
 
@@ -56,9 +61,9 @@ namespace puppet::runtime {
                     static uint64_t noRobotStateWarnCount = 0;
                     ++noRobotStateWarnCount;
                     if ((noRobotStateWarnCount % 100ULL) == 1ULL) {
-                        LOG(WARNING) << "TeleopRuntime skip plan due to stale robot state. pipeline=" << plan.pipelineId
-                                     << " body_group=" << plan.bodyGroup
-                                     << " robot_state_timeout_ms=" << config_.robotState.freshnessTimeoutMs;
+                        PUPPET_LOG(WARNING, "plan_skipped_stale_robot_state", "teleop_runtime", "run_once")
+                            << " pipeline_id=" << plan.pipelineId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId
+                            << " timeout_ms=" << config_.robotState.freshnessTimeoutMs;
                     }
                     continue;
                 }
@@ -67,9 +72,15 @@ namespace puppet::runtime {
                                                 robotSnapshot.frame.jointStates.end());
             }
             std::string pipelineError;
-            if (!pipeline_.run(plan.pipelineId, runtimeFrame, plan.bodyGroup, plan.controlSemantics, &groupIntent, &pipelineError)) {
-                error = "pipeline run failed: " + pipelineError;
-                return false;
+            PUPPET_VLOG(2, "pipeline_dispatch", "teleop_runtime", "run_once")
+                << " pipeline_id=" << plan.pipelineId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId
+                << " seq=" << controlIntent.sequenceId;
+            if (!pipeline_.run(plan.pipelineId, runtimeFrame, plan.bodyGroup, plan.controlSemantics, &groupIntent, pipelineError)) {
+                error = pipelineError;
+                PUPPET_LOG(ERROR, "pipeline_run_failed", "teleop_runtime", "run_once")
+                    << " pipeline_id=" << plan.pipelineId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId
+                    << " seq=" << controlIntent.sequenceId << " error=" << error;
+                return common::WrapError(error, "pipeline run failed: ");
             }
             controlIntent.groupIntents.push_back(std::move(groupIntent));
         }
@@ -81,12 +92,12 @@ namespace puppet::runtime {
             static uint64_t noInputCount = 0;
             ++noInputCount;
             if ((noInputCount % 200ULL) == 1ULL) {
-                LOG(WARNING) << "TeleopRuntime has no input frame for resolved plans. plan_count=" << plans.size()
-                             << " control_intent_groups=" << finalTarget.groups.size();
+                PUPPET_LOG(WARNING, "source_frame_missing", "teleop_runtime", "run_once")
+                    << " plan_count=" << plans.size() << " control_intent_groups=" << finalTarget.groups.size();
             }
         }
 
-        error.clear();
+        common::ClearError(error);
         return true;
     }
 

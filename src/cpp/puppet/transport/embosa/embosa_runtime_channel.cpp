@@ -5,6 +5,7 @@
 #include <glog/logging.h>
 #include <spdlog/spdlog.h>
 
+#include "puppet/common/logging.hpp"
 #include "puppet/transport/proto_copy.hpp"
 
 namespace puppet::runtime {
@@ -25,23 +26,27 @@ namespace puppet::runtime {
 
     bool EmbosaRuntimeChannel::start(const EmbosaRuntimeConfig& config, std::string& error) {
         config_ = config;
-        LOG(INFO) << "EmbosaRuntimeChannel start node=" << config_.embosaNodeName << " input_topic=" << config_.inputTopicName
-                  << " output_topic=" << config_.outputControlIntentTopic;
+        PUPPET_LOG(INFO, "channel_starting", "embosa_runtime_channel", "start")
+            << " node=" << config_.embosaNodeName << " input_topic=" << config_.inputTopicName
+            << " output_topic=" << config_.outputControlIntentTopic;
 
         if (!initNode(error)) {
             setLastError(error);
-            LOG(ERROR) << "EmbosaRuntimeChannel initNode failed: " << error;
+            PUPPET_LOG(ERROR, "channel_start_failed", "embosa_runtime_channel", "init_node") << " error=" << error;
             return false;
         }
 
         if (!initDefaultEndpoints(error)) {
             setLastError(error);
-            LOG(ERROR) << "EmbosaRuntimeChannel initDefaultEndpoints failed: " << error;
+            PUPPET_LOG(ERROR, "channel_start_failed", "embosa_runtime_channel", "init_default_endpoints") << " error=" << error;
             return false;
         }
 
         started_ = true;
         error.clear();
+        PUPPET_LOG(INFO, "channel_started", "embosa_runtime_channel", "start")
+            << " node=" << config_.embosaNodeName << " input_topic=" << config_.inputTopicName
+            << " output_topic=" << config_.outputControlIntentTopic;
         return true;
     }
 
@@ -67,7 +72,7 @@ namespace puppet::runtime {
         if (controlIntentWriter_ == nullptr) {
             error = "control intent writer is null";
             setLastError(error);
-            LOG(ERROR) << "EmbosaRuntimeChannel publish failed: " << error;
+            PUPPET_LOG(ERROR, "publish_failed", "embosa_runtime_channel", "publish_control_intent") << " error=" << error;
             return false;
         }
 
@@ -120,7 +125,8 @@ namespace puppet::runtime {
                 continue;
             }
             if (initBuiltInInputEndpoint(endpoint, error)) {
-                LOG(INFO) << "EmbosaRuntimeChannel input endpoint key=" << endpoint.key << " topic=" << endpoint.topicName;
+                PUPPET_LOG(INFO, "endpoint_bound", "embosa_runtime_channel", "init_input_endpoint")
+                    << " direction=input endpoint_key=" << endpoint.key << " topic=" << endpoint.topicName;
                 continue;
             }
             const auto binderIt = inputEndpointBinders_.find(endpoint.key);
@@ -131,15 +137,16 @@ namespace puppet::runtime {
             if (!binderIt->second(endpoint.topicName, error)) {
                 return false;
             }
-            LOG(INFO) << "EmbosaRuntimeChannel input endpoint bound by external binder key=" << endpoint.key
-                      << " topic=" << endpoint.topicName;
+            PUPPET_LOG(INFO, "endpoint_bound", "embosa_runtime_channel", "init_input_endpoint")
+                << " direction=input binder=external endpoint_key=" << endpoint.key << " topic=" << endpoint.topicName;
         }
         for (const auto& endpoint : config_.outputEndpoints) {
             if (!endpoint.enabled) {
                 continue;
             }
             if (initBuiltInOutputEndpoint(endpoint, error)) {
-                LOG(INFO) << "EmbosaRuntimeChannel output endpoint key=" << endpoint.key << " topic=" << endpoint.topicName;
+                PUPPET_LOG(INFO, "endpoint_bound", "embosa_runtime_channel", "init_output_endpoint")
+                    << " direction=output endpoint_key=" << endpoint.key << " topic=" << endpoint.topicName;
                 continue;
             }
             const auto binderIt = outputEndpointBinders_.find(endpoint.key);
@@ -150,8 +157,8 @@ namespace puppet::runtime {
             if (!binderIt->second(endpoint.topicName, error)) {
                 return false;
             }
-            LOG(INFO) << "EmbosaRuntimeChannel output endpoint bound by external binder key=" << endpoint.key
-                      << " topic=" << endpoint.topicName;
+            PUPPET_LOG(INFO, "endpoint_bound", "embosa_runtime_channel", "init_output_endpoint")
+                << " direction=output binder=external endpoint_key=" << endpoint.key << " topic=" << endpoint.topicName;
         }
         return true;
     }
@@ -194,7 +201,8 @@ namespace puppet::runtime {
             std::lock_guard<std::mutex> lock(statsMutex_);
             stats_.droppedPrimitiveFrameCount++;
             stats_.lastError = "invalid primitive frame proto";
-            LOG(WARNING) << "EmbosaRuntimeChannel drop invalid PrimitiveFrame proto";
+            PUPPET_LOG_EVERY_N(WARNING, 100, "proto_copy_failed", "embosa_runtime_channel", "on_primitive_frame")
+                << " endpoint_key=primitive_frame drop_count=" << stats_.droppedPrimitiveFrameCount;
             return;
         }
 
@@ -228,7 +236,8 @@ namespace puppet::runtime {
             std::lock_guard<std::mutex> lock(statsMutex_);
             stats_.droppedPrimitiveFrameCount++;
             stats_.lastError = "invalid robot state primitive frame proto";
-            LOG(WARNING) << "EmbosaRuntimeChannel drop invalid robot state PrimitiveFrame proto";
+            PUPPET_LOG_EVERY_N(WARNING, 100, "proto_copy_failed", "embosa_runtime_channel", "on_robot_state_frame")
+                << " endpoint_key=robot_state_frame drop_count=" << stats_.droppedPrimitiveFrameCount;
             return;
         }
 

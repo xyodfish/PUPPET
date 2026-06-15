@@ -16,9 +16,9 @@ namespace puppet::device {
 
     class ScaledDeviceProvider : public IDeviceProvider {
        public:
-        bool initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId, std::string* error) override;
+        bool initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId, std::string& error) override;
 
-        bool nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string* error) override;
+        bool nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string& error) override;
 
         int suggestedLoopHz() const override;
 
@@ -74,7 +74,7 @@ namespace puppet::device {
             bool moveTranslate           = false;
         };
 
-        bool parseArmConfig(const YAML::Node& armNode, const std::string& armName, ArmRuntimeState* state, std::string* error);
+        bool parseArmConfig(const YAML::Node& armNode, const std::string& armName, ArmRuntimeState* state, std::string& error);
         static model::BodyGroup parseBodyGroup(const std::string& value);
         static double wrapJointAngle(double value);
         static double applyDeadZone(double value, double deadZone);

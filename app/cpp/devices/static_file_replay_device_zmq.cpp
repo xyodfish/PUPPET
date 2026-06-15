@@ -25,7 +25,7 @@ namespace static_file_replay_device_zmq_detail {
         bool loopPlayback = true;
     };
 
-    bool loadConfig(const std::string& path, ReplayConfig* cfg, std::string* error) {
+    bool loadConfig(const std::string& path, ReplayConfig* cfg, std::string& error) {
         try {
             YAML::Node root = YAML::LoadFile(path);
             if (root["topic_name"])
@@ -43,12 +43,12 @@ namespace static_file_replay_device_zmq_detail {
             if (root["loop_playback"])
                 cfg->loopPlayback = root["loop_playback"].as<bool>();
             if (cfg->humanFrameJson.empty()) {
-                *error = "human_frame_json is empty";
+                error = "human_frame_json is empty";
                 return false;
             }
             return true;
         } catch (const std::exception& ex) {
-            *error = ex.what();
+            error = ex.what();
             return false;
         }
     }
@@ -101,21 +101,21 @@ namespace static_file_replay_device_zmq_detail {
     }
 
     bool publishFrame(void* publisher, const std::string& topicName, const ::puppet::puppet_proto::PrimitiveFrame& frame,
-                      std::string* error) {
+                      std::string& error) {
         std::string payload(frame.ByteSizeLong(), '\0');
         if (!frame.SerializeToArray(payload.data(), static_cast<int>(payload.size()))) {
-            *error = "serialize primitive frame failed";
+            error = "serialize primitive frame failed";
             return false;
         }
 
         const int topicRc = zmq_send(publisher, topicName.data(), topicName.size(), ZMQ_SNDMORE);
         if (topicRc < 0) {
-            *error = std::string("zmq send topic failed: ") + zmq_strerror(errno);
+            error = std::string("zmq send topic failed: ") + zmq_strerror(errno);
             return false;
         }
         const int payloadRc = zmq_send(publisher, payload.data(), payload.size(), 0);
         if (payloadRc < 0) {
-            *error = std::string("zmq send payload failed: ") + zmq_strerror(errno);
+            error = std::string("zmq send payload failed: ") + zmq_strerror(errno);
             return false;
         }
         return true;
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
     static_file_replay_device_zmq_detail::ReplayConfig cfg;
     std::string error;
-    if (!static_file_replay_device_zmq_detail::loadConfig(configPath, &cfg, &error)) {
+    if (!static_file_replay_device_zmq_detail::loadConfig(configPath, &cfg, error)) {
         std::cerr << "[static_file_replay_device_zmq] load config failed: " << error << std::endl;
         return 1;
     }
@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
     uint64_t publishSeq = 0;
     while (true) {
         const auto msg = static_file_replay_device_zmq_detail::toPrimitiveFrame(seq.frames[frameIdx], cfg, publishSeq);
-        if (!static_file_replay_device_zmq_detail::publishFrame(publisher, cfg.topicName, msg, &error)) {
+        if (!static_file_replay_device_zmq_detail::publishFrame(publisher, cfg.topicName, msg, error)) {
             std::cerr << "[static_file_replay_device_zmq] publish failed: " << error << std::endl;
             break;
         }

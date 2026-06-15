@@ -166,7 +166,7 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         }
     }
 
-    bool loadConfig(const std::string& path, VisualizerConfig* cfg, std::string* error) {
+    bool loadConfig(const std::string& path, VisualizerConfig* cfg, std::string& error) {
         try {
             YAML::Node root = YAML::LoadFile(path);
             if (root["robot_qpos_source"])
@@ -249,37 +249,37 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
             if (root["print_stat"])
                 cfg->printStat = root["print_stat"].as<bool>();
             if (cfg->mujocoModelXml.empty()) {
-                *error = "mujoco_model_xml is empty";
+                error = "mujoco_model_xml is empty";
                 return false;
             }
             return true;
         } catch (const std::exception& ex) {
-            *error = ex.what();
+            error = ex.what();
             return false;
         }
     }
 
-    bool createSubscriber(void* context, const std::string& endpoint, const std::string& topic, void** subscriber, std::string* error) {
+    bool createSubscriber(void* context, const std::string& endpoint, const std::string& topic, void** subscriber, std::string& error) {
         *subscriber = zmq_socket(context, ZMQ_SUB);
         if (*subscriber == nullptr) {
-            *error = std::string("create subscriber failed: ") + zmq_strerror(errno);
+            error = std::string("create subscriber failed: ") + zmq_strerror(errno);
             return false;
         }
         const int recvHwm = 200;
         if (zmq_setsockopt(*subscriber, ZMQ_RCVHWM, &recvHwm, sizeof(recvHwm)) != 0) {
-            *error = std::string("set ZMQ_RCVHWM failed: ") + zmq_strerror(errno);
+            error = std::string("set ZMQ_RCVHWM failed: ") + zmq_strerror(errno);
             zmq_close(*subscriber);
             *subscriber = nullptr;
             return false;
         }
         if (zmq_setsockopt(*subscriber, ZMQ_SUBSCRIBE, topic.data(), topic.size()) != 0) {
-            *error = std::string("set ZMQ_SUBSCRIBE failed: ") + zmq_strerror(errno);
+            error = std::string("set ZMQ_SUBSCRIBE failed: ") + zmq_strerror(errno);
             zmq_close(*subscriber);
             *subscriber = nullptr;
             return false;
         }
         if (zmq_connect(*subscriber, endpoint.c_str()) != 0) {
-            *error = std::string("connect subscriber failed endpoint=") + endpoint + ", error=" + zmq_strerror(errno);
+            error = std::string("connect subscriber failed endpoint=") + endpoint + ", error=" + zmq_strerror(errno);
             zmq_close(*subscriber);
             *subscriber = nullptr;
             return false;
@@ -287,13 +287,13 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         return true;
     }
 
-    bool tryReceivePayload(void* socket, std::string* payload, bool* hasMessage, std::string* error) {
+    bool tryReceivePayload(void* socket, std::string& payload, bool* hasMessage, std::string& error) {
         *hasMessage = false;
-        payload->clear();
+        payload.clear();
 
         zmq_msg_t firstPart;
         if (zmq_msg_init(&firstPart) != 0) {
-            *error = std::string("zmq_msg_init failed: ") + zmq_strerror(errno);
+            error = std::string("zmq_msg_init failed: ") + zmq_strerror(errno);
             return false;
         }
         const int firstRc = zmq_msg_recv(&firstPart, socket, ZMQ_DONTWAIT);
@@ -302,7 +302,7 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
             if (errno == EAGAIN) {
                 return true;
             }
-            *error = std::string("receive first part failed: ") + zmq_strerror(errno);
+            error = std::string("receive first part failed: ") + zmq_strerror(errno);
             return false;
         }
         *hasMessage = true;
@@ -311,7 +311,7 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         size_t moreSz = sizeof(more);
         if (zmq_getsockopt(socket, ZMQ_RCVMORE, &more, &moreSz) != 0) {
             zmq_msg_close(&firstPart);
-            *error = std::string("getsockopt ZMQ_RCVMORE failed: ") + zmq_strerror(errno);
+            error = std::string("getsockopt ZMQ_RCVMORE failed: ") + zmq_strerror(errno);
             return false;
         }
 
@@ -319,19 +319,19 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
             zmq_msg_close(&firstPart);
             zmq_msg_t secondPart;
             if (zmq_msg_init(&secondPart) != 0) {
-                *error = std::string("zmq_msg_init second part failed: ") + zmq_strerror(errno);
+                error = std::string("zmq_msg_init second part failed: ") + zmq_strerror(errno);
                 return false;
             }
             const int secondRc = zmq_msg_recv(&secondPart, socket, 0);
             if (secondRc < 0) {
                 zmq_msg_close(&secondPart);
-                *error = std::string("receive payload failed: ") + zmq_strerror(errno);
+                error = std::string("receive payload failed: ") + zmq_strerror(errno);
                 return false;
             }
-            payload->assign(static_cast<const char*>(zmq_msg_data(&secondPart)), zmq_msg_size(&secondPart));
+            payload.assign(static_cast<const char*>(zmq_msg_data(&secondPart)), zmq_msg_size(&secondPart));
             zmq_msg_close(&secondPart);
         } else {
-            payload->assign(static_cast<const char*>(zmq_msg_data(&firstPart)), zmq_msg_size(&firstPart));
+            payload.assign(static_cast<const char*>(zmq_msg_data(&firstPart)), zmq_msg_size(&firstPart));
             zmq_msg_close(&firstPart);
         }
         return true;
@@ -379,14 +379,12 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
 
         class HumanOverlayPreprocessor {
            public:
-            bool init(const VisualizerConfig& cfg, std::string* error) {
+            bool init(const VisualizerConfig& cfg, std::string& error) {
                 if (!cfg.humanOverlayUsePreparedFrame) {
                     return true;
                 }
                 if (cfg.humanOverlayRobotModelPath.empty() || cfg.humanOverlayIkConfigPath.empty()) {
-                    if (error != nullptr) {
-                        *error = "human overlay preprocessor requires robot_model_path and ik_config_path";
-                    }
+                    error = "human overlay preprocessor requires robot_model_path and ik_config_path";
                     return false;
                 }
                 const auto backend = gmr::parseRetargetBackend(cfg.humanOverlayBackend);
@@ -411,7 +409,7 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
             std::unique_ptr<gmr::Retargeter> retargeter_;
         };
 
-        bool initPreprocessor(const VisualizerConfig& cfg, std::string* error) { return preprocessor_.init(cfg, error); }
+        bool initPreprocessor(const VisualizerConfig& cfg, std::string& error) { return preprocessor_.init(cfg, error); }
 
         void update(const ::puppet::puppet_proto::PrimitiveFrame& msg) {
             gmr::HumanFrame humanFrame;
@@ -460,15 +458,13 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
 
     class LocalRetargetCache {
        public:
-        bool init(const VisualizerConfig& cfg, std::string* error) {
+        bool init(const VisualizerConfig& cfg, std::string& error) {
             enabled_ = cfg.robotQposSource == "local_retarget";
             if (!enabled_) {
                 return true;
             }
             if (cfg.localRetargetRobotModelPath.empty() || cfg.localRetargetIkConfigPath.empty()) {
-                if (error != nullptr) {
-                    *error = "local retarget requires robot model path and ik config path";
-                }
+                error = "local retarget requires robot model path and ik config path";
                 return false;
             }
             const auto backend = gmr::parseRetargetBackend(cfg.localRetargetBackend);
@@ -546,7 +542,7 @@ int main(int argc, char** argv) {
 
     VisualizerConfig cfg;
     std::string error;
-    if (!loadConfig(configPath, &cfg, &error)) {
+    if (!loadConfig(configPath, &cfg, error)) {
         std::cerr << "[retargeting_mujoco_visualizer] load config failed: " << error << std::endl;
         return 1;
     }
@@ -638,13 +634,13 @@ int main(int argc, char** argv) {
     ControlIntentCache cache;
     HumanPoseCache humanPoseCache;
     LocalRetargetCache localRetargetCache;
-    if (!humanPoseCache.initPreprocessor(cfg, &error)) {
+    if (!humanPoseCache.initPreprocessor(cfg, error)) {
         std::cerr << "[retargeting_mujoco_visualizer] init human overlay preprocessor failed: " << error << std::endl;
         glfwDestroyWindow(window);
         glfwTerminate();
         return 8;
     }
-    if (!localRetargetCache.init(cfg, &error)) {
+    if (!localRetargetCache.init(cfg, error)) {
         std::cerr << "[retargeting_mujoco_visualizer] init local retarget failed: " << error << std::endl;
         glfwDestroyWindow(window);
         glfwTerminate();
@@ -659,7 +655,7 @@ int main(int argc, char** argv) {
         return 6;
     }
     void* controlIntentSubscriber = nullptr;
-    if (!createSubscriber(zmqContext, cfg.controlIntentEndpoint, cfg.topicName, &controlIntentSubscriber, &error)) {
+    if (!createSubscriber(zmqContext, cfg.controlIntentEndpoint, cfg.topicName, &controlIntentSubscriber, error)) {
         std::cerr << "[retargeting_mujoco_visualizer_zmq] create control intent subscriber failed: " << error << std::endl;
         zmq_ctx_term(zmqContext);
         glfwDestroyWindow(window);
@@ -667,7 +663,7 @@ int main(int argc, char** argv) {
         return 7;
     }
     void* humanFrameSubscriber = nullptr;
-    if (!createSubscriber(zmqContext, cfg.humanFrameEndpoint, cfg.humanFrameTopicName, &humanFrameSubscriber, &error)) {
+    if (!createSubscriber(zmqContext, cfg.humanFrameEndpoint, cfg.humanFrameTopicName, &humanFrameSubscriber, error)) {
         std::cerr << "[retargeting_mujoco_visualizer_zmq] create human frame subscriber failed: " << error << std::endl;
         zmq_close(controlIntentSubscriber);
         zmq_ctx_term(zmqContext);
@@ -683,7 +679,7 @@ int main(int argc, char** argv) {
         for (;;) {
             std::string payload;
             bool hasMessage = false;
-            if (!tryReceivePayload(controlIntentSubscriber, &payload, &hasMessage, &error)) {
+            if (!tryReceivePayload(controlIntentSubscriber, payload, &hasMessage, error)) {
                 std::cerr << "[retargeting_mujoco_visualizer_zmq] receive control_intent failed: " << error << std::endl;
                 break;
             }
@@ -702,7 +698,7 @@ int main(int argc, char** argv) {
         for (;;) {
             std::string payload;
             bool hasMessage = false;
-            if (!tryReceivePayload(humanFrameSubscriber, &payload, &hasMessage, &error)) {
+            if (!tryReceivePayload(humanFrameSubscriber, payload, &hasMessage, error)) {
                 std::cerr << "[retargeting_mujoco_visualizer_zmq] receive primitive_frame failed: " << error << std::endl;
                 break;
             }

@@ -6,7 +6,7 @@
 namespace puppet::device {
 
     bool StaticFileReplayDeviceProvider::initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId,
-                                                    std::string* error) {
+                                                    std::string& error) {
         frameId_  = frameId;
         sourceId_ = sourceId;
 
@@ -15,7 +15,7 @@ namespace puppet::device {
             humanFrameJson = configNode["human_frame_json"].as<std::string>();
         }
         if (humanFrameJson.empty()) {
-            *error = "device.human_frame_json is empty";
+            error = "device.human_frame_json is empty";
             return false;
         }
 
@@ -38,11 +38,11 @@ namespace puppet::device {
         try {
             sequence_ = gmr::loadHumanFrameSequence(humanFrameJson);
         } catch (const std::exception& ex) {
-            *error = ex.what();
+            error = ex.what();
             return false;
         }
         if (sequence_.frames.empty()) {
-            *error = "human frame sequence is empty";
+            error = "human frame sequence is empty";
             return false;
         }
 
@@ -54,10 +54,10 @@ namespace puppet::device {
         return true;
     }
 
-    bool StaticFileReplayDeviceProvider::nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string* error) {
+    bool StaticFileReplayDeviceProvider::nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string& error) {
         if (frameIndex_ >= sequence_.frames.size()) {
             if (!loopPlayback_) {
-                *error = "replay finished";
+                error = "replay finished";
                 return false;
             }
             frameIndex_ = 0;

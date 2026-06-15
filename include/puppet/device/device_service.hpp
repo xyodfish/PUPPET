@@ -11,7 +11,7 @@ namespace puppet::device {
 
     class DeviceService {
        public:
-        bool initialize(const DeviceServiceConfig& config, std::string* error);
+        bool initialize(const DeviceServiceConfig& config, std::string& error);
         int run();
 
        private:

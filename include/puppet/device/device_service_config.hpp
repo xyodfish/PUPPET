@@ -20,6 +20,6 @@ namespace puppet::device {
         YAML::Node deviceNode;
     };
 
-    bool loadDeviceServiceConfig(const std::string& path, DeviceServiceConfig* config, std::string* error);
+    bool loadDeviceServiceConfig(const std::string& path, DeviceServiceConfig* config, std::string& error);
 
 }  // namespace puppet::device

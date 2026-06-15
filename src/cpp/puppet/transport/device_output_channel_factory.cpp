@@ -5,7 +5,7 @@
 
 namespace puppet::transport {
 
-    std::unique_ptr<IDeviceOutputChannel> createDeviceOutputChannel(const std::string& channelType, std::string* error) {
+    std::unique_ptr<IDeviceOutputChannel> createDeviceOutputChannel(const std::string& channelType, std::string& error) {
         if (channelType == "embosa") {
             return std::make_unique<EmbosaDeviceOutputChannel>();
         }
@@ -13,7 +13,7 @@ namespace puppet::transport {
             return std::make_unique<ZmqDeviceOutputChannel>();
         }
 
-        *error = "unsupported channel.type: " + channelType;
+        error = "unsupported channel.type: " + channelType;
         return nullptr;
     }
 

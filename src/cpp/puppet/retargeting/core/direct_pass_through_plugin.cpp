@@ -28,19 +28,15 @@ namespace puppet::retargeting {
 
     }  // namespace
 
-    bool DirectPassThroughPlugin::configure(const runtime::RuntimeConfig&, std::string* error) {
-        if (error != nullptr) {
-            error->clear();
-        }
+    bool DirectPassThroughPlugin::configure(const runtime::RuntimeConfig&, std::string& error) {
+        error.clear();
         return true;
     }
 
     bool DirectPassThroughPlugin::process(const model::PrimitiveFrame& input, const std::string& bodyGroup,
-                                          model::GroupControlIntent* output, std::string* error) {
+                                          model::GroupControlIntent* output, std::string& error) {
         if (output == nullptr) {
-            if (error != nullptr) {
-                *error = "output is null";
-            }
+            error = "output is null";
             return false;
         }
 
@@ -81,9 +77,7 @@ namespace puppet::retargeting {
             output->baseMotionIntents.push_back(std::move(baseIntent));
         }
 
-        if (error != nullptr) {
-            error->clear();
-        }
+        error.clear();
         return true;
     }
 

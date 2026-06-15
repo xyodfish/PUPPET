@@ -4,6 +4,8 @@
 
 #include <glog/logging.h>
 
+#include "puppet/common/logging.hpp"
+
 namespace puppet::source {
 
     void SourceManager::configure(const std::vector<runtime::SourceConfig>& sourceConfigs) {
@@ -22,8 +24,8 @@ namespace puppet::source {
             static std::atomic<uint64_t> unknownSourceCount{0};
             const uint64_t count = ++unknownSourceCount;
             if ((count % 200ULL) == 1ULL) {
-                LOG(WARNING) << "SourceManager ignore frame from unknown source_id=" << frame.context.sourceId
-                             << " known_source_count=" << states_.size() << " ignored_count=" << count;
+                PUPPET_LOG(WARNING, "unknown_source_frame", "source_manager", "capture_frame")
+                    << " source_id=" << frame.context.sourceId << " known_source_count=" << states_.size() << " ignored_count=" << count;
             }
             return;
         }

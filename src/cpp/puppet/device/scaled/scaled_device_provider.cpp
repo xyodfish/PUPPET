@@ -60,7 +60,7 @@ namespace puppet::device {
     }  // namespace scaled_device_provider_detail
 
     bool ScaledDeviceProvider::parseArmConfig(const YAML::Node& armNode, const std::string& armName, ArmRuntimeState* state,
-                                              std::string* error) {
+                                              std::string& error) {
         state->armName   = armName;
         state->stateName = armName + "_joint_state";
         if (armNode["state_name"]) {
@@ -103,11 +103,11 @@ namespace puppet::device {
         }
 
         if (state->jointInit.size() != state->jointNames.size()) {
-            *error = armName + ".joint_init size mismatch";
+            error = armName + ".joint_init size mismatch";
             return false;
         }
         if (state->jointScale.size() != state->jointNames.size()) {
-            *error = armName + ".joint_scale size mismatch";
+            error = armName + ".joint_scale size mismatch";
             return false;
         }
 
@@ -353,7 +353,7 @@ namespace puppet::device {
     }
 
     bool ScaledDeviceProvider::initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId,
-                                          std::string* error) {
+                                          std::string& error) {
         frameId_  = frameId;
         sourceId_ = sourceId;
 
@@ -514,7 +514,7 @@ namespace puppet::device {
         system_ = std::make_unique<System>(busName_);
         remote_ = std::make_unique<RemoteOperate>(busName_);
         if (system_ == nullptr || remote_ == nullptr) {
-            *error = "create scaled device sdk objects failed";
+            error = "create scaled device sdk objects failed";
             return false;
         }
 
@@ -914,13 +914,13 @@ namespace puppet::device {
         softEmergencyStopUpdated_    = false;
     }
 
-    bool ScaledDeviceProvider::nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string* error) {
+    bool ScaledDeviceProvider::nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string& error) {
         std::lock_guard<std::mutex> lock(dataMutex_);
         tryReconnect();
         handleChassisMotionCommand();
 
         if (!hasPendingFrame()) {
-            error->clear();
+            error.clear();
             return false;
         }
 

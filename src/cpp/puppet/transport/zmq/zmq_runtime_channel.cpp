@@ -8,6 +8,7 @@
 #include <glog/logging.h>
 #include <zmq.h>
 
+#include "puppet/common/logging.hpp"
 #include "puppet/transport/proto_copy.hpp"
 
 namespace puppet::runtime {
@@ -28,23 +29,25 @@ namespace puppet::runtime {
 
     bool ZmqRuntimeChannel::start(const ZmqRuntimeConfig& config, std::string& error) {
         config_ = config;
-        LOG(INFO) << "ZmqRuntimeChannel start input_endpoint=" << config_.inputEndpoint
-                  << " output_endpoint=" << config_.outputControlIntentEndpoint;
+        PUPPET_LOG(INFO, "channel_starting", "zmq_runtime_channel", "start")
+            << " input_endpoint=" << config_.inputEndpoint << " output_endpoint=" << config_.outputControlIntentEndpoint;
 
         if (!initContext(error)) {
             setLastError(error);
-            LOG(ERROR) << "ZmqRuntimeChannel initContext failed: " << error;
+            PUPPET_LOG(ERROR, "channel_start_failed", "zmq_runtime_channel", "init_context") << " error=" << error;
             return false;
         }
 
         if (!initDefaultEndpoints(error)) {
             setLastError(error);
-            LOG(ERROR) << "ZmqRuntimeChannel initDefaultEndpoints failed: " << error;
+            PUPPET_LOG(ERROR, "channel_start_failed", "zmq_runtime_channel", "init_default_endpoints") << " error=" << error;
             return false;
         }
 
         started_ = true;
         error.clear();
+        PUPPET_LOG(INFO, "channel_started", "zmq_runtime_channel", "start")
+            << " input_endpoint=" << config_.inputEndpoint << " output_endpoint=" << config_.outputControlIntentEndpoint;
         return true;
     }
 
@@ -150,8 +153,8 @@ namespace puppet::runtime {
                 error = "input endpoint key not supported: " + endpoint.key;
                 return false;
             }
-            LOG(INFO) << "ZmqRuntimeChannel input endpoint key=" << endpoint.key << " endpoint=" << endpoint.endpoint
-                      << " topic=" << endpoint.topicName;
+            PUPPET_LOG(INFO, "endpoint_bound", "zmq_runtime_channel", "init_input_endpoint")
+                << " direction=input endpoint_key=" << endpoint.key << " endpoint=" << endpoint.endpoint << " topic=" << endpoint.topicName;
         }
 
         for (const auto& endpoint : config_.outputEndpoints) {
@@ -165,8 +168,9 @@ namespace puppet::runtime {
                 error = "output endpoint key not supported: " + endpoint.key;
                 return false;
             }
-            LOG(INFO) << "ZmqRuntimeChannel output endpoint key=" << endpoint.key << " endpoint=" << endpoint.endpoint
-                      << " topic=" << endpoint.topicName;
+            PUPPET_LOG(INFO, "endpoint_bound", "zmq_runtime_channel", "init_output_endpoint")
+                << " direction=output endpoint_key=" << endpoint.key << " endpoint=" << endpoint.endpoint
+                << " topic=" << endpoint.topicName;
         }
         return true;
     }
@@ -334,7 +338,8 @@ namespace puppet::runtime {
         std::string error;
         if (!tryReceiveMessage(socket, topic, payload, gotMessage, error)) {
             setLastError(error);
-            LOG(ERROR) << "ZmqRuntimeChannel receive failed key=" << endpointKey << " error=" << error;
+            PUPPET_LOG(ERROR, "receive_failed", "zmq_runtime_channel", "on_input_message")
+                << " endpoint_key=" << endpointKey << " error=" << error;
             return false;
         }
         if (!gotMessage) {
@@ -346,6 +351,9 @@ namespace puppet::runtime {
             std::lock_guard<std::mutex> lock(statsMutex_);
             stats_.droppedPrimitiveFrameCount++;
             stats_.lastError = "parse primitive frame proto failed";
+            PUPPET_LOG_EVERY_N(WARNING, 100, "proto_parse_failed", "zmq_runtime_channel", "on_input_message")
+                << " endpoint_key=" << endpointKey << " payload_size=" << payload.size()
+                << " drop_count=" << stats_.droppedPrimitiveFrameCount;
             return false;
         }
 
@@ -354,6 +362,8 @@ namespace puppet::runtime {
             std::lock_guard<std::mutex> lock(statsMutex_);
             stats_.droppedPrimitiveFrameCount++;
             stats_.lastError = "copy primitive frame proto failed";
+            PUPPET_LOG_EVERY_N(WARNING, 100, "proto_copy_failed", "zmq_runtime_channel", "on_input_message")
+                << " endpoint_key=" << endpointKey << " drop_count=" << stats_.droppedPrimitiveFrameCount;
             return false;
         }
 

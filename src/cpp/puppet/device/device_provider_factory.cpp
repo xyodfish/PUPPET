@@ -6,7 +6,7 @@
 
 namespace puppet::device {
 
-    std::unique_ptr<IDeviceProvider> createDeviceProvider(const std::string& deviceType, std::string* error) {
+    std::unique_ptr<IDeviceProvider> createDeviceProvider(const std::string& deviceType, std::string& error) {
         if (deviceType == "static_file_replay") {
             return std::make_unique<StaticFileReplayDeviceProvider>();
         }
@@ -17,7 +17,7 @@ namespace puppet::device {
             return std::make_unique<ScaledDeviceProvider>();
         }
 
-        *error = "unsupported device.type: " + deviceType;
+        error = "unsupported device.type: " + deviceType;
         return nullptr;
     }
 

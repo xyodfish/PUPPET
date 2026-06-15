@@ -21,7 +21,7 @@ namespace puppet::device {
     }
 
     bool SingleChainIkSenderDeviceProvider::initialize(const YAML::Node& configNode, const std::string& frameId,
-                                                       const std::string& sourceId, std::string* error) {
+                                                       const std::string& sourceId, std::string& error) {
         (void)error;
         frameId_  = frameId;
         sourceId_ = sourceId;
@@ -47,7 +47,7 @@ namespace puppet::device {
         return true;
     }
 
-    bool SingleChainIkSenderDeviceProvider::nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string* error) {
+    bool SingleChainIkSenderDeviceProvider::nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string& error) {
         (void)error;
         const auto now  = std::chrono::system_clock::now().time_since_epoch();
         const auto sec  = std::chrono::duration_cast<std::chrono::seconds>(now).count();

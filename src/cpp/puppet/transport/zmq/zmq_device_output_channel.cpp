@@ -9,26 +9,26 @@
 namespace puppet::transport {
 
     bool ZmqDeviceOutputChannel::initialize(const std::string& nodeName, const std::string& topicName, const std::string& outputEndpoint,
-                                            const YAML::Node& configNode, std::string* error) {
+                                            const YAML::Node& configNode, std::string& error) {
         (void)nodeName;
         (void)configNode;
 
         topicName_ = topicName;
         context_   = zmq_ctx_new();
         if (context_ == nullptr) {
-            *error = std::string("create zmq context failed: ") + zmq_strerror(errno);
+            error = std::string("create zmq context failed: ") + zmq_strerror(errno);
             return false;
         }
 
         publisher_ = zmq_socket(context_, ZMQ_PUB);
         if (publisher_ == nullptr) {
-            *error = std::string("create zmq publisher failed: ") + zmq_strerror(errno);
+            error = std::string("create zmq publisher failed: ") + zmq_strerror(errno);
             shutdown();
             return false;
         }
 
         if (zmq_bind(publisher_, outputEndpoint.c_str()) != 0) {
-            *error = std::string("bind zmq publisher failed: ") + zmq_strerror(errno);
+            error = std::string("bind zmq publisher failed: ") + zmq_strerror(errno);
             shutdown();
             return false;
         }
@@ -37,25 +37,25 @@ namespace puppet::transport {
         return true;
     }
 
-    bool ZmqDeviceOutputChannel::publish(const model::PrimitiveFrame& frame, std::string* error) {
+    bool ZmqDeviceOutputChannel::publish(const model::PrimitiveFrame& frame, std::string& error) {
         ::puppet::puppet_proto::PrimitiveFrame framePb;
         if (!copyToProto(frame, &framePb)) {
-            *error = "convert model primitive frame to proto failed";
+            error = "convert model primitive frame to proto failed";
             return false;
         }
 
         std::string payload(framePb.ByteSizeLong(), '\0');
         if (!framePb.SerializeToArray(payload.data(), static_cast<int>(payload.size()))) {
-            *error = "serialize primitive frame failed";
+            error = "serialize primitive frame failed";
             return false;
         }
 
         if (zmq_send(publisher_, topicName_.data(), topicName_.size(), ZMQ_SNDMORE) < 0) {
-            *error = std::string("zmq send topic failed: ") + zmq_strerror(errno);
+            error = std::string("zmq send topic failed: ") + zmq_strerror(errno);
             return false;
         }
         if (zmq_send(publisher_, payload.data(), payload.size(), 0) < 0) {
-            *error = std::string("zmq send payload failed: ") + zmq_strerror(errno);
+            error = std::string("zmq send payload failed: ") + zmq_strerror(errno);
             return false;
         }
         return true;

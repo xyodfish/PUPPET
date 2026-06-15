@@ -13,9 +13,9 @@ namespace puppet::transport {
     class EmbosaDeviceOutputChannel : public IDeviceOutputChannel {
        public:
         bool initialize(const std::string& nodeName, const std::string& topicName, const std::string& outputEndpoint,
-                        const YAML::Node& configNode, std::string* error) override;
+                        const YAML::Node& configNode, std::string& error) override;
 
-        bool publish(const model::PrimitiveFrame& frame, std::string* error) override;
+        bool publish(const model::PrimitiveFrame& frame, std::string& error) override;
 
         bool ok() const override;
 

@@ -40,7 +40,7 @@ namespace puppet::tools::retargeting_mujoco_visualizer_udp_internal {
         uint16_t controlIntentBindPort  = 16663;
     };
 
-    bool loadConfig(const std::string& path, VisualizerConfig* cfg, std::string* error) {
+    bool loadConfig(const std::string& path, VisualizerConfig* cfg, std::string& error) {
         try {
             YAML::Node root = YAML::LoadFile(path);
             if (root["mujoco_model_xml"]) {
@@ -81,12 +81,12 @@ namespace puppet::tools::retargeting_mujoco_visualizer_udp_internal {
                 cfg->controlIntentBindPort = root["control_intent_bind_port"].as<uint16_t>();
             }
             if (cfg->mujocoModelXml.empty()) {
-                *error = "mujoco_model_xml is empty";
+                error = "mujoco_model_xml is empty";
                 return false;
             }
             return true;
         } catch (const std::exception& ex) {
-            *error = ex.what();
+            error = ex.what();
             return false;
         }
     }
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
 
     VisualizerConfig cfg;
     std::string error;
-    if (!loadConfig(configPath, &cfg, &error)) {
+    if (!loadConfig(configPath, &cfg, error)) {
         std::cerr << "[retargeting_mujoco_visualizer_udp] load config failed: " << error << std::endl;
         return 1;
     }

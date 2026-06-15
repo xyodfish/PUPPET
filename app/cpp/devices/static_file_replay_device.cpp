@@ -24,7 +24,7 @@ namespace {
         bool loopPlayback = true;
     };
 
-    bool loadConfig(const std::string& path, ReplayConfig* cfg, std::string* error) {
+    bool loadConfig(const std::string& path, ReplayConfig* cfg, std::string& error) {
         try {
             YAML::Node root = YAML::LoadFile(path);
             if (root["node_name"])
@@ -41,12 +41,12 @@ namespace {
             if (root["loop_playback"])
                 cfg->loopPlayback = root["loop_playback"].as<bool>();
             if (cfg->humanFrameJson.empty()) {
-                *error = "human_frame_json is empty";
+                error = "human_frame_json is empty";
                 return false;
             }
             return true;
         } catch (const std::exception& ex) {
-            *error = ex.what();
+            error = ex.what();
             return false;
         }
     }
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 
     ReplayConfig cfg;
     std::string error;
-    if (!loadConfig(configPath, &cfg, &error)) {
+    if (!loadConfig(configPath, &cfg, error)) {
         std::cerr << "[static_file_replay_device] load config failed: " << error << std::endl;
         return 1;
     }

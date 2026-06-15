@@ -9,9 +9,9 @@ namespace puppet::device {
 
     class StaticFileReplayDeviceProvider : public IDeviceProvider {
        public:
-        bool initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId, std::string* error) override;
+        bool initialize(const YAML::Node& configNode, const std::string& frameId, const std::string& sourceId, std::string& error) override;
 
-        bool nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string* error) override;
+        bool nextFrame(uint64_t sequenceId, model::PrimitiveFrame* frame, std::string& error) override;
 
         int suggestedLoopHz() const override;
 

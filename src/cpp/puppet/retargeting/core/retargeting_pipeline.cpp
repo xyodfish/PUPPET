@@ -2,6 +2,7 @@
 
 #include <glog/logging.h>
 
+#include "puppet/common/logging.hpp"
 #include "puppet/retargeting/native/gmr_retargeting_plugin.hpp"
 #include "puppet/retargeting/native/single_chain_ik_retargeting_plugin.hpp"
 
@@ -51,38 +52,30 @@ namespace puppet::retargeting {
         }
     }  // namespace
 
-    bool RetargetingPipeline::configure(const runtime::RuntimeConfig& config, std::string* error) {
+    bool RetargetingPipeline::configure(const runtime::RuntimeConfig& config, std::string& error) {
         plugins_.clear();
         pipelineTypes_.clear();
 
         for (const auto& route : config.groupRouting) {
             const auto pipelineIt = config.pipelineMap.find(route.pipelineId);
             if (pipelineIt == config.pipelineMap.end()) {
-                if (error != nullptr) {
-                    *error = "group_routing references missing pipeline: " + route.pipelineId;
-                }
-                return false;
+                return common::Fail(error, "group_routing references missing pipeline: " + route.pipelineId);
             }
             if (!pipelineIt->second.enabled) {
-                if (error != nullptr) {
-                    *error = "group_routing references disabled pipeline: " + route.pipelineId;
-                }
-                return false;
+                return common::Fail(error, "group_routing references disabled pipeline: " + route.pipelineId);
             }
         }
 
         for (const auto& pipelineConfig : config.pipelines) {
             if (!pipelineConfig.enabled) {
-                LOG(INFO) << "RetargetingPipeline skip disabled pipeline_id=" << pipelineConfig.pipelineId
-                          << " plugin_type=" << pipelineConfig.pluginType;
+                PUPPET_LOG(INFO, "pipeline_skipped_disabled", "retargeting_pipeline", "configure")
+                    << " pipeline_id=" << pipelineConfig.pipelineId << " plugin_type=" << pipelineConfig.pluginType;
                 continue;
             }
 
             if (!isPluginEnabled(config, pipelineConfig.pluginType)) {
-                if (error != nullptr) {
-                    *error = "pipeline " + pipelineConfig.pipelineId + " references disabled plugin type: " + pipelineConfig.pluginType;
-                }
-                return false;
+                return common::Fail(
+                    error, "pipeline " + pipelineConfig.pipelineId + " references disabled plugin type: " + pipelineConfig.pluginType);
             }
 
             RetargetingPluginPtr plugin;
@@ -91,34 +84,28 @@ namespace puppet::retargeting {
             } else if (pipelineConfig.pluginType == "gmr") {
                 plugin = std::make_shared<GmrRetargetingPlugin>();
             } else if (pipelineConfig.pluginType == "single_chain_ik_velocity") {
-                LOG(WARNING) << "pipeline_id=" << pipelineConfig.pipelineId
-                             << " uses deprecated plugin type single_chain_ik_velocity, fallback to single_chain_ik";
+                PUPPET_LOG(WARNING, "deprecated_plugin_type", "retargeting_pipeline", "configure")
+                    << " pipeline_id=" << pipelineConfig.pipelineId << " plugin_type=single_chain_ik_velocity"
+                    << " fallback=single_chain_ik";
                 plugin = std::make_shared<SingleChainIkRetargetingPlugin>();
             } else if (pipelineConfig.pluginType == "single_chain_ik") {
                 plugin = std::make_shared<SingleChainIkRetargetingPlugin>();
             } else {
-                if (error != nullptr) {
-                    *error = "unknown plugin type: " + pipelineConfig.pluginType;
-                }
-                return false;
+                return common::Fail(error, "unknown plugin type: " + pipelineConfig.pluginType);
             }
 
             std::string pluginError;
-            if (!plugin->configure(config, &pluginError)) {
-                if (error != nullptr) {
-                    *error = "configure plugin " + pipelineConfig.pluginType + " failed: " + pluginError;
-                }
-                return false;
+            if (!plugin->configure(config, pluginError)) {
+                error = pluginError;
+                return common::WrapError(error, "configure plugin " + pipelineConfig.pluginType + " failed: ");
             }
             plugins_[pipelineConfig.pipelineId]       = std::move(plugin);
             pipelineTypes_[pipelineConfig.pipelineId] = pipelineConfig.pluginType;
-            LOG(INFO) << "RetargetingPipeline configured pipeline_id=" << pipelineConfig.pipelineId
-                      << " plugin_type=" << pipelineConfig.pluginType;
+            PUPPET_LOG(INFO, "pipeline_configured", "retargeting_pipeline", "configure")
+                << " pipeline_id=" << pipelineConfig.pipelineId << " plugin_type=" << pipelineConfig.pluginType;
         }
 
-        if (error != nullptr) {
-            error->clear();
-        }
+        common::ClearError(error);
         return true;
     }
 
@@ -142,33 +129,25 @@ namespace puppet::retargeting {
     }
 
     bool RetargetingPipeline::run(const std::string& pipelineId, const model::PrimitiveFrame& frame, const std::string& bodyGroup,
-                                  const std::string& controlSemantics, model::GroupControlIntent* output, std::string* error) const {
+                                  const std::string& controlSemantics, model::GroupControlIntent* output, std::string& error) const {
         const auto pluginIt = plugins_.find(pipelineId);
         if (pluginIt == plugins_.end()) {
-            if (error != nullptr) {
-                *error = "pipeline not found: " + pipelineId;
-            }
-            return false;
+            return common::Fail(error, "pipeline not found: " + pipelineId);
         }
         const auto typeIt = pipelineTypes_.find(pipelineId);
         if (typeIt == pipelineTypes_.end()) {
-            if (error != nullptr) {
-                *error = "pipeline type not found: " + pipelineId;
-            }
-            return false;
+            return common::Fail(error, "pipeline type not found: " + pipelineId);
         }
         const std::string& pluginType = typeIt->second;
+        PUPPET_VLOG(2, "plugin_dispatch", "retargeting_pipeline", "run")
+            << " pipeline_id=" << pipelineId << " plugin_type=" << pluginType << " body_group=" << bodyGroup
+            << " control_semantics=" << controlSemantics;
         if (!supportsGroup(pluginType, bodyGroup)) {
-            if (error != nullptr) {
-                *error = "pipeline " + pipelineId + " plugin " + pluginType + " does not support body_group: " + bodyGroup;
-            }
-            return false;
+            return common::Fail(error, "pipeline " + pipelineId + " plugin " + pluginType + " does not support body_group: " + bodyGroup);
         }
         if (!supportsSemantics(pluginType, controlSemantics)) {
-            if (error != nullptr) {
-                *error = "pipeline " + pipelineId + " plugin " + pluginType + " does not support control_semantics: " + controlSemantics;
-            }
-            return false;
+            return common::Fail(
+                error, "pipeline " + pipelineId + " plugin " + pluginType + " does not support control_semantics: " + controlSemantics);
         }
         return pluginIt->second->process(frame, bodyGroup, output, error);
     }

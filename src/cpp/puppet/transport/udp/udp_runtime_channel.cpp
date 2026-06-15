@@ -13,6 +13,7 @@
 
 #include <glog/logging.h>
 
+#include "puppet/common/logging.hpp"
 #include "puppet/transport/proto_copy.hpp"
 
 namespace puppet::runtime {
@@ -36,17 +37,21 @@ namespace puppet::runtime {
 
     bool UdpRuntimeChannel::start(const UdpRuntimeConfig& config, std::string& error) {
         config_ = config;
-        LOG(INFO) << "UdpRuntimeChannel start input_bind=" << config_.inputBindHost << ":" << config_.inputBindPort
-                  << " output_remote=" << config_.outputRemoteHost << ":" << config_.outputControlIntentPort;
+        PUPPET_LOG(INFO, "channel_starting", "udp_runtime_channel", "start")
+            << " input_bind=" << config_.inputBindHost << ":" << config_.inputBindPort << " output_remote=" << config_.outputRemoteHost
+            << ":" << config_.outputControlIntentPort;
 
         if (!initDefaultEndpoints(error)) {
             setLastError(error);
-            LOG(ERROR) << "UdpRuntimeChannel initDefaultEndpoints failed: " << error;
+            PUPPET_LOG(ERROR, "channel_start_failed", "udp_runtime_channel", "init_default_endpoints") << " error=" << error;
             return false;
         }
 
         started_ = true;
         error.clear();
+        PUPPET_LOG(INFO, "channel_started", "udp_runtime_channel", "start")
+            << " input_bind=" << config_.inputBindHost << ":" << config_.inputBindPort << " output_remote=" << config_.outputRemoteHost
+            << ":" << config_.outputControlIntentPort;
         return true;
     }
 
@@ -267,6 +272,8 @@ namespace puppet::runtime {
             std::lock_guard<std::mutex> lock(statsMutex_);
             stats_.droppedPrimitiveFrameCount++;
             stats_.lastError = "parse primitive frame proto failed";
+            PUPPET_LOG_EVERY_N(WARNING, 100, "proto_parse_failed", "udp_runtime_channel", "handle_incoming_payload")
+                << " endpoint_key=" << endpointKey << " payload_size=" << size << " drop_count=" << stats_.droppedPrimitiveFrameCount;
             return false;
         }
 
@@ -275,6 +282,8 @@ namespace puppet::runtime {
             std::lock_guard<std::mutex> lock(statsMutex_);
             stats_.droppedPrimitiveFrameCount++;
             stats_.lastError = "copy primitive frame proto failed";
+            PUPPET_LOG_EVERY_N(WARNING, 100, "proto_copy_failed", "udp_runtime_channel", "handle_incoming_payload")
+                << " endpoint_key=" << endpointKey << " drop_count=" << stats_.droppedPrimitiveFrameCount;
             return false;
         }
 
@@ -347,13 +356,15 @@ namespace puppet::runtime {
         if (frameInputFd_ >= 0 && FD_ISSET(frameInputFd_, &readSet)) {
             if (!receiveAndDispatchInput(frameInputFd_, "primitive_frame", true, error)) {
                 setLastError(error);
-                LOG(ERROR) << "UdpRuntimeChannel read primitive_frame failed: " << error;
+                PUPPET_LOG(ERROR, "receive_failed", "udp_runtime_channel", "poll_inputs")
+                    << " endpoint_key=primitive_frame error=" << error;
             }
         }
         if (robotInputFd_ >= 0 && FD_ISSET(robotInputFd_, &readSet)) {
             if (!receiveAndDispatchInput(robotInputFd_, "robot_state_frame", false, error)) {
                 setLastError(error);
-                LOG(ERROR) << "UdpRuntimeChannel read robot_state_frame failed: " << error;
+                PUPPET_LOG(ERROR, "receive_failed", "udp_runtime_channel", "poll_inputs")
+                    << " endpoint_key=robot_state_frame error=" << error;
             }
         }
     }

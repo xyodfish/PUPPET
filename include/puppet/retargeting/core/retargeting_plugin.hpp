@@ -14,11 +14,14 @@ namespace puppet::retargeting {
         virtual ~RetargetingPlugin() = default;
 
         virtual std::string name() const                                                 = 0;
-        virtual bool configure(const runtime::RuntimeConfig& config, std::string* error) = 0;
+        virtual bool configure(const runtime::RuntimeConfig& config, std::string& error) = 0;
         virtual bool requiresRobotState() const { return false; }
 
         virtual bool process(const model::PrimitiveFrame& input, const std::string& bodyGroup, model::GroupControlIntent* output,
-                             std::string* error) = 0;
+                             std::string& error) = 0;
+
+       protected:
+        std::vector<std::string> bodyGroups_;  // 用于描述 当前 pluging 所支持处理的 bodyGroup有哪些
     };
 
     using RetargetingPluginPtr = std::shared_ptr<RetargetingPlugin>;

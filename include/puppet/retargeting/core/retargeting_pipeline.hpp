@@ -14,11 +14,11 @@ namespace puppet::retargeting {
 
     class RetargetingPipeline {
        public:
-        bool configure(const runtime::RuntimeConfig& config, std::string* error);
+        bool configure(const runtime::RuntimeConfig& config, std::string& error);
         bool requiresRobotState(const std::string& pipelineId, const std::string& controlSemantics) const;
 
         bool run(const std::string& pipelineId, const model::PrimitiveFrame& frame, const std::string& bodyGroup,
-                 const std::string& controlSemantics, model::GroupControlIntent* output, std::string* error) const;
+                 const std::string& controlSemantics, model::GroupControlIntent* output, std::string& error) const;
 
        private:
         std::unordered_map<std::string, RetargetingPluginPtr> plugins_;

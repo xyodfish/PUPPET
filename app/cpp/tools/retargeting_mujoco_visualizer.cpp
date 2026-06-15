@@ -163,7 +163,7 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         }
     }
 
-    bool loadConfig(const std::string& path, VisualizerConfig* cfg, std::string* error) {
+    bool loadConfig(const std::string& path, VisualizerConfig* cfg, std::string& error) {
         try {
             YAML::Node root = YAML::LoadFile(path);
             if (root["robot_qpos_source"])
@@ -240,12 +240,12 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
             if (root["print_stat"])
                 cfg->printStat = root["print_stat"].as<bool>();
             if (cfg->mujocoModelXml.empty()) {
-                *error = "mujoco_model_xml is empty";
+                error = "mujoco_model_xml is empty";
                 return false;
             }
             return true;
         } catch (const std::exception& ex) {
-            *error = ex.what();
+            error = ex.what();
             return false;
         }
     }
@@ -292,14 +292,12 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
 
         class HumanOverlayPreprocessor {
            public:
-            bool init(const VisualizerConfig& cfg, std::string* error) {
+            bool init(const VisualizerConfig& cfg, std::string& error) {
                 if (!cfg.humanOverlayUsePreparedFrame) {
                     return true;
                 }
                 if (cfg.humanOverlayRobotModelPath.empty() || cfg.humanOverlayIkConfigPath.empty()) {
-                    if (error != nullptr) {
-                        *error = "human overlay preprocessor requires robot_model_path and ik_config_path";
-                    }
+                    error = "human overlay preprocessor requires robot_model_path and ik_config_path";
                     return false;
                 }
                 const auto backend = gmr::parseRetargetBackend(cfg.humanOverlayBackend);
@@ -324,7 +322,7 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
             std::unique_ptr<gmr::Retargeter> retargeter_;
         };
 
-        bool initPreprocessor(const VisualizerConfig& cfg, std::string* error) { return preprocessor_.init(cfg, error); }
+        bool initPreprocessor(const VisualizerConfig& cfg, std::string& error) { return preprocessor_.init(cfg, error); }
 
         void update(const ::puppet::puppet_proto::PrimitiveFrame& msg) {
             gmr::HumanFrame humanFrame;
@@ -373,15 +371,13 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
 
     class LocalRetargetCache {
        public:
-        bool init(const VisualizerConfig& cfg, std::string* error) {
+        bool init(const VisualizerConfig& cfg, std::string& error) {
             enabled_ = cfg.robotQposSource == "local_retarget";
             if (!enabled_) {
                 return true;
             }
             if (cfg.localRetargetRobotModelPath.empty() || cfg.localRetargetIkConfigPath.empty()) {
-                if (error != nullptr) {
-                    *error = "local retarget requires robot model path and ik config path";
-                }
+                error = "local retarget requires robot model path and ik config path";
                 return false;
             }
             const auto backend = gmr::parseRetargetBackend(cfg.localRetargetBackend);
@@ -459,7 +455,7 @@ int main(int argc, char** argv) {
 
     VisualizerConfig cfg;
     std::string error;
-    if (!loadConfig(configPath, &cfg, &error)) {
+    if (!loadConfig(configPath, &cfg, error)) {
         std::cerr << "[retargeting_mujoco_visualizer] load config failed: " << error << std::endl;
         return 1;
     }
@@ -551,13 +547,13 @@ int main(int argc, char** argv) {
     ControlIntentCache cache;
     HumanPoseCache humanPoseCache;
     LocalRetargetCache localRetargetCache;
-    if (!humanPoseCache.initPreprocessor(cfg, &error)) {
+    if (!humanPoseCache.initPreprocessor(cfg, error)) {
         std::cerr << "[retargeting_mujoco_visualizer] init human overlay preprocessor failed: " << error << std::endl;
         glfwDestroyWindow(window);
         glfwTerminate();
         return 8;
     }
-    if (!localRetargetCache.init(cfg, &error)) {
+    if (!localRetargetCache.init(cfg, error)) {
         std::cerr << "[retargeting_mujoco_visualizer] init local retarget failed: " << error << std::endl;
         glfwDestroyWindow(window);
         glfwTerminate();

@@ -5,6 +5,7 @@
 
 #include <glog/logging.h>
 
+#include "puppet/common/logging.hpp"
 #include "puppet/common/time_utils.hpp"
 #include "puppet/transport/embosa/embosa_runtime_channel.hpp"
 #include "puppet/transport/tcp/tcp_runtime_channel.hpp"
@@ -23,20 +24,22 @@ namespace puppet::runtime {
 
         if (!loadConfig(runtimeConfigPath, error)) {
             setError(error);
-            LOG(ERROR) << "PuppetManager load config failed: " << error;
+            PUPPET_LOG(ERROR, "config_load_failed", "puppet_manager", "init") << " config_path=" << runtimeConfigPath << " error=" << error;
             return false;
         }
 
         if (!initModules(error)) {
             setError(error);
-            LOG(ERROR) << "PuppetManager init modules failed: " << error;
+            PUPPET_LOG(ERROR, "modules_init_failed", "puppet_manager", "init") << " error=" << error;
             return false;
         }
 
         initialized_ = true;
         state_       = PuppetManagerState::kModulesInitialized;
         lastError_.clear();
-        error.clear();
+        common::ClearError(error);
+        PUPPET_LOG(INFO, "manager_initialized", "puppet_manager", "init")
+            << " config_path=" << runtimeConfigPath << " channel=" << config_.runtimeChannelType;
         return true;
     }
 
@@ -44,6 +47,7 @@ namespace puppet::runtime {
         if (!initialized_) {
             error = "PuppetManager is not initialized";
             setError(error);
+            PUPPET_LOG(ERROR, "run_rejected", "puppet_manager", "run") << " error=" << error;
             return;
         }
 
@@ -59,7 +63,8 @@ namespace puppet::runtime {
         }
 
         state_ = PuppetManagerState::kStopped;
-        error.clear();
+        common::ClearError(error);
+        PUPPET_LOG(INFO, "manager_stopped", "puppet_manager", "run");
     }
 
     void PuppetManager::stop() {
@@ -101,53 +106,59 @@ namespace puppet::runtime {
     bool PuppetManager::createRuntimeChannel(std::string& error) {
         if (config_.runtimeChannelType == "embosa") {
             channel_ = std::make_unique<EmbosaRuntimeChannel>(config_.embosaRuntime);
-            error.clear();
+            common::ClearError(error);
+            PUPPET_LOG(INFO, "channel_created", "puppet_manager", "create_runtime_channel") << " channel=embosa";
             return true;
         }
         if (config_.runtimeChannelType == "zmq") {
             channel_ = std::make_unique<ZmqRuntimeChannel>(config_.zmqRuntime);
-            error.clear();
+            common::ClearError(error);
+            PUPPET_LOG(INFO, "channel_created", "puppet_manager", "create_runtime_channel") << " channel=zmq";
             return true;
         }
         if (config_.runtimeChannelType == "tcp") {
             channel_ = std::make_unique<TcpRuntimeChannel>(config_.tcpRuntime);
-            error.clear();
+            common::ClearError(error);
+            PUPPET_LOG(INFO, "channel_created", "puppet_manager", "create_runtime_channel") << " channel=tcp";
             return true;
         }
         if (config_.runtimeChannelType == "udp") {
             channel_ = std::make_unique<UdpRuntimeChannel>(config_.udpRuntime);
-            error.clear();
+            common::ClearError(error);
+            PUPPET_LOG(INFO, "channel_created", "puppet_manager", "create_runtime_channel") << " channel=udp";
             return true;
         }
 
-        error = "unsupported runtime channel type: " + config_.runtimeChannelType;
-        return false;
+        return common::Fail(error, "unsupported runtime channel type: " + config_.runtimeChannelType);
     }
 
     bool PuppetManager::processOneLoop(std::string& error) {
         model::PrimitiveFrame frame;
         if (!channel_->tryPopFrame(frame)) {
             report_->recordNoFrameSleep();
-            error.clear();
+            common::ClearError(error);
             return true;
         }
 
         runtime_->sourceManager()->captureFrame(frame);
         if (!runtime_->runOnce(error)) {
             report_->recordRunOnceFailure(error);
-            LOG(ERROR) << "PuppetManager runOnce failed: " << error;
+            PUPPET_LOG_EVERY_N(ERROR, 100, "run_once_failed", "puppet_manager", "process_one_loop")
+                << " source_id=" << frame.context.sourceId << " pipeline_id=" << frame.context.pipelineId
+                << " seq=" << runtime_->lastControlIntent().sequenceId << " error=" << error;
             return true;
         }
 
         if (!channel_->publishControlIntent(runtime_->lastControlIntent(), error)) {
             report_->recordPublishFailure(error);
-            LOG(ERROR) << "PuppetManager publish control intent failed: " << error;
+            PUPPET_LOG_EVERY_N(ERROR, 100, "publish_failed", "puppet_manager", "process_one_loop")
+                << " seq=" << runtime_->lastControlIntent().sequenceId << " error=" << error;
             return true;
         }
 
         report_->recordSuccessfulLoop();
         report_->maybeReport(*runtime_, *channel_);
-        error.clear();
+        common::ClearError(error);
         return true;
     }
 

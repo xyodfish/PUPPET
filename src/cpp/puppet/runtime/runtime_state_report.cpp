@@ -2,6 +2,8 @@
 
 #include <glog/logging.h>
 
+#include "puppet/common/logging.hpp"
+
 namespace puppet::runtime {
 
     void RuntimeStateReport::recordNoFrameSleep() {
@@ -37,12 +39,13 @@ namespace puppet::runtime {
         }
 
         const auto channelStats = channel.getRuntimeStats();
-        LOG(INFO) << "runtime report loop=" << loopCount_ << " no_frame_sleep=" << noFrameSleepCount_
-                  << " run_once_fail=" << runOnceFailCount_ << " publish_fail=" << publishFailCount_
-                  << " source_unhealthy=" << unhealthySources << "/" << sources.size() << " rx=" << channelStats.receivedPrimitiveFrameCount
-                  << " rx_drop=" << channelStats.droppedPrimitiveFrameCount << " tx=" << channelStats.publishedControlIntentCount
-                  << " channel_last_error=" << channelStats.lastError << " run_once_last_error=" << lastRunOnceError_
-                  << " publish_last_error=" << lastPublishError_;
+        PUPPET_LOG(INFO, "runtime_report", "teleop_runtime", "maybe_report")
+            << " loop=" << loopCount_ << " no_frame_sleep=" << noFrameSleepCount_ << " run_once_fail=" << runOnceFailCount_
+            << " publish_fail=" << publishFailCount_ << " source_unhealthy=" << unhealthySources << " source_count=" << sources.size()
+            << " rx=" << channelStats.receivedPrimitiveFrameCount << " rx_robot_state=" << channelStats.receivedRobotStateFrameCount
+            << " rx_drop=" << channelStats.droppedPrimitiveFrameCount << " tx=" << channelStats.publishedControlIntentCount
+            << " channel_last_error=" << channelStats.lastError << " run_once_last_error=" << lastRunOnceError_
+            << " publish_last_error=" << lastPublishError_;
     }
 
 }  // namespace puppet::runtime

@@ -11,6 +11,8 @@
 #include <random>
 #include <utility>
 
+#include "puppet/common/logging.hpp"
+
 namespace puppet::retargeting {
 
     namespace single_chain_ik_internal {
@@ -91,15 +93,13 @@ namespace puppet::retargeting {
 
     }  // namespace single_chain_ik_internal
 
-    bool SingleChainIkRetargetingPlugin::configure(const runtime::RuntimeConfig& config, std::string* error) {
+    bool SingleChainIkRetargetingPlugin::configure(const runtime::RuntimeConfig& config, std::string& error) {
         enabled_  = config.singleChainIk.enabled;
         chainMap_ = config.singleChainIk.chainMap;
         dtSec_    = config.loopHz > 0 ? (1.0 / static_cast<double>(config.loopHz)) : 0.01;
 
         if (chainMap_.empty()) {
-            if (error != nullptr) {
-                *error = "single_chain_ik chains is empty";
-            }
+            error = "single_chain_ik chains is empty";
             return false;
         }
 
@@ -114,17 +114,13 @@ namespace puppet::retargeting {
             ChainContext ctx;
             ctx.config = chainCfg;
             if (!solver->getKDLChain(ctx.chain) || !solver->getKDLLimits(ctx.lowerLimit, ctx.upperLimit)) {
-                if (error != nullptr) {
-                    *error = "single_chain_ik failed to initialize chain from TRAC-IK for body_group: " + bodyGroup;
-                }
+                error = "single_chain_ik failed to initialize chain from TRAC-IK for body_group: " + bodyGroup;
                 return false;
             }
 
             const auto jointCount = static_cast<size_t>(ctx.chain.getNrOfJoints());
             if (jointCount != chainCfg.jointNames.size()) {
-                if (error != nullptr) {
-                    *error = "single_chain_ik joint_names size mismatch for body_group: " + bodyGroup;
-                }
+                error = "single_chain_ik joint_names size mismatch for body_group: " + bodyGroup;
                 return false;
             }
 
@@ -142,13 +138,12 @@ namespace puppet::retargeting {
 
             chainContextMap_.emplace(bodyGroup, std::move(ctx));
 
-            LOG(INFO) << "single_chain_ik configured body_group=" << bodyGroup << " base_link=" << chainCfg.baseLink
-                      << " tip_link=" << chainCfg.tipLink << " joints=" << jointCount;
+            PUPPET_LOG(INFO, "chain_configured", "single_chain_ik_plugin", "configure")
+                << " body_group=" << bodyGroup << " base_link=" << chainCfg.baseLink << " tip_link=" << chainCfg.tipLink
+                << " joints=" << jointCount;
         }
 
-        if (error != nullptr) {
-            error->clear();
-        }
+        error.clear();
         return true;
     }
 
@@ -262,25 +257,19 @@ namespace puppet::retargeting {
     }
 
     bool SingleChainIkRetargetingPlugin::process(const model::PrimitiveFrame& input, const std::string& bodyGroup,
-                                                 model::GroupControlIntent* output, std::string* error) {
+                                                 model::GroupControlIntent* output, std::string& error) {
         if (output == nullptr) {
-            if (error != nullptr) {
-                *error = "output is null";
-            }
+            error = "output is null";
             return false;
         }
         if (!enabled_) {
-            if (error != nullptr) {
-                *error = "single_chain_ik plugin is disabled";
-            }
+            error = "single_chain_ik plugin is disabled";
             return false;
         }
 
         auto chainIt = chainContextMap_.find(bodyGroup);
         if (chainIt == chainContextMap_.end()) {
-            if (error != nullptr) {
-                *error = "single_chain_ik chain config not found for body_group: " + bodyGroup;
-            }
+            error = "single_chain_ik chain config not found for body_group: " + bodyGroup;
             return false;
         }
         ChainContext& chainCtx = chainIt->second;
@@ -288,9 +277,7 @@ namespace puppet::retargeting {
         const model::PrimitiveFrame runtimeInput = preprocessToPoseFrame(input, bodyGroup);
         const model::PosePrimitive* selectedPose = selectTargetPose(runtimeInput, bodyGroup, chainCtx);
         if (selectedPose == nullptr) {
-            if (error != nullptr) {
-                *error = "single_chain_ik input poses is empty";
-            }
+            error = "single_chain_ik input poses is empty";
             return false;
         }
 
@@ -299,9 +286,7 @@ namespace puppet::retargeting {
         KDL::JntArray ikSolution(static_cast<size_t>(chainCtx.chain.getNrOfJoints()));
         if (!solveIkWithPerturbation(chainCtx, seed, targetPose, &ikSolution)) {
             handleSolveFailure(&chainCtx);
-            if (error != nullptr) {
-                *error = "single_chain_ik trac_ik solve failed for body_group: " + bodyGroup;
-            }
+            error = "single_chain_ik trac_ik solve failed for body_group: " + bodyGroup;
             return false;
         }
         chainCtx.consecutiveFailureCount = 0;
@@ -312,9 +297,7 @@ namespace puppet::retargeting {
         output->mode                          = "single_chain_ik";
         output->enabled                       = true;
         output->jointCommandIntents.push_back(std::move(jointIntent));
-        if (error != nullptr) {
-            error->clear();
-        }
+        error.clear();
         return true;
     }
 
@@ -339,8 +322,8 @@ namespace puppet::retargeting {
                     static uint64_t noSeedWarnCount = 0;
                     ++noSeedWarnCount;
                     if ((noSeedWarnCount % 100ULL) == 1ULL) {
-                        LOG(WARNING) << "single_chain_ik skip twist integration due to missing pose seed, body_group=" << bodyGroup
-                                     << " entity=" << twistPrimitive.meta.entity;
+                        PUPPET_LOG(WARNING, "twist_seed_missing", "single_chain_ik_plugin", "preprocess_to_pose_frame")
+                            << " body_group=" << bodyGroup << " entity=" << twistPrimitive.meta.entity;
                     }
                     continue;
                 }

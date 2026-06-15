@@ -6,7 +6,7 @@
 
 namespace puppet::device {
 
-    bool DeviceService::initialize(const DeviceServiceConfig& config, std::string* error) {
+    bool DeviceService::initialize(const DeviceServiceConfig& config, std::string& error) {
         config_ = config;
 
         provider_ = createDeviceProvider(config_.deviceType, error);
@@ -43,8 +43,8 @@ namespace puppet::device {
         while (channel_->ok()) {
             model::PrimitiveFrame frame;
             std::string error;
-            if (provider_->nextFrame(sequenceId, &frame, &error)) {
-                if (!channel_->publish(frame, &error)) {
+            if (provider_->nextFrame(sequenceId, &frame, error)) {
+                if (!channel_->publish(frame, error)) {
                     std::cerr << "[device_service] publish failed: " << error << std::endl;
                     break;
                 }

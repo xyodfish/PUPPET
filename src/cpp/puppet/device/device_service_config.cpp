@@ -22,7 +22,7 @@ namespace puppet::device {
 
     }  // namespace device_config_detail
 
-    bool loadDeviceServiceConfig(const std::string& path, DeviceServiceConfig* config, std::string* error) {
+    bool loadDeviceServiceConfig(const std::string& path, DeviceServiceConfig* config, std::string& error) {
         try {
             const YAML::Node root = YAML::LoadFile(path);
 
@@ -44,16 +44,16 @@ namespace puppet::device {
             config->deviceNode  = root["device"] ? root["device"] : YAML::Node(YAML::NodeType::Map);
 
             if (config->deviceType.empty()) {
-                *error = "device.type is empty";
+                error = "device.type is empty";
                 return false;
             }
             if (config->channelType.empty()) {
-                *error = "channel.type is empty";
+                error = "channel.type is empty";
                 return false;
             }
             return true;
         } catch (const std::exception& ex) {
-            *error = ex.what();
+            error = ex.what();
             return false;
         }
     }

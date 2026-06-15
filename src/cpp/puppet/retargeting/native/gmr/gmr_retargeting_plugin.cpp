@@ -26,12 +26,10 @@ namespace puppet::retargeting {
 
     }  // namespace gmr_wrap
 
-    bool GmrRetargetingPlugin::configure(const runtime::RuntimeConfig& config, std::string* error) {
+    bool GmrRetargetingPlugin::configure(const runtime::RuntimeConfig& config, std::string& error) {
         enabled_ = config.gmr.enabled;
         if (!enabled_) {
-            if (error != nullptr) {
-                error->clear();
-            }
+            error.clear();
             return true;
         }
         const gmr::RetargetBackend backend = gmr::parseRetargetBackend(config.gmr.backendName);
@@ -40,9 +38,7 @@ namespace puppet::retargeting {
             isMujocoBackend && !config.gmr.robotModelXmlPath.empty() ? config.gmr.robotModelXmlPath : config.gmr.robotModelPath;
 
         if (resolvedRobotModelPath.empty() || config.gmr.ikConfigPath.empty()) {
-            if (error != nullptr) {
-                *error = "gmr enabled but resolved robot model path or ik_config_path is empty";
-            }
+            error = "gmr enabled but resolved robot model path or ik_config_path is empty";
             return false;
         }
 
@@ -59,33 +55,25 @@ namespace puppet::retargeting {
         holder->retargeter = gmr::createRetargeter(backend, resolvedRobotModelPath, std::move(ikConfig), options);
         holder_            = std::move(holder);
 
-        if (error != nullptr) {
-            error->clear();
-        }
+        error.clear();
         return true;
     }
 
     bool GmrRetargetingPlugin::process(const model::PrimitiveFrame& input, const std::string& bodyGroup, model::GroupControlIntent* output,
-                                       std::string* error) {
+                                       std::string& error) {
         static bool firstRun = true;
         if (!enabled_) {
-            if (error != nullptr) {
-                *error = "GMR plugin is not enabled in runtime config";
-            }
+            error = "GMR plugin is not enabled in runtime config";
             return false;
         }
 
         if (output == nullptr) {
-            if (error != nullptr) {
-                *error = "output is null";
-            }
+            error = "output is null";
             return false;
         }
 
         if (holder_ == nullptr || holder_->retargeter == nullptr) {
-            if (error != nullptr) {
-                *error = "GMR retargeter is not initialized";
-            }
+            error = "GMR retargeter is not initialized";
             return false;
         }
 
@@ -102,9 +90,7 @@ namespace puppet::retargeting {
         }
 
         if (humanFrame.empty()) {
-            if (error != nullptr) {
-                *error = "GMR input human frame is empty, requires pose primitives with entity";
-            }
+            error = "GMR input human frame is empty, requires pose primitives with entity";
             return false;
         }
 
@@ -149,9 +135,7 @@ namespace puppet::retargeting {
         output->enabled       = true;
         output->jointCommandIntents.push_back(std::move(jointIntent));
 
-        if (error != nullptr) {
-            error->clear();
-        }
+        error.clear();
         (void)bodyGroup;
         return true;
     }
