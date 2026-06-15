@@ -27,7 +27,6 @@ namespace puppet::test::single_chain_ik_demo_frame_builder {
 
     inline ::puppet::puppet_proto::PrimitiveFrame buildFrame(uint64_t sequence_id, double t_sec) {
         using PrimitiveFramePb = ::puppet::puppet_proto::PrimitiveFrame;
-        using BodyGroupPb      = ::puppet::puppet_proto::BodyGroup;
         using SourceTypePb     = ::puppet::puppet_proto::SourceType;
 
         PrimitiveFramePb frame;
@@ -58,7 +57,7 @@ namespace puppet::test::single_chain_ik_demo_frame_builder {
         auto* pose = frame.add_poses();
         pose->mutable_meta()->set_name("right_wrist_pose_demo");
         pose->mutable_meta()->set_entity("right_wrist");
-        pose->mutable_meta()->set_body_group(BodyGroupPb::BODY_GROUP_RIGHT_ARM);
+        pose->mutable_meta()->set_body_group("right_arm");
         pose->mutable_meta()->set_frame_id("torso_link");
         pose->mutable_meta()->set_reference_frame_id("torso_link");
         pose->mutable_meta()->set_confidence(1.0F);
@@ -96,7 +95,7 @@ namespace puppet::test::single_chain_ik_demo_frame_builder {
         auto* left_pose = frame.add_poses();
         left_pose->mutable_meta()->set_name("left_wrist_pose_demo");
         left_pose->mutable_meta()->set_entity("left_wrist");
-        left_pose->mutable_meta()->set_body_group(BodyGroupPb::BODY_GROUP_LEFT_ARM);
+        left_pose->mutable_meta()->set_body_group("left_arm");
         left_pose->mutable_meta()->set_frame_id("torso_link");
         left_pose->mutable_meta()->set_reference_frame_id("torso_link");
         left_pose->mutable_meta()->set_confidence(1.0F);
@@ -114,7 +113,7 @@ namespace puppet::test::single_chain_ik_demo_frame_builder {
         auto* joint_state = frame.add_joint_states();
         joint_state->mutable_meta()->set_name("right_arm_seed_state");
         joint_state->mutable_meta()->set_entity("right_arm");
-        joint_state->mutable_meta()->set_body_group(BodyGroupPb::BODY_GROUP_RIGHT_ARM);
+        joint_state->mutable_meta()->set_body_group("right_arm");
         joint_state->mutable_meta()->set_frame_id("torso_link");
         joint_state->mutable_meta()->set_reference_frame_id("torso_link");
         joint_state->mutable_meta()->set_confidence(1.0F);
@@ -133,7 +132,7 @@ namespace puppet::test::single_chain_ik_demo_frame_builder {
         auto* left_joint_state = frame.add_joint_states();
         left_joint_state->mutable_meta()->set_name("left_arm_seed_state");
         left_joint_state->mutable_meta()->set_entity("left_arm");
-        left_joint_state->mutable_meta()->set_body_group(BodyGroupPb::BODY_GROUP_LEFT_ARM);
+        left_joint_state->mutable_meta()->set_body_group("left_arm");
         left_joint_state->mutable_meta()->set_frame_id("torso_link");
         left_joint_state->mutable_meta()->set_reference_frame_id("torso_link");
         left_joint_state->mutable_meta()->set_confidence(1.0F);

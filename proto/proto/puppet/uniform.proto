@@ -22,6 +22,22 @@ enum BodyGroup {
   BODY_GROUP_CUSTOM = 100; // 自定义分组，具体语义由配置或 tags 解释。
 }
 
+/**
+body_group_example:
+unspecified:
+head
+left_arm
+right_arm
+bi_manual
+torso
+base
+lower_body
+whole_body
+left_gripper
+right_gripper
+custom
+*/
+
 // 输入来源类型，用于统计、路由和诊断。
 enum SourceType {
   SOURCE_TYPE_UNSPECIFIED = 0; // 未指定来源。
@@ -50,7 +66,8 @@ message FrameContext {
 message PrimitiveMeta {
   string name = 1;          // Primitive 名称，如 left_wrist_pose。
   string entity = 2;        // 控制实体名，如 left_hand、head、base。
-  BodyGroup body_group = 3; // 归属身体分组。  在使用 CUSTOM 时，强制要求填写 [PrimitiveMeta.name]
+//   BodyGroup body_group = 3; // 归属身体分组。  在使用 CUSTOM 时，强制要求填写 [PrimitiveMeta.name]
+  string body_group = 3;
   string frame_id = 4;      // 当前数据坐标系。
   string reference_frame_id = 5; // 参考坐标系（用于相对表达）。
   Timestamp timestamp = 6;       // Primitive 生效时间。

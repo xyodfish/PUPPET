@@ -1,9 +1,23 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16)
 project(PUPPET VERSION 0.1.0 LANGUAGES CXX)
 
 option(PUPPET_BUILD_CPP_APPS "Build C++ runtime/tools/demos apps." ON)
 option(PUPPET_BUILD_TESTS "Build tests." ON)
 
+find_program(PUPPET_PROTOC_EXECUTABLE protoc)
+if(PUPPET_PROTOC_EXECUTABLE)
+  get_filename_component(PUPPET_PROTOC_BIN_DIR "${PUPPET_PROTOC_EXECUTABLE}" DIRECTORY)
+  get_filename_component(PUPPET_PROTOBUF_PREFIX "${PUPPET_PROTOC_BIN_DIR}/.." ABSOLUTE)
+  if(EXISTS "${PUPPET_PROTOBUF_PREFIX}/include/google/protobuf/port_def.inc")
+    set(Protobuf_PROTOC_EXECUTABLE "${PUPPET_PROTOC_EXECUTABLE}" CACHE FILEPATH "" FORCE)
+    set(Protobuf_INCLUDE_DIR "${PUPPET_PROTOBUF_PREFIX}/include" CACHE PATH "" FORCE)
+    if(EXISTS "${PUPPET_PROTOBUF_PREFIX}/lib/libprotobuf.so")
+      set(Protobuf_LIBRARY "${PUPPET_PROTOBUF_PREFIX}/lib/libprotobuf.so" CACHE FILEPATH "" FORCE)
+    elseif(EXISTS "${PUPPET_PROTOBUF_PREFIX}/lib/libprotobuf.a")
+      set(Protobuf_LIBRARY "${PUPPET_PROTOBUF_PREFIX}/lib/libprotobuf.a" CACHE FILEPATH "" FORCE)
+    endif()
+  endif()
+endif()
 
 add_subdirectory(src/cpp)
 

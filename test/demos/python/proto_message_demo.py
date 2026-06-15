@@ -81,7 +81,7 @@ def build_primitive_frame(uniform_pb2, primitive_frame_pb2):
     left_pose = frame.poses.add()
     left_pose.meta.name = "left_hand_pose"
     left_pose.meta.entity = "left_hand"
-    left_pose.meta.body_group = uniform_pb2.BODY_GROUP_LEFT_ARM
+    left_pose.meta.body_group = "left_arm"
     left_pose.meta.frame_id = "world"
     left_pose.meta.reference_frame_id = "world"
     _fill_timestamp(left_pose.meta.timestamp, sec=1712736000, nanosec=120000000)
@@ -100,7 +100,7 @@ def build_primitive_frame(uniform_pb2, primitive_frame_pb2):
     grip = frame.scalars.add()
     grip.meta.name = "left_grip"
     grip.meta.entity = "left_gripper"
-    grip.meta.body_group = uniform_pb2.BODY_GROUP_LEFT_GRIPPER
+    grip.meta.body_group = "left_gripper"
     _fill_timestamp(grip.meta.timestamp, sec=1712736000, nanosec=120000000)
     grip.meta.confidence = 1.0
     grip.meta.valid = True
@@ -111,7 +111,7 @@ def build_primitive_frame(uniform_pb2, primitive_frame_pb2):
     clutch = frame.booleans.add()
     clutch.meta.name = "deadman"
     clutch.meta.entity = "operator_switch"
-    clutch.meta.body_group = uniform_pb2.BODY_GROUP_WHOLE_BODY
+    clutch.meta.body_group = "whole_body"
     _fill_timestamp(clutch.meta.timestamp, sec=1712736000, nanosec=120000000)
     clutch.meta.confidence = 1.0
     clutch.meta.valid = True
@@ -120,7 +120,7 @@ def build_primitive_frame(uniform_pb2, primitive_frame_pb2):
     base_cmd = frame.planar_motions.add()
     base_cmd.meta.name = "base_cmd"
     base_cmd.meta.entity = "mobile_base"
-    base_cmd.meta.body_group = uniform_pb2.BODY_GROUP_BASE
+    base_cmd.meta.body_group = "base"
     _fill_timestamp(base_cmd.meta.timestamp, sec=1712736000, nanosec=120000000)
     base_cmd.meta.confidence = 1.0
     base_cmd.meta.valid = True

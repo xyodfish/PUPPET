@@ -12,8 +12,8 @@ set_target_properties(puppet_proto::puppet_proto PROPERTIES
   IMPORTED_SONAME_NOCONFIG "libpuppet_proto.so.0"
   )
 
-list(APPEND _cmake_import_check_targets puppet_proto::puppet_proto )
-list(APPEND _cmake_import_check_files_for_puppet_proto::puppet_proto "${_IMPORT_PREFIX}/lib/libpuppet_proto.so.0.1.0" )
+list(APPEND _IMPORT_CHECK_TARGETS puppet_proto::puppet_proto )
+list(APPEND _IMPORT_CHECK_FILES_FOR_puppet_proto::puppet_proto "${_IMPORT_PREFIX}/lib/libpuppet_proto.so.0.1.0" )
 
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)

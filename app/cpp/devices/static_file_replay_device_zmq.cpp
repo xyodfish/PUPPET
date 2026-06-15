@@ -78,7 +78,7 @@ namespace static_file_replay_device_zmq_detail {
             auto* pose = frame.add_poses();
             pose->mutable_meta()->set_name(name + "_pose");
             pose->mutable_meta()->set_entity(name);
-            pose->mutable_meta()->set_body_group(::puppet::puppet_proto::BodyGroup::BODY_GROUP_WHOLE_BODY);
+            pose->mutable_meta()->set_body_group("whole_body");
             pose->mutable_meta()->set_frame_id("world");
             pose->mutable_meta()->set_reference_frame_id("world");
             pose->mutable_meta()->set_confidence(1.0F);

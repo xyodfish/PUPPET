@@ -4,9 +4,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(yaml-cpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(qpOASES REQUIRED)
+find_package(urdfdom REQUIRED)
 find_package(pinocchio REQUIRED)
 find_package(glog REQUIRED)
-find_package(puppet_proto CONFIG QUIET)
 
 
 set(PUPPET_REPO_ROOT ${CMAKE_SOURCE_DIR})
@@ -21,6 +21,16 @@ endif()
 if (NOT ROOT_DEVEL_ARCH_PATH)
   set(ROOT_DEVEL_ARCH_PATH "/opt/robot/devel/${ARCH_FREFIX}")
 endif()
+
+set(PUPPET_CONTROL_DEVEL_PREFIX "/opt/galbot/devel_control/${ARCH_FREFIX}")
+list(APPEND CMAKE_PREFIX_PATH "${ROOT_DEVEL_ARCH_PATH}")
+list(APPEND CMAKE_PREFIX_PATH "${PUPPET_CONTROL_DEVEL_PREFIX}")
+
+if (EXISTS "${PUPPET_CONTROL_DEVEL_PREFIX}/lib/cmake/urdfdom/urdfdom-config.cmake")
+  set(urdfdom_DIR "${PUPPET_CONTROL_DEVEL_PREFIX}/lib/cmake/urdfdom")
+endif()
+
+find_package(puppet_proto CONFIG QUIET)
 
 set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
@@ -121,7 +131,7 @@ add_library(puppet_cpp_core SHARED ${PUPPET_CORE_SOURCES}
 
 find_library(OROCOS_KDL_LIBRARY NAMES orocos-kdl REQUIRED)
 find_library(TRAC_IK_LIBRARY NAMES trac_ik REQUIRED)
-# find_library(MUJOCO_LIBRARY NAMES mujoco REQUIRED)
+find_library(MUJOCO_LIBRARY NAMES mujoco HINTS "${PUPPET_CONTROL_DEVEL_PREFIX}/lib" "${ROOT_DEVEL_ARCH_PATH}/lib")
 
 target_include_directories(puppet_cpp_core
   PUBLIC
@@ -150,10 +160,13 @@ target_link_libraries(puppet_cpp_core
     puppet_proto::puppet_proto
     ${OROCOS_KDL_LIBRARY}
     ${TRAC_IK_LIBRARY}
-    ${MUJOCO_LIBRARY}
     ${EMBOSA_LIBRARIES}
     ${ZMQ_LIBRARIES}
-    )
+)
+
+if (MUJOCO_LIBRARY)
+  target_link_libraries(puppet_cpp_core PUBLIC ${MUJOCO_LIBRARY})
+endif()
 
 target_link_libraries(puppet_cpp_core
   PUBLIC

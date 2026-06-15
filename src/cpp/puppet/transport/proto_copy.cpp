@@ -25,6 +25,73 @@ namespace puppet::transport {
 
     namespace {
 
+        std::string bodyGroupToString(model::BodyGroup bodyGroup) {
+            switch (bodyGroup) {
+                case model::BodyGroup::kUnspecified:
+                    return "unspecified";
+                case model::BodyGroup::kHead:
+                    return "head";
+                case model::BodyGroup::kLeftArm:
+                    return "left_arm";
+                case model::BodyGroup::kRightArm:
+                    return "right_arm";
+                case model::BodyGroup::kBiManual:
+                    return "bi_manual";
+                case model::BodyGroup::kTorso:
+                    return "torso";
+                case model::BodyGroup::kBase:
+                    return "base";
+                case model::BodyGroup::kLowerBody:
+                    return "lower_body";
+                case model::BodyGroup::kWholeBody:
+                    return "whole_body";
+                case model::BodyGroup::kLeftGripper:
+                    return "left_gripper";
+                case model::BodyGroup::kRightGripper:
+                    return "right_gripper";
+                case model::BodyGroup::kCustom:
+                    return "custom";
+            }
+            return "custom";
+        }
+
+        model::BodyGroup bodyGroupFromString(const std::string& bodyGroup) {
+            if (bodyGroup.empty() || bodyGroup == "unspecified") {
+                return model::BodyGroup::kUnspecified;
+            }
+            if (bodyGroup == "head") {
+                return model::BodyGroup::kHead;
+            }
+            if (bodyGroup == "left_arm") {
+                return model::BodyGroup::kLeftArm;
+            }
+            if (bodyGroup == "right_arm") {
+                return model::BodyGroup::kRightArm;
+            }
+            if (bodyGroup == "bi_manual") {
+                return model::BodyGroup::kBiManual;
+            }
+            if (bodyGroup == "torso") {
+                return model::BodyGroup::kTorso;
+            }
+            if (bodyGroup == "base") {
+                return model::BodyGroup::kBase;
+            }
+            if (bodyGroup == "lower_body") {
+                return model::BodyGroup::kLowerBody;
+            }
+            if (bodyGroup == "whole_body") {
+                return model::BodyGroup::kWholeBody;
+            }
+            if (bodyGroup == "left_gripper") {
+                return model::BodyGroup::kLeftGripper;
+            }
+            if (bodyGroup == "right_gripper") {
+                return model::BodyGroup::kRightGripper;
+            }
+            return model::BodyGroup::kCustom;
+        }
+
         template <typename SrcMap, typename DstMap>
         void CopyToProtoMap(const SrcMap& src, DstMap* dst) {
             dst->clear();
@@ -85,7 +152,7 @@ namespace puppet::transport {
         void CopyToProto(const model::PrimitiveMeta& src, ::puppet::puppet_proto::PrimitiveMeta* dst) {
             dst->set_name(src.name);
             dst->set_entity(src.entity);
-            dst->set_body_group(static_cast<::puppet::puppet_proto::BodyGroup>(src.bodyGroup));
+            dst->set_body_group(bodyGroupToString(src.bodyGroup));
             dst->set_frame_id(src.frameId);
             dst->set_reference_frame_id(src.referenceFrameId);
             CopyToProto(src.timestamp, dst->mutable_timestamp());
@@ -323,7 +390,7 @@ namespace puppet::transport {
             return false;
         dst->name             = src.name();
         dst->entity           = src.entity();
-        dst->bodyGroup        = static_cast<model::BodyGroup>(src.body_group());
+        dst->bodyGroup        = bodyGroupFromString(src.body_group());
         dst->frameId          = src.frame_id();
         dst->referenceFrameId = src.reference_frame_id();
         copyFromProto(src.timestamp(), &dst->timestamp);

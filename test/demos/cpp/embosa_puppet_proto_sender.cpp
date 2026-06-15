@@ -13,7 +13,6 @@ namespace {
 
     using PrimitiveFramePb = ::puppet::puppet_proto::PrimitiveFrame;
     using SourceTypePb     = ::puppet::puppet_proto::SourceType;
-    using BodyGroupPb      = ::puppet::puppet_proto::BodyGroup;
 
     std::shared_ptr<PrimitiveFramePb> BuildFrame(uint64_t sequenceId, double tSec) {
         auto frame = std::make_shared<PrimitiveFramePb>();
@@ -37,7 +36,7 @@ namespace {
         auto* pose = frame->add_poses();
         pose->mutable_meta()->set_name("left_hand_pose");
         pose->mutable_meta()->set_entity("left_hand");
-        pose->mutable_meta()->set_body_group(BodyGroupPb::BODY_GROUP_LEFT_ARM);
+        pose->mutable_meta()->set_body_group("left_arm");
         pose->mutable_meta()->set_frame_id("world");
         pose->mutable_meta()->set_reference_frame_id("world");
         pose->mutable_meta()->set_confidence(1.0F);
@@ -52,7 +51,7 @@ namespace {
         auto* scalar = frame->add_scalars();
         scalar->mutable_meta()->set_name("left_grip");
         scalar->mutable_meta()->set_entity("left_gripper");
-        scalar->mutable_meta()->set_body_group(BodyGroupPb::BODY_GROUP_LEFT_GRIPPER);
+        scalar->mutable_meta()->set_body_group("left_gripper");
         scalar->mutable_meta()->set_confidence(1.0F);
         scalar->mutable_meta()->set_valid(true);
         scalar->set_value(0.5 + 0.4 * std::sin(tSec));
@@ -62,7 +61,7 @@ namespace {
         auto* planar = frame->add_planar_motions();
         planar->mutable_meta()->set_name("base_cmd");
         planar->mutable_meta()->set_entity("mobile_base");
-        planar->mutable_meta()->set_body_group(BodyGroupPb::BODY_GROUP_BASE);
+        planar->mutable_meta()->set_body_group("base");
         planar->mutable_meta()->set_confidence(1.0F);
         planar->mutable_meta()->set_valid(true);
         planar->set_vx(0.2);

@@ -163,28 +163,27 @@ const char descriptor_table_protodef_puppet_2funiform_2eproto[] PROTOBUF_SECTION
   "bot_id\030\005 \001(\t\022\023\n\013pipeline_id\030\006 \001(\t\0229\n\004tag"
   "s\030\024 \003(\0132+.puppet.puppet_proto.FrameConte"
   "xt.TagsEntry\032+\n\tTagsEntry\022\013\n\003key\030\001 \001(\t\022\r"
-  "\n\005value\030\002 \001(\t:\0028\001\"\316\002\n\rPrimitiveMeta\022\014\n\004n"
-  "ame\030\001 \001(\t\022\016\n\006entity\030\002 \001(\t\0222\n\nbody_group\030"
-  "\003 \001(\0162\036.puppet.puppet_proto.BodyGroup\022\020\n"
-  "\010frame_id\030\004 \001(\t\022\032\n\022reference_frame_id\030\005 "
-  "\001(\t\0221\n\ttimestamp\030\006 \001(\0132\036.puppet.puppet_p"
-  "roto.Timestamp\022\022\n\nconfidence\030\007 \001(\002\022\r\n\005va"
-  "lid\030\010 \001(\010\022:\n\004tags\030\024 \003(\0132,.puppet.puppet_"
-  "proto.PrimitiveMeta.TagsEntry\032+\n\tTagsEnt"
-  "ry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001*\274\002\n\tB"
-  "odyGroup\022\032\n\026BODY_GROUP_UNSPECIFIED\020\000\022\023\n\017"
-  "BODY_GROUP_HEAD\020\001\022\027\n\023BODY_GROUP_LEFT_ARM"
-  "\020\002\022\030\n\024BODY_GROUP_RIGHT_ARM\020\003\022\030\n\024BODY_GRO"
-  "UP_BI_MANUAL\020\004\022\024\n\020BODY_GROUP_TORSO\020\005\022\023\n\017"
-  "BODY_GROUP_BASE\020\006\022\031\n\025BODY_GROUP_LOWER_BO"
-  "DY\020\007\022\031\n\025BODY_GROUP_WHOLE_BODY\020\010\022\033\n\027BODY_"
-  "GROUP_LEFT_GRIPPER\020\t\022\034\n\030BODY_GROUP_RIGHT"
-  "_GRIPPER\020\n\022\025\n\021BODY_GROUP_CUSTOM\020d*\274\001\n\nSo"
-  "urceType\022\033\n\027SOURCE_TYPE_UNSPECIFIED\020\000\022\022\n"
-  "\016SOURCE_TYPE_VR\020\001\022\032\n\026SOURCE_TYPE_MASTER_"
-  "ARM\020\002\022\025\n\021SOURCE_TYPE_MOCAP\020\003\022\026\n\022SOURCE_T"
-  "YPE_VISION\020\004\022\030\n\024SOURCE_TYPE_JOYSTICK\020\005\022\030"
-  "\n\024SOURCE_TYPE_EXTERNAL\020db\006proto3"
+  "\n\005value\030\002 \001(\t:\0028\001\"\256\002\n\rPrimitiveMeta\022\014\n\004n"
+  "ame\030\001 \001(\t\022\016\n\006entity\030\002 \001(\t\022\022\n\nbody_group\030"
+  "\003 \001(\t\022\020\n\010frame_id\030\004 \001(\t\022\032\n\022reference_fra"
+  "me_id\030\005 \001(\t\0221\n\ttimestamp\030\006 \001(\0132\036.puppet."
+  "puppet_proto.Timestamp\022\022\n\nconfidence\030\007 \001"
+  "(\002\022\r\n\005valid\030\010 \001(\010\022:\n\004tags\030\024 \003(\0132,.puppet"
+  ".puppet_proto.PrimitiveMeta.TagsEntry\032+\n"
+  "\tTagsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\002"
+  "8\001*\274\002\n\tBodyGroup\022\032\n\026BODY_GROUP_UNSPECIFI"
+  "ED\020\000\022\023\n\017BODY_GROUP_HEAD\020\001\022\027\n\023BODY_GROUP_"
+  "LEFT_ARM\020\002\022\030\n\024BODY_GROUP_RIGHT_ARM\020\003\022\030\n\024"
+  "BODY_GROUP_BI_MANUAL\020\004\022\024\n\020BODY_GROUP_TOR"
+  "SO\020\005\022\023\n\017BODY_GROUP_BASE\020\006\022\031\n\025BODY_GROUP_"
+  "LOWER_BODY\020\007\022\031\n\025BODY_GROUP_WHOLE_BODY\020\010\022"
+  "\033\n\027BODY_GROUP_LEFT_GRIPPER\020\t\022\034\n\030BODY_GRO"
+  "UP_RIGHT_GRIPPER\020\n\022\025\n\021BODY_GROUP_CUSTOM\020"
+  "d*\274\001\n\nSourceType\022\033\n\027SOURCE_TYPE_UNSPECIF"
+  "IED\020\000\022\022\n\016SOURCE_TYPE_VR\020\001\022\032\n\026SOURCE_TYPE"
+  "_MASTER_ARM\020\002\022\025\n\021SOURCE_TYPE_MOCAP\020\003\022\026\n\022"
+  "SOURCE_TYPE_VISION\020\004\022\030\n\024SOURCE_TYPE_JOYS"
+  "TICK\020\005\022\030\n\024SOURCE_TYPE_EXTERNAL\020db\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_puppet_2funiform_2eproto_deps[1] = {
   &::descriptor_table_puppet_2fcommon_2eproto,
@@ -197,7 +196,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_pup
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_puppet_2funiform_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_puppet_2funiform_2eproto = {
-  false, false, descriptor_table_protodef_puppet_2funiform_2eproto, "puppet/uniform.proto", 1192,
+  false, false, descriptor_table_protodef_puppet_2funiform_2eproto, "puppet/uniform.proto", 1160,
   &descriptor_table_puppet_2funiform_2eproto_once, descriptor_table_puppet_2funiform_2eproto_sccs, descriptor_table_puppet_2funiform_2eproto_deps, 4, 1,
   schemas, file_default_instances, TableStruct_puppet_2funiform_2eproto::offsets,
   file_level_metadata_puppet_2funiform_2eproto, 4, file_level_enum_descriptors_puppet_2funiform_2eproto, file_level_service_descriptors_puppet_2funiform_2eproto,
@@ -780,6 +779,11 @@ PrimitiveMeta::PrimitiveMeta(const PrimitiveMeta& from)
     entity_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_entity(), 
       GetArena());
   }
+  body_group_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_body_group().empty()) {
+    body_group_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_body_group(), 
+      GetArena());
+  }
   frame_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_frame_id().empty()) {
     frame_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_frame_id(), 
@@ -795,9 +799,9 @@ PrimitiveMeta::PrimitiveMeta(const PrimitiveMeta& from)
   } else {
     timestamp_ = nullptr;
   }
-  ::memcpy(&body_group_, &from.body_group_,
+  ::memcpy(&confidence_, &from.confidence_,
     static_cast<size_t>(reinterpret_cast<char*>(&valid_) -
-    reinterpret_cast<char*>(&body_group_)) + sizeof(valid_));
+    reinterpret_cast<char*>(&confidence_)) + sizeof(valid_));
   // @@protoc_insertion_point(copy_constructor:puppet.puppet_proto.PrimitiveMeta)
 }
 
@@ -805,6 +809,7 @@ void PrimitiveMeta::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_PrimitiveMeta_puppet_2funiform_2eproto.base);
   name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   entity_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  body_group_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   frame_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   reference_frame_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
@@ -823,6 +828,7 @@ void PrimitiveMeta::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
   name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   entity_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  body_group_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   frame_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   reference_frame_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete timestamp_;
@@ -852,15 +858,16 @@ void PrimitiveMeta::Clear() {
   tags_.Clear();
   name_.ClearToEmpty();
   entity_.ClearToEmpty();
+  body_group_.ClearToEmpty();
   frame_id_.ClearToEmpty();
   reference_frame_id_.ClearToEmpty();
   if (GetArena() == nullptr && timestamp_ != nullptr) {
     delete timestamp_;
   }
   timestamp_ = nullptr;
-  ::memset(&body_group_, 0, static_cast<size_t>(
+  ::memset(&confidence_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&valid_) -
-      reinterpret_cast<char*>(&body_group_)) + sizeof(valid_));
+      reinterpret_cast<char*>(&confidence_)) + sizeof(valid_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -889,12 +896,13 @@ const char* PrimitiveMeta::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // .puppet.puppet_proto.BodyGroup body_group = 3;
+      // string body_group = 3;
       case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          auto str = _internal_mutable_body_group();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "puppet.puppet_proto.PrimitiveMeta.body_group"));
           CHK_(ptr);
-          _internal_set_body_group(static_cast<::puppet::puppet_proto::BodyGroup>(val));
         } else goto handle_unusual;
         continue;
       // string frame_id = 4;
@@ -996,11 +1004,14 @@ failure:
         2, this->_internal_entity(), target);
   }
 
-  // .puppet.puppet_proto.BodyGroup body_group = 3;
-  if (this->body_group() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
-      3, this->_internal_body_group(), target);
+  // string body_group = 3;
+  if (this->body_group().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_body_group().data(), static_cast<int>(this->_internal_body_group().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "puppet.puppet_proto.PrimitiveMeta.body_group");
+    target = stream->WriteStringMaybeAliased(
+        3, this->_internal_body_group(), target);
   }
 
   // string frame_id = 4;
@@ -1127,6 +1138,13 @@ size_t PrimitiveMeta::ByteSizeLong() const {
         this->_internal_entity());
   }
 
+  // string body_group = 3;
+  if (this->body_group().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_body_group());
+  }
+
   // string frame_id = 4;
   if (this->frame_id().size() > 0) {
     total_size += 1 +
@@ -1146,12 +1164,6 @@ size_t PrimitiveMeta::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *timestamp_);
-  }
-
-  // .puppet.puppet_proto.BodyGroup body_group = 3;
-  if (this->body_group() != 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_body_group());
   }
 
   // float confidence = 7;
@@ -1202,6 +1214,9 @@ void PrimitiveMeta::MergeFrom(const PrimitiveMeta& from) {
   if (from.entity().size() > 0) {
     _internal_set_entity(from._internal_entity());
   }
+  if (from.body_group().size() > 0) {
+    _internal_set_body_group(from._internal_body_group());
+  }
   if (from.frame_id().size() > 0) {
     _internal_set_frame_id(from._internal_frame_id());
   }
@@ -1210,9 +1225,6 @@ void PrimitiveMeta::MergeFrom(const PrimitiveMeta& from) {
   }
   if (from.has_timestamp()) {
     _internal_mutable_timestamp()->::puppet::puppet_proto::Timestamp::MergeFrom(from._internal_timestamp());
-  }
-  if (from.body_group() != 0) {
-    _internal_set_body_group(from._internal_body_group());
   }
   if (!(from.confidence() <= 0 && from.confidence() >= 0)) {
     _internal_set_confidence(from._internal_confidence());
@@ -1246,6 +1258,7 @@ void PrimitiveMeta::InternalSwap(PrimitiveMeta* other) {
   tags_.Swap(&other->tags_);
   name_.Swap(&other->name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   entity_.Swap(&other->entity_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  body_group_.Swap(&other->body_group_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   frame_id_.Swap(&other->frame_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   reference_frame_id_.Swap(&other->reference_frame_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
