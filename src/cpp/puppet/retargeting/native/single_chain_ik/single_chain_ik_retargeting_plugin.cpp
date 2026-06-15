@@ -258,12 +258,15 @@ namespace puppet::retargeting {
 
     bool SingleChainIkRetargetingPlugin::process(const model::PrimitiveFrame& input, const std::string& bodyGroup,
                                                  model::GroupControlIntent* output, std::string& error) {
-        if (output == nullptr) {
-            error = "output is null";
-            return false;
-        }
+
         if (!enabled_) {
             error = "single_chain_ik plugin is disabled";
+            return false;
+        }
+
+        if (!bodyGroupValid(bodyGroup)) {
+            PUPPET_LOG(ERROR, "retargeting", "SingleChainIkRetargetingPlugin", "process")
+                << "Body group '" << bodyGroup << "' is not supported.";
             return false;
         }
 

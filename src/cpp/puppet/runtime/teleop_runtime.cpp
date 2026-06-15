@@ -87,7 +87,6 @@ namespace puppet::runtime {
 
         lastControlIntent_     = controlIntent;
         const auto finalTarget = backend_.buildTarget(lastControlIntent_);
-        // std::cout << "[teleop_runtime] seq=" << finalTarget.sequenceId << " groups=" << finalTarget.groups.size() << std::endl;
         if (!hasAnyInputFrame) {
             static uint64_t noInputCount = 0;
             ++noInputCount;

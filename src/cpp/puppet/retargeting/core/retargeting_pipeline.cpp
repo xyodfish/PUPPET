@@ -134,22 +134,27 @@ namespace puppet::retargeting {
         if (pluginIt == plugins_.end()) {
             return common::Fail(error, "pipeline not found: " + plan.pipelineId);
         }
+
         const auto typeIt = pipelineTypes_.find(plan.pipelineId);
         if (typeIt == pipelineTypes_.end()) {
             return common::Fail(error, "pipeline type not found: " + plan.pipelineId);
         }
+
         const std::string& pluginType = typeIt->second;
         PUPPET_VLOG(2, "plugin_dispatch", "retargeting_pipeline", "run")
             << " pipeline_id=" << plan.pipelineId << " plugin_type=" << pluginType << " body_group=" << plan.bodyGroup
             << " control_semantics=" << plan.controlSemantics;
+
         if (!supportsGroup(pluginType, plan.bodyGroup)) {
             return common::Fail(
                 error, "pipeline " + plan.pipelineId + " plugin " + pluginType + " does not support body_group: " + plan.bodyGroup);
         }
+
         if (!supportsSemantics(pluginType, plan.controlSemantics)) {
             return common::Fail(error, "pipeline " + plan.pipelineId + " plugin " + pluginType +
                                            " does not support control_semantics: " + plan.controlSemantics);
         }
+
         return pluginIt->second->process(frame, plan.bodyGroup, output, error);
     }
 

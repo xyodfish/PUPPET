@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
+#include "puppet/common/logging.hpp"
 #include "puppet/common/uniform_types.hpp"
-
 namespace puppet::retargeting {
     namespace {
 
@@ -35,8 +35,8 @@ namespace puppet::retargeting {
 
     bool DirectPassThroughPlugin::process(const model::PrimitiveFrame& input, const std::string& bodyGroup,
                                           model::GroupControlIntent* output, std::string& error) {
-        if (output == nullptr) {
-            error = "output is null";
+        if (!bodyGroupValid(bodyGroup)) {
+            PUPPET_LOG(ERROR, "retargeting", "DirectPassThroughPlugin", "process") << "Body group '" << bodyGroup << "' is not supported.";
             return false;
         }
 

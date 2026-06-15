@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "puppet/common/logging.hpp"
+
 namespace puppet::retargeting {
     namespace gmr_retargeting_detail {
         constexpr const char* kRootPosXKey  = "__root_pos_x";
@@ -67,8 +69,8 @@ namespace puppet::retargeting {
             return false;
         }
 
-        if (output == nullptr) {
-            error = "output is null";
+        if (!bodyGroupValid(bodyGroup)) {
+            PUPPET_LOG(ERROR, "retargeting", "GmrRetargetingPlugin", "process") << "Body group '" << bodyGroup << "' is not supported.";
             return false;
         }
 
