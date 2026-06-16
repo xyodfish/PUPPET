@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 
-#include "puppet/orchestrator/orchestrator.hpp"
 #include "puppet/retargeting/core/retargeting_pipeline.hpp"
 #include "puppet/robot/backend/direct_mapping_backend.hpp"
 #include "puppet/routing/groupRoutingResolver.hpp"
@@ -28,7 +27,6 @@ namespace puppet::runtime {
        private:
         RuntimeConfig config_;
         source::SourceManager sourceManager_;
-        orchestrator::Orchestrator orchestrator_;
         retargeting::RetargetingPipeline pipeline_;
         robot::DirectMappingBackend backend_;
         std::shared_ptr<RobotStateSync> robotStateSync_;

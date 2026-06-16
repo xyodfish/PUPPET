@@ -114,7 +114,6 @@ set(PUPPET_CORE_SOURCES
 
   puppet/transport/message_snapshot.cpp
   puppet/transport/proto_copy.cpp
-  puppet/orchestrator/orchestrator.cpp
   puppet/retargeting/core/direct_pass_through_plugin.cpp
   puppet/retargeting/core/retargeting_pipeline.cpp
   puppet/retargeting/native/single_chain_ik/single_chain_ik_retargeting_plugin.cpp

@@ -109,7 +109,7 @@ namespace puppet::retargeting {
         return true;
     }
 
-    bool RetargetingPipeline::requiresRobotState(const orchestrator::GroupExecutionPlan& plan) const {
+    bool RetargetingPipeline::requiresRobotState(const routing::GroupRoutingPlan& plan) const {
         const auto it = pipelineTypes_.find(plan.pipelineId);
         if (it == pipelineTypes_.end()) {
             return false;
@@ -128,7 +128,7 @@ namespace puppet::retargeting {
         return pluginIt->second->requiresRobotState();
     }
 
-    bool RetargetingPipeline::run(const orchestrator::GroupExecutionPlan& plan, const model::PrimitiveFrame& frame,
+    bool RetargetingPipeline::run(const routing::GroupRoutingPlan& plan, const model::PrimitiveFrame& frame,
                                   model::GroupControlIntent* output, std::string& error) const {
         const auto pluginIt = plugins_.find(plan.pipelineId);
         if (pluginIt == plugins_.end()) {

@@ -7,6 +7,40 @@
 #include "puppet/common/logging.hpp"
 
 namespace puppet::runtime {
+    namespace {
+        const runtime::PipelineConfig* selectActivePlugin(const routing::GroupRoutingPlan& routingPlan,
+                                                          const model::PrimitiveFrame& frame) {
+            const auto& activePlugins = routingPlan.activedPlugins_;
+            if (activePlugins.empty()) {
+                return nullptr;
+            }
+
+            if (!frame.context.pipelineId.empty()) {
+                for (const auto& plugin : activePlugins) {
+                    if (plugin.enabled && plugin.pipelineId == frame.context.pipelineId) {
+                        return &plugin;
+                    }
+                }
+            }
+
+            for (const auto& plugin : activePlugins) {
+                if (plugin.enabled) {
+                    return &plugin;
+                }
+            }
+            return nullptr;
+        }
+
+        std::string inferControlSemantics(const std::string& pluginType, const model::PrimitiveFrame& frame, const std::string& fallback) {
+            if (pluginType == "direct_pass" && !frame.jointCommands.empty()) {
+                return "joint_absolute";
+            }
+            if ((pluginType == "single_chain_ik" || pluginType == "single_chain_ik_velocity") && !frame.poses.empty()) {
+                return "cartesian_absolute";
+            }
+            return fallback;
+        }
+    }  // namespace
 
     bool TeleopRuntime::init(const std::string& configPath, std::string& error) {
         std::string configError;
@@ -22,7 +56,6 @@ namespace puppet::runtime {
         config_ = runtimeConfig;
 
         sourceManager_.configure(config_.sources);
-        orchestrator_.configure(config_.groupRouting);
         grSolver_.configure(config_.groupRouting);
 
         std::string pplErr;
@@ -43,13 +76,20 @@ namespace puppet::runtime {
         controlIntent.sequenceId = ++sequenceId_;
         bool hasAnyInputFrame    = false;
 
-        const auto plans = orchestrator_.resolvePlans();
-        for (const auto& plan : plans) {
+        const auto plans = grSolver_.resolvePlans();
+        for (const auto& routingPlan : plans) {
+            auto plan        = routingPlan;
             const auto frame = sourceManager_.getLatestFrame(plan.ownerSourceId);
             if (frame == nullptr) {
                 continue;
             }
             hasAnyInputFrame = true;
+
+            if (const auto* activePlugin = selectActivePlugin(routingPlan, *frame); activePlugin != nullptr) {
+                plan.pipelineId       = activePlugin->pipelineId;
+                plan.mode             = activePlugin->pluginType;
+                plan.controlSemantics = inferControlSemantics(activePlugin->pluginType, *frame, plan.controlSemantics);
+            }
 
             model::GroupControlIntent groupIntent;
             groupIntent.mode                   = plan.mode;

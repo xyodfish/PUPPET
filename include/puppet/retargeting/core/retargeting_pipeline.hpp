@@ -5,10 +5,10 @@
 #include <unordered_map>
 
 #include "puppet/control/control_intent_types.hpp"
-#include "puppet/orchestrator/orchestrator.hpp"
 #include "puppet/primitive/primitive_types.hpp"
 #include "puppet/retargeting/core/direct_pass_through_plugin.hpp"
 #include "puppet/retargeting/core/retargeting_plugin.hpp"
+#include "puppet/routing/groupRoutingResolver.hpp"
 #include "puppet/runtime/runtime_config.hpp"
 
 namespace puppet::retargeting {
@@ -16,9 +16,9 @@ namespace puppet::retargeting {
     class RetargetingPipeline {
        public:
         bool configure(const runtime::RuntimeConfig& config, std::string& error);
-        bool requiresRobotState(const orchestrator::GroupExecutionPlan& plan) const;
+        bool requiresRobotState(const routing::GroupRoutingPlan& plan) const;
 
-        bool run(const orchestrator::GroupExecutionPlan& plan, const model::PrimitiveFrame& frame, model::GroupControlIntent* output,
+        bool run(const routing::GroupRoutingPlan& plan, const model::PrimitiveFrame& frame, model::GroupControlIntent* output,
                  std::string& error) const;
 
        private:

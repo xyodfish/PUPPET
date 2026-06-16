@@ -19,21 +19,20 @@ namespace puppet::routing {
             }
 
             GroupRoutingPlan candidate;
-            auto& gePlan            = candidate.gePlan_;
-            gePlan.bodyGroup        = route.bodyGroup;
-            gePlan.ownerSourceId    = route.ownerSourceId;
-            gePlan.pipelineId       = route.pipelineId;
-            gePlan.backendId        = route.backendId;
-            gePlan.mode             = route.mode;
-            gePlan.controlSemantics = route.controlSemantics;
-            gePlan.priority         = route.priority;
+            candidate.bodyGroup        = route.bodyGroup;
+            candidate.ownerSourceId    = route.ownerSourceId;
+            candidate.pipelineId       = route.pipelineId;
+            candidate.backendId        = route.backendId;
+            candidate.mode             = route.mode;
+            candidate.controlSemantics = route.controlSemantics;
+            candidate.priority         = route.priority;
             if (route.bodyGroup == "whole_body") {
-                gePlan.priority += kWholeBodyBonus;
+                candidate.priority += kWholeBodyBonus;
             }
 
             candidate.activedPlugins_ = route.activedPlugins;
             auto it                   = routingPlans.find(route.bodyGroup);
-            if (it == routingPlans.end() || gePlan.priority > it->second.gePlan_.priority) {
+            if (it == routingPlans.end() || candidate.priority > it->second.priority) {
                 routingPlans[route.bodyGroup] = std::move(candidate);
             }
         }
@@ -41,11 +40,11 @@ namespace puppet::routing {
         std::vector<GroupRoutingPlan> plans;
         plans.reserve(routingPlans.size());
         for (auto& kv : routingPlans) {
-            const auto& gePlan = kv.second.gePlan_;
-            PUPPET_VLOG(1, "plan_resolved", "orchestrator", "resolve_plans")
-                << " body_group=" << gePlan.bodyGroup << " source_id=" << gePlan.ownerSourceId << " pipeline_id=" << gePlan.pipelineId
-                << " backend=" << gePlan.backendId << " priority=" << gePlan.priority << " mode=" << gePlan.mode
-                << " control_semantics=" << gePlan.controlSemantics;
+            const auto& plan = kv.second;
+            PUPPET_VLOG(1, "plan_resolved", "group_routing_resolver", "resolve_plans")
+                << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId << " pipeline_id=" << plan.pipelineId
+                << " backend=" << plan.backendId << " priority=" << plan.priority << " mode=" << plan.mode
+                << " control_semantics=" << plan.controlSemantics;
             plans.push_back(std::move(kv.second));
         }
 

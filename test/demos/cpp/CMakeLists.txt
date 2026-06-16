@@ -14,6 +14,7 @@ set(PUPPET_DEFAULT_DEVEL_PREFIX
 list(APPEND CMAKE_PREFIX_PATH "${PUPPET_DEFAULT_DEVEL_PREFIX}")
 
 find_package(puppet_proto CONFIG QUIET)
+find_package(Eigen3 REQUIRED)
 if(NOT puppet_proto_FOUND)
   message(WARNING "puppet_proto package not found. Skip embosa demos. "
                   "Expected prefix example: ${PUPPET_DEFAULT_DEVEL_PREFIX}")
@@ -33,6 +34,8 @@ set(EMBOSA_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include/embosa")
 set(EMBOSA_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
 set(ZMQ_INCLUDE_DIR "${ROOT_DEVEL_ARCH_PATH}/include")
 set(ZMQ_LIBRARY_DIR "${ROOT_DEVEL_ARCH_PATH}/lib")
+find_library(OROCOS_KDL_LIBRARY NAMES orocos-kdl REQUIRED)
+find_library(TRAC_IK_LIBRARY NAMES trac_ik REQUIRED)
 set(EMBOSA_LIBRARIES
     embosa
     fastcdr
@@ -84,6 +87,34 @@ target_include_directories(test_embosa_single_chain_ik_sender
 target_link_libraries(test_embosa_single_chain_ik_sender
   PRIVATE
     puppet_proto_copy_demo
+    ${EMBOSA_LIBRARIES}
+    pthread)
+
+add_executable(test_embosa_direct_pass_sender
+  "${CMAKE_CURRENT_LIST_DIR}/embosa_direct_pass_sender.cpp")
+target_include_directories(test_embosa_direct_pass_sender
+  PRIVATE
+    "${EMBOSA_INCLUDE_DIR}"
+    ${EIGEN3_INCLUDE_DIRS})
+target_link_libraries(test_embosa_direct_pass_sender
+  PRIVATE
+    puppet_proto_copy_demo
+    ${OROCOS_KDL_LIBRARY}
+    ${TRAC_IK_LIBRARY}
+    ${EMBOSA_LIBRARIES}
+    pthread)
+
+add_executable(test_embosa_left_arm_single_chain_ik_sender
+  "${CMAKE_CURRENT_LIST_DIR}/embosa_left_arm_single_chain_ik_sender.cpp")
+target_include_directories(test_embosa_left_arm_single_chain_ik_sender
+  PRIVATE
+    "${EMBOSA_INCLUDE_DIR}"
+    ${EIGEN3_INCLUDE_DIRS})
+target_link_libraries(test_embosa_left_arm_single_chain_ik_sender
+  PRIVATE
+    puppet_proto_copy_demo
+    ${OROCOS_KDL_LIBRARY}
+    ${TRAC_IK_LIBRARY}
     ${EMBOSA_LIBRARIES}
     pthread)
 
@@ -144,6 +175,8 @@ target_link_libraries(test_embosa_puppet_proto_receiver
 set_target_properties(
   test_embosa_puppet_proto_sender
   test_embosa_single_chain_ik_sender
+  test_embosa_direct_pass_sender
+  test_embosa_left_arm_single_chain_ik_sender
   test_embosa_puppet_proto_receiver
   test_zmq_single_chain_ik_sender
   test_tcp_single_chain_ik_sender

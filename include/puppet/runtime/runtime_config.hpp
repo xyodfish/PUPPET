@@ -33,16 +33,6 @@ namespace puppet::runtime {
         bool enabled     = true;
     };
 
-    struct GroupExecutionPlan {
-        std::string bodyGroup;
-        std::string ownerSourceId;
-        std::string pipelineId;
-        std::string backendId;
-        std::string mode;
-        std::string controlSemantics;
-        int32_t priority = 0;
-    };
-
     struct BackendConfig {
         std::string backendId;
         std::string backendType;
