@@ -40,6 +40,33 @@ namespace puppet::runtime {
             return root[sectionName];
         }
 
+        void parseActivePlugins(const YAML::Node& routeNode, std::vector<PipelineConfig>* activePlugins) {
+            if (activePlugins == nullptr) {
+                return;
+            }
+
+            activePlugins->clear();
+
+            const YAML::Node pluginsNode = routeNode["active_plugins"];
+            if (!pluginsNode || !pluginsNode.IsSequence()) {
+                return;
+            }
+
+            auto appendPlugin = [&](const YAML::Node& pluginNode) {
+                PipelineConfig pplCfg;
+                pplCfg.pipelineId = readOr<std::string>(pluginNode, "pipeline_id", "");
+                pplCfg.pluginType = readOr<std::string>(pluginNode, "type", "direct_pass");
+                pplCfg.enabled    = readOr<bool>(pluginNode, "enabled", true);
+                activePlugins->push_back(std::move(pplCfg));
+            };
+
+            if (pluginsNode.IsSequence()) {
+                for (const auto& pluginNode : pluginsNode) {
+                    appendPlugin(pluginNode);
+                }
+            }
+        }
+
     }  // namespace
 
     bool RuntimeConfigLoader::loadFromYamlFile(const std::string& path, RuntimeConfig& config, std::string& error) {
@@ -86,6 +113,7 @@ namespace puppet::runtime {
                     route.controlSemantics = readOr<std::string>(routeNode, "control_semantics", "cartesian_absolute");
                     route.priority         = readOr<int32_t>(routeNode, "priority", 0);
                     route.enabled          = readOr<bool>(routeNode, "enabled", true);
+                    parseActivePlugins(routeNode, &route.activedPlugins);
                     if (!route.bodyGroup.empty()) {
                         config.groupRouting.push_back(std::move(route));
                     }

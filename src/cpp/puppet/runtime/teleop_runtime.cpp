@@ -23,10 +23,11 @@ namespace puppet::runtime {
 
         sourceManager_.configure(config_.sources);
         orchestrator_.configure(config_.groupRouting);
+        grSolver_.configure(config_.groupRouting);
 
-        std::string pipelineError;
-        if (!pipeline_.configure(config_, pipelineError)) {
-            error = pipelineError;
+        std::string pplErr;
+        if (!pipeline_.configure(config_, pplErr)) {
+            error = pplErr;
             return common::WrapError(error, "configure retargeting pipeline failed: ");
         }
 
@@ -71,12 +72,12 @@ namespace puppet::runtime {
                 runtimeFrame.jointStates.insert(runtimeFrame.jointStates.end(), robotSnapshot.frame.jointStates.begin(),
                                                 robotSnapshot.frame.jointStates.end());
             }
-            std::string pipelineError;
+            std::string pplErr;
             PUPPET_VLOG(2, "pipeline_dispatch", "teleop_runtime", "run_once")
                 << " pipeline_id=" << plan.pipelineId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId
                 << " seq=" << controlIntent.sequenceId;
-            if (!pipeline_.run(plan, runtimeFrame, &groupIntent, pipelineError)) {
-                error = pipelineError;
+            if (!pipeline_.run(plan, runtimeFrame, &groupIntent, pplErr)) {
+                error = pplErr;
                 PUPPET_LOG(ERROR, "pipeline_run_failed", "teleop_runtime", "run_once")
                     << " pipeline_id=" << plan.pipelineId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId
                     << " seq=" << controlIntent.sequenceId << " error=" << error;

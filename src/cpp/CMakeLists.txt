@@ -96,6 +96,8 @@ set(PUPPET_CORE_SOURCES
   puppet/source/source_manager.cpp
   puppet/transport/device_output_channel_factory.cpp
 
+  puppet/routing/groupRoutingResolver.cpp
+
   puppet/transport/embosa/embosa_device_output_channel.cpp
   puppet/transport/embosa/embosa_runtime_channel.cpp
   puppet/transport/embosa/embosa_runtime_config.cpp

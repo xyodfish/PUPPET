@@ -15,6 +15,12 @@ namespace puppet::runtime {
         int32_t historySize        = 5;
     };
 
+    struct PipelineConfig {
+        std::string pipelineId;
+        std::string pluginType;
+        bool enabled = true;
+    };
+
     struct GroupRoutingConfig {
         std::string bodyGroup;
         std::string ownerSourceId;
@@ -22,14 +28,19 @@ namespace puppet::runtime {
         std::string pipelineId;
         std::string backendId;
         std::string controlSemantics = "cartesian_absolute";
-        int32_t priority             = 0;
-        bool enabled                 = true;
+        std::vector<PipelineConfig> activedPlugins;  // 当前 group 有可以被激活的 retargeting plugin type
+        int32_t priority = 0;
+        bool enabled     = true;
     };
 
-    struct PipelineConfig {
+    struct GroupExecutionPlan {
+        std::string bodyGroup;
+        std::string ownerSourceId;
         std::string pipelineId;
-        std::string pluginType;
-        bool enabled = true;
+        std::string backendId;
+        std::string mode;
+        std::string controlSemantics;
+        int32_t priority = 0;
     };
 
     struct BackendConfig {

@@ -6,6 +6,7 @@
 #include "puppet/orchestrator/orchestrator.hpp"
 #include "puppet/retargeting/core/retargeting_pipeline.hpp"
 #include "puppet/robot/backend/direct_mapping_backend.hpp"
+#include "puppet/routing/groupRoutingResolver.hpp"
 #include "puppet/runtime/robot_state_sync.hpp"
 #include "puppet/runtime/runtime_config.hpp"
 #include "puppet/source/source_manager.hpp"
@@ -33,6 +34,7 @@ namespace puppet::runtime {
         std::shared_ptr<RobotStateSync> robotStateSync_;
         uint64_t sequenceId_ = 0;
         model::ControlIntent lastControlIntent_;
+        routing::GroupRoutingResolver grSolver_;
     };
 
 }  // namespace puppet::runtime

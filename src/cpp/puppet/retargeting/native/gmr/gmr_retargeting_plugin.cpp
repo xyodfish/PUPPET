@@ -63,7 +63,6 @@ namespace puppet::retargeting {
 
     bool GmrRetargetingPlugin::process(const model::PrimitiveFrame& input, const std::string& bodyGroup, model::GroupControlIntent* output,
                                        std::string& error) {
-        static bool firstRun = true;
         if (!enabled_) {
             error = "GMR plugin is not enabled in runtime config";
             return false;
@@ -138,7 +137,6 @@ namespace puppet::retargeting {
         output->jointCommandIntents.push_back(std::move(jointIntent));
 
         error.clear();
-        (void)bodyGroup;
         return true;
     }
 

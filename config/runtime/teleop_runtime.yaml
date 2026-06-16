@@ -14,6 +14,10 @@ group_routing:
     mode: direct
     pipeline: direct_pipeline
     backend: direct_backend
+    active_plugins:
+      - enabled: true
+        type: direct_pass
+        pipeline_id: direct_pass_pipeline
 
 pipelines:
   - pipeline_id: direct_pipeline

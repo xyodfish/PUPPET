@@ -30,6 +30,10 @@ group_routing:
     mode: gmr
     pipeline: gmr_pipeline
     backend: direct_backend
+    active_plugins:
+      - enabled: true
+        type: gmr
+        pipeline_id: gmr_pipeline
 
 pipelines:
   - pipeline_id: gmr_pipeline
@@ -60,7 +64,16 @@ single_chain_ik:
       urdf_path: "assets/unitree_g1/g1_custom_collision_29dof.urdf"
       base_link: "torso_link"
       tip_link: "right_wrist_yaw_link"
-      joint_names: [right_shoulder_pitch_joint, right_shoulder_roll_joint, right_shoulder_yaw_joint, right_elbow_joint, right_wrist_roll_joint, right_wrist_pitch_joint, right_wrist_yaw_joint]
+      joint_names:
+        [
+          right_shoulder_pitch_joint,
+          right_shoulder_roll_joint,
+          right_shoulder_yaw_joint,
+          right_elbow_joint,
+          right_wrist_roll_joint,
+          right_wrist_pitch_joint,
+          right_wrist_yaw_joint,
+        ]
       default_posture: [0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.0]
       min_position_limit: [-3.0892, -2.2515, -2.6180, -1.0472, -1.972222054, -1.614429558, -1.614429558]
       max_position_limit: [2.6704, 1.5882, 2.6180, 2.0944, 1.972222054, 1.614429558, 1.614429558]
