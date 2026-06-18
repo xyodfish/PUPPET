@@ -56,7 +56,7 @@ namespace puppet::runtime {
         config_ = runtimeConfig;
 
         sourceManager_.configure(config_.sources);
-        grSolver_.configure(config_.groupRouting);
+        groupRouteSolver_.updateGroupRouting(config_.groupRouting);
 
         std::string pplErr;
         if (!pipeline_.configure(config_, pplErr)) {
@@ -76,16 +76,15 @@ namespace puppet::runtime {
         controlIntent.sequenceId = ++sequenceId_;
         bool hasAnyInputFrame    = false;
 
-        const auto plans = grSolver_.resolvePlans();
-        for (const auto& routingPlan : plans) {
-            auto plan        = routingPlan;
+        const auto& plans = groupRouteSolver_.getPlans();
+        for (const auto& plan : plans) {
             const auto frame = sourceManager_.getLatestFrame(plan.ownerSourceId);
             if (frame == nullptr) {
                 continue;
             }
             hasAnyInputFrame = true;
 
-            if (const auto* activePlugin = selectActivePlugin(routingPlan, *frame); activePlugin != nullptr) {
+            if (const auto* activePlugin = selectActivePlugin(plan, *frame); activePlugin != nullptr) {
                 plan.pipelineId       = activePlugin->pipelineId;
                 plan.mode             = activePlugin->pluginType;
                 plan.controlSemantics = inferControlSemantics(activePlugin->pluginType, *frame, plan.controlSemantics);

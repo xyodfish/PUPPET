@@ -32,7 +32,7 @@ namespace puppet::runtime {
         std::shared_ptr<RobotStateSync> robotStateSync_;
         uint64_t sequenceId_ = 0;
         model::ControlIntent lastControlIntent_;
-        routing::GroupRoutingResolver grSolver_;
+        routing::GroupRoutingResolver groupRouteSolver_;
     };
 
 }  // namespace puppet::runtime

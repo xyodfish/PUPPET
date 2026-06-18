@@ -4,12 +4,24 @@
 
 #include "puppet/common/logging.hpp"
 
+#include <mutex>
 namespace puppet::routing {
-    void GroupRoutingResolver::configure(const std::vector<runtime::GroupRoutingConfig>& groupRouting) {
+    void GroupRoutingResolver::updateGroupRouting(const std::vector<runtime::GroupRoutingConfig>& groupRouting) {
+        std::unique_lock<std::mutex> lock(routeMtx_);
         groupRouting_ = groupRouting;
+        plansChanged_.store(true, std::memory_order_release);
     }
 
-    std::vector<GroupRoutingPlan> GroupRoutingResolver::resolvePlans() const {
+    void GroupRoutingResolver::updatePlans() {
+        std::unique_lock<std::mutex> lock(planMtx_);
+        if (!plansChanged()) {
+            return;
+        }
+        curPlans_ = resolvePlans();
+        clearPlansChanged();
+    }
+
+    std::vector<GroupRoutingPlan> GroupRoutingResolver::resolvePlans() {
         constexpr int32_t kWholeBodyBonus = 10000;
         std::unordered_map<std::string, GroupRoutingPlan> routingPlans;
 
@@ -47,7 +59,19 @@ namespace puppet::routing {
                 << " control_semantics=" << plan.controlSemantics;
             plans.push_back(std::move(kv.second));
         }
-
         return plans;
+    }
+
+    bool GroupRoutingResolver::plansChanged() const {
+        return plansChanged_.load(std::memory_order_acquire);
+    }
+
+    void GroupRoutingResolver::clearPlansChanged() {
+        plansChanged_.store(false, std::memory_order_release);
+    }
+
+    const std::vector<GroupRoutingPlan>& GroupRoutingResolver::getPlans() {
+        updatePlans();
+        return curPlans_;
     }
 }  // namespace puppet::routing

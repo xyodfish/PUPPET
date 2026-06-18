@@ -2,6 +2,8 @@
 
 #include "puppet/runtime/runtime_config.hpp"
 
+#include <atomic>
+#include <mutex>
 namespace puppet::routing {
 
     struct GroupRoutingPlan {
@@ -17,10 +19,18 @@ namespace puppet::routing {
 
     class GroupRoutingResolver {
        public:
-        void configure(const std::vector<runtime::GroupRoutingConfig>& groupRouting);
-        std::vector<GroupRoutingPlan> resolvePlans() const;
+        void updateGroupRouting(const std::vector<runtime::GroupRoutingConfig>& groupRouting);
+        const std::vector<GroupRoutingPlan>& getPlans();
 
        private:
+        std::vector<GroupRoutingPlan> resolvePlans();
+        void updatePlans();
+        bool plansChanged() const;
+        void clearPlansChanged();
+
         std::vector<runtime::GroupRoutingConfig> groupRouting_;
+        std::vector<GroupRoutingPlan> curPlans_;
+        std::atomic_bool plansChanged_ = true;
+        std::mutex planMtx_, routeMtx_;
     };
 }  // namespace puppet::routing
