@@ -15,6 +15,7 @@
 namespace puppet::transport {
 
     bool copyToProto(const model::PrimitiveFrame& src, ::puppet::puppet_proto::PrimitiveFrame* dst);
+    bool copyToProto(const model::ControlIntent& src, ::puppet::puppet_proto::ControlIntent* dst);
 
     // Basic types.
     bool copyFromProto(const ::puppet::puppet_proto::Timestamp& src, model::Timestamp* dst);

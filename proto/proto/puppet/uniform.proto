@@ -58,7 +58,8 @@ message FrameContext {
                           // teleop/manual/assist/replay/handover/calibration/
   string mode = 4;        // 当前模式名，如 direct_pose、clutch。
   string robot_id = 5;    // 目标机器人 ID。
-  string pipeline_id = 6; // 匹配到的 retargeting pipeline ID。
+  string pipeline_id = 6; // 匹配到的 retargeting pipeline ID。 整帧默认 pipeline id
+  map<string, string> group_pipeline_ids = 7; // 按 body_group 覆盖默认值
   map<string, string> tags = 20; // 扩展信息（调试/实验标签）。
 }
 
@@ -66,8 +67,7 @@ message FrameContext {
 message PrimitiveMeta {
   string name = 1;          // Primitive 名称，如 left_wrist_pose。
   string entity = 2;        // 控制实体名，如 left_hand、head、base。
-//   BodyGroup body_group = 3; // 归属身体分组。  在使用 CUSTOM 时，强制要求填写 [PrimitiveMeta.name]
-  string body_group = 3;
+  string body_group = 3;    // 归属身体分组，统一使用字符串语义，如 left_arm / whole_body。
   string frame_id = 4;      // 当前数据坐标系。
   string reference_frame_id = 5; // 参考坐标系（用于相对表达）。
   Timestamp timestamp = 6;       // Primitive 生效时间。

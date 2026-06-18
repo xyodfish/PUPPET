@@ -32,6 +32,8 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         constexpr const char* kRootQuatZKey = "__root_quat_z";
     }  // namespace visualizer_detail
 
+    bool needsHumanFrameInput(const struct VisualizerConfig& cfg);
+
     struct VisualizerConfig {
         std::string robotQposSource       = "control_intent";  // control_intent | local_retarget
         std::string nodeName              = "puppet_retargeting_mujoco_visualizer";
@@ -409,7 +411,12 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
             std::unique_ptr<gmr::Retargeter> retargeter_;
         };
 
-        bool initPreprocessor(const VisualizerConfig& cfg, std::string& error) { return preprocessor_.init(cfg, error); }
+        bool initPreprocessor(const VisualizerConfig& cfg, std::string& error) {
+            if (!cfg.showHumanOverlay) {
+                return true;
+            }
+            return preprocessor_.init(cfg, error);
+        }
 
         void update(const ::puppet::puppet_proto::PrimitiveFrame& msg) {
             gmr::HumanFrame humanFrame;
@@ -530,6 +537,10 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         uint64_t sequenceId_ = 0;
         bool hasQpos_        = false;
     };
+
+    bool needsHumanFrameInput(const VisualizerConfig& cfg) {
+        return cfg.showHumanOverlay || cfg.robotQposSource == "local_retarget";
+    }
 
 }  // namespace puppet::tools::retargeting_mujoco_visualizer_internal
 
@@ -663,7 +674,8 @@ int main(int argc, char** argv) {
         return 7;
     }
     void* humanFrameSubscriber = nullptr;
-    if (!createSubscriber(zmqContext, cfg.humanFrameEndpoint, cfg.humanFrameTopicName, &humanFrameSubscriber, error)) {
+    if (needsHumanFrameInput(cfg) &&
+        !createSubscriber(zmqContext, cfg.humanFrameEndpoint, cfg.humanFrameTopicName, &humanFrameSubscriber, error)) {
         std::cerr << "[retargeting_mujoco_visualizer_zmq] create human frame subscriber failed: " << error << std::endl;
         zmq_close(controlIntentSubscriber);
         zmq_ctx_term(zmqContext);
@@ -695,24 +707,28 @@ int main(int argc, char** argv) {
             cache.update(msg);
         }
 
-        for (;;) {
-            std::string payload;
-            bool hasMessage = false;
-            if (!tryReceivePayload(humanFrameSubscriber, payload, &hasMessage, error)) {
-                std::cerr << "[retargeting_mujoco_visualizer_zmq] receive primitive_frame failed: " << error << std::endl;
-                break;
+        if (humanFrameSubscriber != nullptr) {
+            for (;;) {
+                std::string payload;
+                bool hasMessage = false;
+                if (!tryReceivePayload(humanFrameSubscriber, payload, &hasMessage, error)) {
+                    std::cerr << "[retargeting_mujoco_visualizer_zmq] receive primitive_frame failed: " << error << std::endl;
+                    break;
+                }
+                if (!hasMessage) {
+                    break;
+                }
+                ::puppet::puppet_proto::PrimitiveFrame msg;
+                if (!msg.ParseFromArray(payload.data(), static_cast<int>(payload.size()))) {
+                    std::cerr << "[retargeting_mujoco_visualizer_zmq] parse primitive_frame failed, payload_size=" << payload.size()
+                              << std::endl;
+                    continue;
+                }
+                if (cfg.showHumanOverlay) {
+                    humanPoseCache.update(msg);
+                }
+                localRetargetCache.update(msg);
             }
-            if (!hasMessage) {
-                break;
-            }
-            ::puppet::puppet_proto::PrimitiveFrame msg;
-            if (!msg.ParseFromArray(payload.data(), static_cast<int>(payload.size()))) {
-                std::cerr << "[retargeting_mujoco_visualizer_zmq] parse primitive_frame failed, payload_size=" << payload.size()
-                          << std::endl;
-                continue;
-            }
-            humanPoseCache.update(msg);
-            localRetargetCache.update(msg);
         }
 
         int64_t messageCount      = 0;

@@ -3,6 +3,12 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-${REPO_ROOT}/build}"
+ARCH_TRIPLET="${CMAKE_SYSTEM_PROCESSOR:-$(uname -m)}-Linux-GNU-$(g++ -dumpfullversion)"
+LOCAL_DEVEL_LIB_DIR="${REPO_ROOT}/devel/${ARCH_TRIPLET}/lib"
+
+if [[ -d "${LOCAL_DEVEL_LIB_DIR}" ]]; then
+  export LD_LIBRARY_PATH="${LOCAL_DEVEL_LIB_DIR}:${LD_LIBRARY_PATH:-}"
+fi
 
 RUNTIME_CFG="${1:-${REPO_ROOT}/config/runtime/demo_dual_source_mixed_runtime.yaml}"
 VIEWER_CFG="${2:-${REPO_ROOT}/config/tools/demo_single_chain_ik_visualizer.yaml}"

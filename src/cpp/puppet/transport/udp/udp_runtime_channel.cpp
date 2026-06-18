@@ -383,43 +383,7 @@ namespace puppet::runtime {
 
     ::puppet::puppet_proto::ControlIntent UdpRuntimeChannel::toProto(const model::ControlIntent& src) const {
         ::puppet::puppet_proto::ControlIntent dst;
-        dst.set_sequence_id(src.sequenceId);
-        dst.mutable_context()->set_source_id(src.context.sourceId);
-        dst.mutable_context()->set_mode(src.context.mode);
-        dst.mutable_context()->set_semantic_context(src.context.semanticContext);
-        dst.mutable_context()->set_pipeline_id(src.context.pipelineId);
-
-        for (const auto& group : src.groupIntents) {
-            auto* groupPb = dst.add_group_intents();
-            groupPb->set_owner_source_id(group.ownerSourceId);
-            groupPb->set_mode(group.mode);
-            groupPb->set_priority(group.priority);
-            groupPb->set_backend_hint(group.backendHint);
-            groupPb->set_enabled(group.enabled);
-
-            for (const auto& jointIntent : group.jointCommandIntents) {
-                auto* jointPb = groupPb->add_joint_command_intents();
-                for (const auto& n : jointIntent.jointNames) {
-                    jointPb->add_joint_names(n);
-                }
-                for (double v : jointIntent.position) {
-                    jointPb->add_position(v);
-                }
-                for (double v : jointIntent.velocity) {
-                    jointPb->add_velocity(v);
-                }
-                for (double v : jointIntent.effort) {
-                    jointPb->add_effort(v);
-                }
-                for (double v : jointIntent.stiffness) {
-                    jointPb->add_stiffness(v);
-                }
-                for (double v : jointIntent.damping) {
-                    jointPb->add_damping(v);
-                }
-                jointPb->set_weight(jointIntent.weight);
-            }
-        }
+        transport::copyToProto(src, &dst);
         return dst;
     }
 

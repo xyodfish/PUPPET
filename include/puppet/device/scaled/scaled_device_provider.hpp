@@ -29,7 +29,7 @@ namespace puppet::device {
         struct ArmRuntimeState {
             std::string armName;
             std::string stateName;
-            model::BodyGroup bodyGroup = model::BodyGroup::kWholeBody;
+            std::string bodyGroup = "whole_body";
             std::vector<std::string> jointNames;
             std::vector<double> jointInit;
             std::vector<double> jointScale;
@@ -75,7 +75,7 @@ namespace puppet::device {
         };
 
         bool parseArmConfig(const YAML::Node& armNode, const std::string& armName, ArmRuntimeState* state, std::string& error);
-        static model::BodyGroup parseBodyGroup(const std::string& value);
+        static std::string parseBodyGroup(const std::string& value);
         static double wrapJointAngle(double value);
         static double applyDeadZone(double value, double deadZone);
         static double mapJoyAxis(double value, double threshold);
@@ -89,7 +89,7 @@ namespace puppet::device {
         bool hasPendingFrame() const;
         void initializeFrame(uint64_t sequenceId, model::PrimitiveFrame* frame);
         void appendArmJointState(const ArmRuntimeState& armState, model::PrimitiveFrame* frame);
-        void appendGripperJointState(const std::string& name, const std::string& entity, model::BodyGroup bodyGroup,
+        void appendGripperJointState(const std::string& name, const std::string& entity, const std::string& bodyGroup,
                                      const std::string& jointName, double position, model::PrimitiveFrame* frame);
         void appendChassisMotion(model::PrimitiveFrame* frame);
         void appendJoyRelativeCommands(model::PrimitiveFrame* frame);

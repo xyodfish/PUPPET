@@ -3,16 +3,10 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-${REPO_ROOT}/build}"
-ARCH_TRIPLET="${CMAKE_SYSTEM_PROCESSOR:-$(uname -m)}-Linux-GNU-$(g++ -dumpfullversion)"
-LOCAL_DEVEL_LIB_DIR="${REPO_ROOT}/devel/${ARCH_TRIPLET}/lib"
 
-if [[ -d "${LOCAL_DEVEL_LIB_DIR}" ]]; then
-  export LD_LIBRARY_PATH="${LOCAL_DEVEL_LIB_DIR}:${LD_LIBRARY_PATH:-}"
-fi
-
-RUNTIME_CFG="${1:-${REPO_ROOT}/config/runtime/teleop_runtime_gmr.yaml}"
-DEVICE_CFG="${2:-${REPO_ROOT}/config/device/device_service_static_file_embosa.yaml}"
-VIEWER_CFG="${3:-${REPO_ROOT}/config/tools/retargeting_mujoco_visualizer.yaml}"
+RUNTIME_CFG="${1:-${REPO_ROOT}/config/runtime/demo_mixed_arm_split_runtime.yaml}"
+DEVICE_CFG="${2:-${REPO_ROOT}/config/device/device_service_mixed_arm_split_embosa.yaml}"
+VIEWER_CFG="${3:-${REPO_ROOT}/config/tools/demo_mixed_arm_split_visualizer.yaml}"
 
 RUNTIME_BIN="${BUILD_DIR}/app/cpp/runtime/teleop_runtime_embosa_main"
 DEVICE_BIN="${BUILD_DIR}/app/cpp/devices/device_service"
@@ -20,20 +14,20 @@ VIEWER_BIN="${BUILD_DIR}/app/cpp/tools/retargeting_mujoco_visualizer"
 
 for f in "${RUNTIME_BIN}" "${DEVICE_BIN}" "${VIEWER_BIN}"; do
   if [[ ! -x "${f}" ]]; then
-    echo "[start_retargeting_3nodes] missing executable: ${f}" >&2
+    echo "[start_mixed_arm_split_demo] missing executable: ${f}" >&2
     echo "Build first: cmake -S . -B build && cmake --build build -j\$(nproc)" >&2
     exit 1
   fi
 done
 
 mkdir -p "${REPO_ROOT}/bin/log"
-RUNTIME_LOG="${REPO_ROOT}/bin/log/teleop_runtime_embosa_main.log"
-DEVICE_LOG="${REPO_ROOT}/bin/log/device_service_static_file_embosa.log"
-VIEWER_LOG="${REPO_ROOT}/bin/log/retargeting_mujoco_visualizer.log"
+RUNTIME_LOG="${REPO_ROOT}/bin/log/mixed_arm_split_runtime.log"
+DEVICE_LOG="${REPO_ROOT}/bin/log/mixed_arm_split_device_service.log"
+VIEWER_LOG="${REPO_ROOT}/bin/log/mixed_arm_split_viewer.log"
 
 pids=()
 cleanup() {
-  echo "[start_retargeting_3nodes] stopping nodes..."
+  echo "[start_mixed_arm_split_demo] stopping nodes..."
   for pid in "${pids[@]:-}"; do
     if kill -0 "${pid}" 2>/dev/null; then
       kill "${pid}" 2>/dev/null || true
@@ -48,7 +42,7 @@ check_started() {
   local name="$2"
   local log_file="$3"
   if ! kill -0 "${pid}" 2>/dev/null; then
-    echo "[start_retargeting_3nodes] ${name} exited during startup, see log: ${log_file}" >&2
+    echo "[start_mixed_arm_split_demo] ${name} exited during startup, see log: ${log_file}" >&2
     if [[ -f "${log_file}" ]]; then
       sed -n '1,120p' "${log_file}" >&2 || true
     fi
@@ -56,25 +50,25 @@ check_started() {
   fi
 }
 
-echo "[start_retargeting_3nodes] start runtime"
+echo "[start_mixed_arm_split_demo] start runtime"
 "${RUNTIME_BIN}" "${RUNTIME_CFG}" >"${RUNTIME_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
 check_started "${pids[$((${#pids[@]} - 1))]}" "runtime" "${RUNTIME_LOG}"
 
-echo "[start_retargeting_3nodes] start device service (static_file_replay + embosa)"
+echo "[start_mixed_arm_split_demo] start device service"
 "${DEVICE_BIN}" "${DEVICE_CFG}" >"${DEVICE_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
 check_started "${pids[$((${#pids[@]} - 1))]}" "device service" "${DEVICE_LOG}"
 
-echo "[start_retargeting_3nodes] start viewer"
+echo "[start_mixed_arm_split_demo] start viewer"
 "${VIEWER_BIN}" "${VIEWER_CFG}" >"${VIEWER_LOG}" 2>&1 &
 pids+=("$!")
 sleep 1
 check_started "${pids[$((${#pids[@]} - 1))]}" "viewer" "${VIEWER_LOG}"
 
-echo "[start_retargeting_3nodes] running"
+echo "[start_mixed_arm_split_demo] running"
 echo "  runtime log: ${RUNTIME_LOG}"
 echo "  device  log: ${DEVICE_LOG}"
 echo "  viewer  log: ${VIEWER_LOG}"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include "puppet/common/base_types.hpp"
@@ -24,6 +25,73 @@ namespace puppet::model {
         kCustom       = 100,
     };
 
+    inline std::string bodyGroupToString(BodyGroup bodyGroup) {
+        switch (bodyGroup) {
+            case BodyGroup::kUnspecified:
+                return "unspecified";
+            case BodyGroup::kHead:
+                return "head";
+            case BodyGroup::kLeftArm:
+                return "left_arm";
+            case BodyGroup::kRightArm:
+                return "right_arm";
+            case BodyGroup::kBiManual:
+                return "bi_manual";
+            case BodyGroup::kTorso:
+                return "torso";
+            case BodyGroup::kBase:
+                return "base";
+            case BodyGroup::kLowerBody:
+                return "lower_body";
+            case BodyGroup::kWholeBody:
+                return "whole_body";
+            case BodyGroup::kLeftGripper:
+                return "left_gripper";
+            case BodyGroup::kRightGripper:
+                return "right_gripper";
+            case BodyGroup::kCustom:
+                return "custom";
+        }
+        return "custom";
+    }
+
+    inline BodyGroup bodyGroupFromString(std::string_view bodyGroup) {
+        if (bodyGroup.empty() || bodyGroup == "unspecified") {
+            return BodyGroup::kUnspecified;
+        }
+        if (bodyGroup == "head") {
+            return BodyGroup::kHead;
+        }
+        if (bodyGroup == "left_arm") {
+            return BodyGroup::kLeftArm;
+        }
+        if (bodyGroup == "right_arm") {
+            return BodyGroup::kRightArm;
+        }
+        if (bodyGroup == "bi_manual") {
+            return BodyGroup::kBiManual;
+        }
+        if (bodyGroup == "torso") {
+            return BodyGroup::kTorso;
+        }
+        if (bodyGroup == "base") {
+            return BodyGroup::kBase;
+        }
+        if (bodyGroup == "lower_body") {
+            return BodyGroup::kLowerBody;
+        }
+        if (bodyGroup == "whole_body") {
+            return BodyGroup::kWholeBody;
+        }
+        if (bodyGroup == "left_gripper") {
+            return BodyGroup::kLeftGripper;
+        }
+        if (bodyGroup == "right_gripper") {
+            return BodyGroup::kRightGripper;
+        }
+        return BodyGroup::kCustom;
+    }
+
     enum class SourceType {
         kUnspecified = 0,
         kVr          = 1,
@@ -41,13 +109,14 @@ namespace puppet::model {
         std::string mode;
         std::string robotId;
         std::string pipelineId;
+        std::unordered_map<std::string, std::string> groupPipelineIds;  // group_name -> pipeline_id
         TagMap tags;
     };
 
     struct PrimitiveMeta {
         std::string name;
         std::string entity;
-        BodyGroup bodyGroup = BodyGroup::kUnspecified;
+        std::string bodyGroup;
         std::string frameId;
         std::string referenceFrameId;
         Timestamp timestamp;

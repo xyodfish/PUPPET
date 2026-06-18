@@ -87,6 +87,7 @@ set(PUPPET_CORE_SOURCES
 
   puppet/device/static_file_replay/static_file_replay_device_provider.cpp
   puppet/device/single_chain_ik/single_chain_ik_sender_device_provider.cpp
+  puppet/device/single_chain_ik/mixed_arm_split_demo_device_provider.cpp
   puppet/device/scaled/scaled_device_provider.cpp
 
   puppet/runtime/robot_state_sync.cpp
@@ -143,6 +144,7 @@ find_library(MUJOCO_LIBRARY NAMES mujoco HINTS "${PUPPET_CONTROL_DEVEL_PREFIX}/l
 
 target_include_directories(puppet_cpp_core
   PUBLIC
+    ${PUPPET_DEFAULT_DEVEL_PREFIX}/include
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include/puppet/retargeting/native
     ${EMBOSA_INCLUDE_DIR}

@@ -24,74 +24,6 @@ namespace puppet::transport {
     }
 
     namespace {
-
-        std::string bodyGroupToString(model::BodyGroup bodyGroup) {
-            switch (bodyGroup) {
-                case model::BodyGroup::kUnspecified:
-                    return "unspecified";
-                case model::BodyGroup::kHead:
-                    return "head";
-                case model::BodyGroup::kLeftArm:
-                    return "left_arm";
-                case model::BodyGroup::kRightArm:
-                    return "right_arm";
-                case model::BodyGroup::kBiManual:
-                    return "bi_manual";
-                case model::BodyGroup::kTorso:
-                    return "torso";
-                case model::BodyGroup::kBase:
-                    return "base";
-                case model::BodyGroup::kLowerBody:
-                    return "lower_body";
-                case model::BodyGroup::kWholeBody:
-                    return "whole_body";
-                case model::BodyGroup::kLeftGripper:
-                    return "left_gripper";
-                case model::BodyGroup::kRightGripper:
-                    return "right_gripper";
-                case model::BodyGroup::kCustom:
-                    return "custom";
-            }
-            return "custom";
-        }
-
-        model::BodyGroup bodyGroupFromString(const std::string& bodyGroup) {
-            if (bodyGroup.empty() || bodyGroup == "unspecified") {
-                return model::BodyGroup::kUnspecified;
-            }
-            if (bodyGroup == "head") {
-                return model::BodyGroup::kHead;
-            }
-            if (bodyGroup == "left_arm") {
-                return model::BodyGroup::kLeftArm;
-            }
-            if (bodyGroup == "right_arm") {
-                return model::BodyGroup::kRightArm;
-            }
-            if (bodyGroup == "bi_manual") {
-                return model::BodyGroup::kBiManual;
-            }
-            if (bodyGroup == "torso") {
-                return model::BodyGroup::kTorso;
-            }
-            if (bodyGroup == "base") {
-                return model::BodyGroup::kBase;
-            }
-            if (bodyGroup == "lower_body") {
-                return model::BodyGroup::kLowerBody;
-            }
-            if (bodyGroup == "whole_body") {
-                return model::BodyGroup::kWholeBody;
-            }
-            if (bodyGroup == "left_gripper") {
-                return model::BodyGroup::kLeftGripper;
-            }
-            if (bodyGroup == "right_gripper") {
-                return model::BodyGroup::kRightGripper;
-            }
-            return model::BodyGroup::kCustom;
-        }
-
         template <typename SrcMap, typename DstMap>
         void CopyToProtoMap(const SrcMap& src, DstMap* dst) {
             dst->clear();
@@ -146,13 +78,14 @@ namespace puppet::transport {
             dst->set_mode(src.mode);
             dst->set_robot_id(src.robotId);
             dst->set_pipeline_id(src.pipelineId);
+            CopyToProtoMap(src.groupPipelineIds, dst->mutable_group_pipeline_ids());
             CopyToProtoMap(src.tags, dst->mutable_tags());
         }
 
         void CopyToProto(const model::PrimitiveMeta& src, ::puppet::puppet_proto::PrimitiveMeta* dst) {
             dst->set_name(src.name);
             dst->set_entity(src.entity);
-            dst->set_body_group(bodyGroupToString(src.bodyGroup));
+            dst->set_body_group(src.bodyGroup);
             dst->set_frame_id(src.frameId);
             dst->set_reference_frame_id(src.referenceFrameId);
             CopyToProto(src.timestamp, dst->mutable_timestamp());
@@ -304,6 +237,90 @@ namespace puppet::transport {
         return true;
     }
 
+    bool copyToProto(const model::ControlIntent& src, ::puppet::puppet_proto::ControlIntent* dst) {
+        if (dst == nullptr) {
+            return false;
+        }
+
+        dst->Clear();
+        CopyToProto(src.header, dst->mutable_header());
+        CopyToProto(src.context, dst->mutable_context());
+        dst->set_sequence_id(src.sequenceId);
+        CopyToProtoMap(src.tags, dst->mutable_tags());
+
+        for (const auto& group : src.groupIntents) {
+            auto* groupPb = dst->add_group_intents();
+            groupPb->set_body_group(static_cast<::puppet::puppet_proto::BodyGroup>(group.bodyGroup));
+            groupPb->set_owner_source_id(group.ownerSourceId);
+            groupPb->set_mode(group.mode);
+            groupPb->set_priority(group.priority);
+            groupPb->set_backend_hint(group.backendHint);
+            groupPb->set_enabled(group.enabled);
+            CopyToProtoMap(group.tags, groupPb->mutable_tags());
+
+            for (const auto& cartIntent : group.eePoseIntents) {
+                auto* cartPb = groupPb->add_ee_pose_intents();
+                cartPb->set_ee_name(cartIntent.eeName);
+                cartPb->set_reference_frame_id(cartIntent.referenceFrameId);
+                CopyToProto(cartIntent.pose, cartPb->mutable_pose());
+                CopyToProto(cartIntent.twistFeedforward, cartPb->mutable_twist_feedforward());
+                cartPb->set_position_weight(cartIntent.positionWeight);
+                cartPb->set_orientation_weight(cartIntent.orientationWeight);
+                cartPb->set_confidence(cartIntent.confidence);
+            }
+
+            for (const auto& jointIntent : group.jointCommandIntents) {
+                auto* jointPb = groupPb->add_joint_command_intents();
+                jointPb->set_body_group(static_cast<::puppet::puppet_proto::BodyGroup>(jointIntent.bodyGroup));
+                jointPb->set_mode(static_cast<::puppet::puppet_proto::JointCommandIntent_JointCommandMode>(jointIntent.mode));
+                for (const auto& name : jointIntent.jointNames)
+                    jointPb->add_joint_names(name);
+                for (const auto value : jointIntent.position)
+                    jointPb->add_position(value);
+                for (const auto value : jointIntent.velocity)
+                    jointPb->add_velocity(value);
+                for (const auto value : jointIntent.effort)
+                    jointPb->add_effort(value);
+                for (const auto value : jointIntent.stiffness)
+                    jointPb->add_stiffness(value);
+                for (const auto value : jointIntent.damping)
+                    jointPb->add_damping(value);
+                jointPb->set_weight(jointIntent.weight);
+            }
+
+            for (const auto& postureIntent : group.postureIntents) {
+                auto* posturePb = groupPb->add_posture_intents();
+                posturePb->set_body_group(static_cast<::puppet::puppet_proto::BodyGroup>(postureIntent.bodyGroup));
+                for (const auto& name : postureIntent.jointNames)
+                    posturePb->add_joint_names(name);
+                for (const auto value : postureIntent.preferredPosition)
+                    posturePb->add_preferred_position(value);
+                posturePb->set_weight(postureIntent.weight);
+            }
+
+            for (const auto& baseIntent : group.baseMotionIntents) {
+                auto* basePb = groupPb->add_base_motion_intents();
+                basePb->set_reference_frame_id(baseIntent.referenceFrameId);
+                basePb->set_vx(baseIntent.vx);
+                basePb->set_vy(baseIntent.vy);
+                basePb->set_wz(baseIntent.wz);
+                basePb->set_accel_limit(baseIntent.accelLimit);
+            }
+
+            for (const auto& constraint : group.constraints) {
+                auto* constraintPb = groupPb->add_constraints();
+                constraintPb->set_type(static_cast<::puppet::puppet_proto::ConstraintRequest_ConstraintType>(constraint.type));
+                constraintPb->set_hard(constraint.hard);
+                constraintPb->set_weight(constraint.weight);
+                constraintPb->set_target(constraint.target);
+                CopyToProtoMap(constraint.scalarParams, constraintPb->mutable_scalar_params());
+                CopyToProtoMap(constraint.stringParams, constraintPb->mutable_string_params());
+            }
+        }
+
+        return true;
+    }
+
     bool copyFromProto(const ::puppet::puppet_proto::Timestamp& src, model::Timestamp* dst) {
         if (dst == nullptr)
             return false;
@@ -381,6 +398,7 @@ namespace puppet::transport {
         dst->mode            = src.mode();
         dst->robotId         = src.robot_id();
         dst->pipelineId      = src.pipeline_id();
+        CopyMap(src.group_pipeline_ids(), &dst->groupPipelineIds);
         CopyMap(src.tags(), &dst->tags);
         return true;
     }
@@ -390,7 +408,7 @@ namespace puppet::transport {
             return false;
         dst->name             = src.name();
         dst->entity           = src.entity();
-        dst->bodyGroup        = bodyGroupFromString(src.body_group());
+        dst->bodyGroup        = src.body_group();
         dst->frameId          = src.frame_id();
         dst->referenceFrameId = src.reference_frame_id();
         copyFromProto(src.timestamp(), &dst->timestamp);

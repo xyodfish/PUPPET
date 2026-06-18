@@ -25,6 +25,12 @@ namespace puppet::runtime {
         const model::ControlIntent& lastControlIntent() const { return lastControlIntent_; }
 
        private:
+        bool preparePlanFrame(const routing::GroupRoutingPlan& routingPlan, routing::GroupRoutingPlan* resolvedPlan,
+                              model::PrimitiveFrame* runtimeFrame) const;
+        bool appendRobotStateIfNeeded(const routing::GroupRoutingPlan& plan, model::PrimitiveFrame* runtimeFrame) const;
+        bool runPlanOnce(const routing::GroupRoutingPlan& routingPlan, model::ControlIntent* controlIntent, bool* hasAnyInputFrame,
+                         std::string& error);
+
         RuntimeConfig config_;
         source::SourceManager sourceManager_;
         retargeting::RetargetingPipeline pipeline_;

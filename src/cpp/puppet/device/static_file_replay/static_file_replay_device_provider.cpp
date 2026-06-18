@@ -4,6 +4,35 @@
 #include <exception>
 
 namespace puppet::device {
+    namespace {
+        template <typename PrimitiveVec>
+        void assignGroupPipelines(const PrimitiveVec& primitives, const std::string& pipelineId,
+                                  std::unordered_map<std::string, std::string>* groupPipelineIds) {
+            for (const auto& primitive : primitives) {
+                if (!primitive.meta.bodyGroup.empty()) {
+                    groupPipelineIds->emplace(primitive.meta.bodyGroup, pipelineId);
+                }
+            }
+        }
+
+        void populateGroupPipelineIds(const std::string& pipelineId, model::PrimitiveFrame* frame) {
+            frame->context.groupPipelineIds.clear();
+            if (pipelineId.empty()) {
+                return;
+            }
+
+            assignGroupPipelines(frame->poses, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->twists, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->jointStates, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->jointCommands, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->scalars, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->booleans, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->modes, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->planarMotions, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->skeletons, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->landmarkSets, pipelineId, &frame->context.groupPipelineIds);
+        }
+    }  // namespace
 
     bool StaticFileReplayDeviceProvider::initialize(const DeviceServiceConfig& config, std::string& error) {
         frameId_                     = config.frameId;
@@ -96,7 +125,7 @@ namespace puppet::device {
             model::PosePrimitive pose;
             pose.meta.name             = name + "_pose";
             pose.meta.entity           = name;
-            pose.meta.bodyGroup        = model::BodyGroup::kWholeBody;
+            pose.meta.bodyGroup        = "whole_body";
             pose.meta.frameId          = frameId_;
             pose.meta.referenceFrameId = frameId_;
             pose.meta.confidence       = 1.0F;
@@ -115,6 +144,7 @@ namespace puppet::device {
             pose.targetFrameId = frameId_;
             frame->poses.push_back(std::move(pose));
         }
+        populateGroupPipelineIds(pipelineId_, frame);
         ++frameIndex_;
         return true;
     }

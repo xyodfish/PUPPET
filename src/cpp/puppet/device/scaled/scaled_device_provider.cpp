@@ -59,6 +59,36 @@ namespace puppet::device {
 
     }  // namespace scaled_device_provider_detail
 
+    namespace {
+        template <typename PrimitiveVec>
+        void assignGroupPipelines(const PrimitiveVec& primitives, const std::string& pipelineId,
+                                  std::unordered_map<std::string, std::string>* groupPipelineIds) {
+            for (const auto& primitive : primitives) {
+                if (!primitive.meta.bodyGroup.empty()) {
+                    groupPipelineIds->emplace(primitive.meta.bodyGroup, pipelineId);
+                }
+            }
+        }
+
+        void populateGroupPipelineIds(const std::string& pipelineId, model::PrimitiveFrame* frame) {
+            frame->context.groupPipelineIds.clear();
+            if (pipelineId.empty()) {
+                return;
+            }
+
+            assignGroupPipelines(frame->poses, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->twists, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->jointStates, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->jointCommands, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->scalars, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->booleans, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->modes, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->planarMotions, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->skeletons, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->landmarkSets, pipelineId, &frame->context.groupPipelineIds);
+        }
+    }  // namespace
+
     bool ScaledDeviceProvider::parseArmConfig(const YAML::Node& armNode, const std::string& armName, ArmRuntimeState* state,
                                               std::string& error) {
         state->armName   = armName;
@@ -119,20 +149,20 @@ namespace puppet::device {
         return true;
     }
 
-    model::BodyGroup ScaledDeviceProvider::parseBodyGroup(const std::string& value) {
+    std::string ScaledDeviceProvider::parseBodyGroup(const std::string& value) {
         if (value == "left_arm") {
-            return model::BodyGroup::kLeftArm;
+            return "left_arm";
         }
         if (value == "right_arm") {
-            return model::BodyGroup::kRightArm;
+            return "right_arm";
         }
         if (value == "left_hand" || value == "left_gripper") {
-            return model::BodyGroup::kLeftGripper;
+            return "left_gripper";
         }
         if (value == "right_hand" || value == "right_gripper") {
-            return model::BodyGroup::kRightGripper;
+            return "right_gripper";
         }
-        return model::BodyGroup::kWholeBody;
+        return "whole_body";
     }
 
     double ScaledDeviceProvider::wrapJointAngle(double value) {
@@ -711,7 +741,7 @@ namespace puppet::device {
             model::PosePrimitive pose;
             pose.meta.name             = "leg_delta_pose";
             pose.meta.entity           = "leg";
-            pose.meta.bodyGroup        = model::BodyGroup::kLowerBody;
+            pose.meta.bodyGroup        = "lower_body";
             pose.meta.frameId          = frameId_;
             pose.meta.referenceFrameId = frameId_;
             pose.meta.confidence       = 1.0F;
@@ -729,7 +759,7 @@ namespace puppet::device {
             model::JointCommandPrimitive command;
             command.meta.name             = "waist_yaw_delta";
             command.meta.entity           = "leg";
-            command.meta.bodyGroup        = model::BodyGroup::kTorso;
+            command.meta.bodyGroup        = "torso";
             command.meta.frameId          = frameId_;
             command.meta.referenceFrameId = frameId_;
             command.meta.confidence       = 1.0F;
@@ -745,7 +775,7 @@ namespace puppet::device {
             model::JointCommandPrimitive command;
             command.meta.name             = "head_delta";
             command.meta.entity           = "head";
-            command.meta.bodyGroup        = model::BodyGroup::kHead;
+            command.meta.bodyGroup        = "head";
             command.meta.frameId          = frameId_;
             command.meta.referenceFrameId = frameId_;
             command.meta.confidence       = 1.0F;
@@ -822,7 +852,7 @@ namespace puppet::device {
         frame->jointStates.push_back(std::move(jointState));
     }
 
-    void ScaledDeviceProvider::appendGripperJointState(const std::string& name, const std::string& entity, model::BodyGroup bodyGroup,
+    void ScaledDeviceProvider::appendGripperJointState(const std::string& name, const std::string& entity, const std::string& bodyGroup,
                                                        const std::string& jointName, double position, model::PrimitiveFrame* frame) {
         model::JointStatePrimitive jointState;
         jointState.meta.name             = name;
@@ -841,7 +871,7 @@ namespace puppet::device {
         model::PlanarMotionPrimitive planar;
         planar.meta.name             = "scaled_device_chassis_motion";
         planar.meta.entity           = "chassis";
-        planar.meta.bodyGroup        = model::BodyGroup::kBase;
+        planar.meta.bodyGroup        = "base";
         planar.meta.frameId          = frameId_;
         planar.meta.referenceFrameId = frameId_;
         planar.meta.confidence       = 1.0F;
@@ -862,7 +892,7 @@ namespace puppet::device {
         model::ModePrimitive mode;
         mode.meta.name             = name;
         mode.meta.entity           = entity;
-        mode.meta.bodyGroup        = entity == "left_arm" ? model::BodyGroup::kLeftArm : model::BodyGroup::kRightArm;
+        mode.meta.bodyGroup        = entity == "left_arm" ? "left_arm" : "right_arm";
         mode.meta.frameId          = frameId_;
         mode.meta.referenceFrameId = frameId_;
         mode.meta.confidence       = 1.0F;
@@ -893,7 +923,7 @@ namespace puppet::device {
         model::BooleanPrimitive stopFlag;
         stopFlag.meta.name             = "soft_emergency_stop";
         stopFlag.meta.entity           = "scaled_device";
-        stopFlag.meta.bodyGroup        = model::BodyGroup::kWholeBody;
+        stopFlag.meta.bodyGroup        = "whole_body";
         stopFlag.meta.frameId          = frameId_;
         stopFlag.meta.referenceFrameId = frameId_;
         stopFlag.meta.confidence       = 1.0F;
@@ -929,13 +959,12 @@ namespace puppet::device {
         appendArmJointState(rightArm_, frame);
 
         if (leftGripperEnabled_ && leftGripperUpdated_) {
-            appendGripperJointState("left_gripper_state", "left_gripper", model::BodyGroup::kLeftGripper, leftGripperJointName_,
-                                    leftGripperPos_, frame);
+            appendGripperJointState("left_gripper_state", "left_gripper", "left_gripper", leftGripperJointName_, leftGripperPos_, frame);
         }
 
         if (rightGripperEnabled_ && rightGripperUpdated_) {
-            appendGripperJointState("right_gripper_state", "right_gripper", model::BodyGroup::kRightGripper, rightGripperJointName_,
-                                    rightGripperPos_, frame);
+            appendGripperJointState("right_gripper_state", "right_gripper", "right_gripper", rightGripperJointName_, rightGripperPos_,
+                                    frame);
         }
 
         if (chassisMotionUpdated_) {
@@ -949,6 +978,7 @@ namespace puppet::device {
         appendArmMode("left_arm_sync_mode", "left_arm", leftArmControl_.effectiveMode, leftArmControl_.modeUpdated, frame);
         appendArmMode("right_arm_sync_mode", "right_arm", rightArmControl_.effectiveMode, rightArmControl_.modeUpdated, frame);
         appendSoftEmergencyStop(frame);
+        populateGroupPipelineIds(pipelineId_, frame);
         resetUpdateFlags();
         return true;
     }

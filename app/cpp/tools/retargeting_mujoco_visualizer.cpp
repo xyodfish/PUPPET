@@ -31,6 +31,8 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         constexpr const char* kRootQuatZKey = "__root_quat_z";
     }  // namespace visualizer_detail
 
+    bool needsHumanFrameInput(const struct VisualizerConfig& cfg);
+
     struct VisualizerConfig {
         std::string robotQposSource     = "control_intent";  // control_intent | local_retarget
         std::string nodeName            = "puppet_retargeting_mujoco_visualizer";
@@ -322,7 +324,12 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
             std::unique_ptr<gmr::Retargeter> retargeter_;
         };
 
-        bool initPreprocessor(const VisualizerConfig& cfg, std::string& error) { return preprocessor_.init(cfg, error); }
+        bool initPreprocessor(const VisualizerConfig& cfg, std::string& error) {
+            if (!cfg.showHumanOverlay) {
+                return true;
+            }
+            return preprocessor_.init(cfg, error);
+        }
 
         void update(const ::puppet::puppet_proto::PrimitiveFrame& msg) {
             gmr::HumanFrame humanFrame;
@@ -443,6 +450,10 @@ namespace puppet::tools::retargeting_mujoco_visualizer_internal {
         uint64_t sequenceId_ = 0;
         bool hasQpos_        = false;
     };
+
+    bool needsHumanFrameInput(const VisualizerConfig& cfg) {
+        return cfg.showHumanOverlay || cfg.robotQposSource == "local_retarget";
+    }
 
 }  // namespace puppet::tools::retargeting_mujoco_visualizer_internal
 
@@ -583,19 +594,24 @@ int main(int argc, char** argv) {
         glfwTerminate();
         return 7;
     }
-    auto humanCallback = [&](const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg, const void*) {
-        if (msg == nullptr) {
-            return;
+    std::shared_ptr<galbot::embosa::SerializationReader<::puppet::puppet_proto::PrimitiveFrame>> humanFrameReader;
+    if (needsHumanFrameInput(cfg)) {
+        auto humanCallback = [&](const std::shared_ptr<::puppet::puppet_proto::PrimitiveFrame>& msg, const void*) {
+            if (msg == nullptr) {
+                return;
+            }
+            if (cfg.showHumanOverlay) {
+                humanPoseCache.update(*msg);
+            }
+            localRetargetCache.update(*msg);
+        };
+        humanFrameReader = node->CreateReader<::puppet::puppet_proto::PrimitiveFrame>(cfg.humanFrameTopicName, humanCallback);
+        if (humanFrameReader == nullptr) {
+            std::cerr << "[retargeting_mujoco_visualizer] create human frame reader failed" << std::endl;
+            glfwDestroyWindow(window);
+            glfwTerminate();
+            return 9;
         }
-        humanPoseCache.update(*msg);
-        localRetargetCache.update(*msg);
-    };
-    auto humanFrameReader = node->CreateReader<::puppet::puppet_proto::PrimitiveFrame>(cfg.humanFrameTopicName, humanCallback);
-    if (humanFrameReader == nullptr) {
-        std::cerr << "[retargeting_mujoco_visualizer] create human frame reader failed" << std::endl;
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return 9;
     }
 
     const int renderHz = cfg.renderHz > 0 ? cfg.renderHz : 60;

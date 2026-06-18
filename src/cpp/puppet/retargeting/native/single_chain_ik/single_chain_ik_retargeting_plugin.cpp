@@ -160,9 +160,8 @@ namespace puppet::retargeting {
             }
         }
         if (selectedPose == nullptr) {
-            const auto targetBodyGroup = single_chain_ik_internal::toBodyGroup(bodyGroup);
             for (const auto& pose : input.poses) {
-                if (pose.meta.bodyGroup == targetBodyGroup) {
+                if (pose.meta.bodyGroup == bodyGroup) {
                     selectedPose = &pose;
                     break;
                 }

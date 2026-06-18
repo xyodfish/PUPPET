@@ -5,6 +5,35 @@
 #include <vector>
 
 namespace puppet::device {
+    namespace {
+        template <typename PrimitiveVec>
+        void assignGroupPipelines(const PrimitiveVec& primitives, const std::string& pipelineId,
+                                  std::unordered_map<std::string, std::string>* groupPipelineIds) {
+            for (const auto& primitive : primitives) {
+                if (!primitive.meta.bodyGroup.empty()) {
+                    groupPipelineIds->emplace(primitive.meta.bodyGroup, pipelineId);
+                }
+            }
+        }
+
+        void populateGroupPipelineIds(const std::string& pipelineId, model::PrimitiveFrame* frame) {
+            frame->context.groupPipelineIds.clear();
+            if (pipelineId.empty()) {
+                return;
+            }
+
+            assignGroupPipelines(frame->poses, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->twists, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->jointStates, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->jointCommands, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->scalars, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->booleans, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->modes, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->planarMotions, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->skeletons, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPipelines(frame->landmarkSets, pipelineId, &frame->context.groupPipelineIds);
+        }
+    }  // namespace
 
     double SingleChainIkSenderDeviceProvider::squareWaveUnit(double phase) {
         const double p = std::fmod(phase, 1.0);
@@ -88,7 +117,7 @@ namespace puppet::device {
         model::PosePrimitive rightPose;
         rightPose.meta.name             = "right_wrist_pose_demo";
         rightPose.meta.entity           = "right_wrist";
-        rightPose.meta.bodyGroup        = model::BodyGroup::kRightArm;
+        rightPose.meta.bodyGroup        = "right_arm";
         rightPose.meta.frameId          = frameId_;
         rightPose.meta.referenceFrameId = frameId_;
         rightPose.meta.confidence       = 1.0F;
@@ -127,7 +156,7 @@ namespace puppet::device {
         model::PosePrimitive leftPose;
         leftPose.meta.name             = "left_wrist_pose_demo";
         leftPose.meta.entity           = "left_wrist";
-        leftPose.meta.bodyGroup        = model::BodyGroup::kLeftArm;
+        leftPose.meta.bodyGroup        = "left_arm";
         leftPose.meta.frameId          = frameId_;
         leftPose.meta.referenceFrameId = frameId_;
         leftPose.meta.confidence       = 1.0F;
@@ -146,7 +175,7 @@ namespace puppet::device {
         model::JointStatePrimitive rightSeed;
         rightSeed.meta.name             = "right_arm_seed_state";
         rightSeed.meta.entity           = "right_arm";
-        rightSeed.meta.bodyGroup        = model::BodyGroup::kRightArm;
+        rightSeed.meta.bodyGroup        = "right_arm";
         rightSeed.meta.frameId          = frameId_;
         rightSeed.meta.referenceFrameId = frameId_;
         rightSeed.meta.confidence       = 1.0F;
@@ -166,7 +195,7 @@ namespace puppet::device {
         model::JointStatePrimitive leftSeed;
         leftSeed.meta.name             = "left_arm_seed_state";
         leftSeed.meta.entity           = "left_arm";
-        leftSeed.meta.bodyGroup        = model::BodyGroup::kLeftArm;
+        leftSeed.meta.bodyGroup        = "left_arm";
         leftSeed.meta.frameId          = frameId_;
         leftSeed.meta.referenceFrameId = frameId_;
         leftSeed.meta.confidence       = 1.0F;
@@ -184,6 +213,7 @@ namespace puppet::device {
         frame->jointStates.push_back(std::move(leftSeed));
 
         frame->tags["demo"] = "single_chain_ik";
+        populateGroupPipelineIds(pipelineId_, frame);
         return true;
     }
 

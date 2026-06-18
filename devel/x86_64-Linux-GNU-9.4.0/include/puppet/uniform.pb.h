@@ -51,7 +51,7 @@ struct TableStruct_puppet_2funiform_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[4]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[5]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -63,6 +63,9 @@ namespace puppet_proto {
 class FrameContext;
 class FrameContextDefaultTypeInternal;
 extern FrameContextDefaultTypeInternal _FrameContext_default_instance_;
+class FrameContext_GroupPipelineIdsEntry_DoNotUse;
+class FrameContext_GroupPipelineIdsEntry_DoNotUseDefaultTypeInternal;
+extern FrameContext_GroupPipelineIdsEntry_DoNotUseDefaultTypeInternal _FrameContext_GroupPipelineIdsEntry_DoNotUse_default_instance_;
 class FrameContext_TagsEntry_DoNotUse;
 class FrameContext_TagsEntry_DoNotUseDefaultTypeInternal;
 extern FrameContext_TagsEntry_DoNotUseDefaultTypeInternal _FrameContext_TagsEntry_DoNotUse_default_instance_;
@@ -76,6 +79,7 @@ extern PrimitiveMeta_TagsEntry_DoNotUseDefaultTypeInternal _PrimitiveMeta_TagsEn
 }  // namespace puppet
 PROTOBUF_NAMESPACE_OPEN
 template<> ::puppet::puppet_proto::FrameContext* Arena::CreateMaybeMessage<::puppet::puppet_proto::FrameContext>(Arena*);
+template<> ::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse* Arena::CreateMaybeMessage<::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse>(Arena*);
 template<> ::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse* Arena::CreateMaybeMessage<::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse>(Arena*);
 template<> ::puppet::puppet_proto::PrimitiveMeta* Arena::CreateMaybeMessage<::puppet::puppet_proto::PrimitiveMeta>(Arena*);
 template<> ::puppet::puppet_proto::PrimitiveMeta_TagsEntry_DoNotUse* Arena::CreateMaybeMessage<::puppet::puppet_proto::PrimitiveMeta_TagsEntry_DoNotUse>(Arena*);
@@ -150,6 +154,38 @@ inline bool SourceType_Parse(
 }
 // ===================================================================
 
+class FrameContext_GroupPipelineIdsEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<FrameContext_GroupPipelineIdsEntry_DoNotUse, 
+    std::string, std::string,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING> {
+public:
+  typedef ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<FrameContext_GroupPipelineIdsEntry_DoNotUse, 
+    std::string, std::string,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING> SuperType;
+  FrameContext_GroupPipelineIdsEntry_DoNotUse();
+  explicit FrameContext_GroupPipelineIdsEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  void MergeFrom(const FrameContext_GroupPipelineIdsEntry_DoNotUse& other);
+  static const FrameContext_GroupPipelineIdsEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const FrameContext_GroupPipelineIdsEntry_DoNotUse*>(&_FrameContext_GroupPipelineIdsEntry_DoNotUse_default_instance_); }
+  static bool ValidateKey(std::string* s) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "puppet.puppet_proto.FrameContext.GroupPipelineIdsEntry.key");
+ }
+  static bool ValidateValue(std::string* s) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "puppet.puppet_proto.FrameContext.GroupPipelineIdsEntry.value");
+ }
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_puppet_2funiform_2eproto);
+    return ::descriptor_table_puppet_2funiform_2eproto.file_level_metadata[0];
+  }
+
+  public:
+};
+
+// -------------------------------------------------------------------
+
 class FrameContext_TagsEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<FrameContext_TagsEntry_DoNotUse, 
     std::string, std::string,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
@@ -174,7 +210,7 @@ public:
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_puppet_2funiform_2eproto);
-    return ::descriptor_table_puppet_2funiform_2eproto.file_level_metadata[0];
+    return ::descriptor_table_puppet_2funiform_2eproto.file_level_metadata[1];
   }
 
   public:
@@ -223,7 +259,7 @@ class FrameContext PROTOBUF_FINAL :
                &_FrameContext_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    2;
 
   friend void swap(FrameContext& a, FrameContext& b) {
     a.Swap(&b);
@@ -295,6 +331,7 @@ class FrameContext PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
+    kGroupPipelineIdsFieldNumber = 7,
     kTagsFieldNumber = 20,
     kSourceIdFieldNumber = 1,
     kSemanticContextFieldNumber = 3,
@@ -303,6 +340,23 @@ class FrameContext PROTOBUF_FINAL :
     kPipelineIdFieldNumber = 6,
     kSourceTypeFieldNumber = 2,
   };
+  // map<string, string> group_pipeline_ids = 7;
+  int group_pipeline_ids_size() const;
+  private:
+  int _internal_group_pipeline_ids_size() const;
+  public:
+  void clear_group_pipeline_ids();
+  private:
+  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+      _internal_group_pipeline_ids() const;
+  ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
+      _internal_mutable_group_pipeline_ids();
+  public:
+  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+      group_pipeline_ids() const;
+  ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
+      mutable_group_pipeline_ids();
+
   // map<string, string> tags = 20;
   int tags_size() const;
   private:
@@ -417,6 +471,11 @@ class FrameContext PROTOBUF_FINAL :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::MapField<
+      FrameContext_GroupPipelineIdsEntry_DoNotUse,
+      std::string, std::string,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING> group_pipeline_ids_;
+  ::PROTOBUF_NAMESPACE_ID::internal::MapField<
       FrameContext_TagsEntry_DoNotUse,
       std::string, std::string,
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
@@ -456,7 +515,7 @@ public:
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_puppet_2funiform_2eproto);
-    return ::descriptor_table_puppet_2funiform_2eproto.file_level_metadata[2];
+    return ::descriptor_table_puppet_2funiform_2eproto.file_level_metadata[3];
   }
 
   public:
@@ -505,7 +564,7 @@ class PrimitiveMeta PROTOBUF_FINAL :
                &_PrimitiveMeta_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   friend void swap(PrimitiveMeta& a, PrimitiveMeta& b) {
     a.Swap(&b);
@@ -752,6 +811,8 @@ class PrimitiveMeta PROTOBUF_FINAL :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // FrameContext
@@ -1079,6 +1140,35 @@ inline void FrameContext::set_allocated_pipeline_id(std::string* pipeline_id) {
   pipeline_id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), pipeline_id,
       GetArena());
   // @@protoc_insertion_point(field_set_allocated:puppet.puppet_proto.FrameContext.pipeline_id)
+}
+
+// map<string, string> group_pipeline_ids = 7;
+inline int FrameContext::_internal_group_pipeline_ids_size() const {
+  return group_pipeline_ids_.size();
+}
+inline int FrameContext::group_pipeline_ids_size() const {
+  return _internal_group_pipeline_ids_size();
+}
+inline void FrameContext::clear_group_pipeline_ids() {
+  group_pipeline_ids_.Clear();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+FrameContext::_internal_group_pipeline_ids() const {
+  return group_pipeline_ids_.GetMap();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+FrameContext::group_pipeline_ids() const {
+  // @@protoc_insertion_point(field_map:puppet.puppet_proto.FrameContext.group_pipeline_ids)
+  return _internal_group_pipeline_ids();
+}
+inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
+FrameContext::_internal_mutable_group_pipeline_ids() {
+  return group_pipeline_ids_.MutableMap();
+}
+inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
+FrameContext::mutable_group_pipeline_ids() {
+  // @@protoc_insertion_point(field_mutable_map:puppet.puppet_proto.FrameContext.group_pipeline_ids)
+  return _internal_mutable_group_pipeline_ids();
 }
 
 // map<string, string> tags = 20;
@@ -1570,6 +1660,8 @@ PrimitiveMeta::mutable_tags() {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

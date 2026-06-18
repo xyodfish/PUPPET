@@ -152,6 +152,7 @@ target_include_directories(puppet_proto
 target_link_libraries(puppet_proto PUBLIC protobuf::libprotobuf)
 
 set_target_properties(puppet_proto PROPERTIES
+    OUTPUT_NAME "puppet_proto_local"
     VERSION "${PROJECT_VERSION}"
     SOVERSION "${PROJECT_VERSION_MAJOR}"
 )
