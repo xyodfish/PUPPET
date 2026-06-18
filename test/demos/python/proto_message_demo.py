@@ -75,7 +75,7 @@ def build_primitive_frame(uniform_pb2, primitive_frame_pb2):
     frame.context.semantic_context = "teleop"
     frame.context.mode = "direct_pose"
     frame.context.robot_id = "galbot_alpha"
-    frame.context.pipeline_id = "upper_body_default"
+    frame.context.plugin_id = "upper_body_default_plugin"
     frame.context.tags["operator"] = "alice"
 
     left_pose = frame.poses.add()
@@ -144,7 +144,7 @@ def build_control_intent(uniform_pb2, control_intent_pb2):
     intent.context.semantic_context = "teleop_runtime"
     intent.context.mode = "assist_ik"
     intent.context.robot_id = "galbot_alpha"
-    intent.context.pipeline_id = "arm_ik_pipeline"
+    intent.context.plugin_id = "arm_ik_plugin"
 
     arm_group = intent.group_intents.add()
     arm_group.body_group = uniform_pb2.BODY_GROUP_LEFT_ARM
@@ -209,7 +209,7 @@ def build_trajectory(uniform_pb2, primitive_trajectory_pb2, frame_a):
     traj.trajectory.context.semantic_context = "replay"
     traj.trajectory.context.mode = "trajectory_playback"
     traj.trajectory.context.robot_id = "galbot_alpha"
-    traj.trajectory.context.pipeline_id = "upper_body_default"
+    traj.trajectory.context.plugin_id = "upper_body_default_plugin"
     traj.trajectory.trajectory_id = "traj_demo_001"
     traj.trajectory.time_domain = primitive_trajectory_pb2.TIME_DOMAIN_MONOTONIC
     _fill_duration(traj.trajectory.total_duration, 1.0)

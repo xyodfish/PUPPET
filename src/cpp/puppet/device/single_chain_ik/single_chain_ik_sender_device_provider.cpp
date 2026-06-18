@@ -7,31 +7,31 @@
 namespace puppet::device {
     namespace {
         template <typename PrimitiveVec>
-        void assignGroupPipelines(const PrimitiveVec& primitives, const std::string& pipelineId,
-                                  std::unordered_map<std::string, std::string>* groupPipelineIds) {
+        void assignGroupPlugins(const PrimitiveVec& primitives, const std::string& pluginId,
+                                std::unordered_map<std::string, std::string>* groupPluginIds) {
             for (const auto& primitive : primitives) {
                 if (!primitive.meta.bodyGroup.empty()) {
-                    groupPipelineIds->emplace(primitive.meta.bodyGroup, pipelineId);
+                    groupPluginIds->emplace(primitive.meta.bodyGroup, pluginId);
                 }
             }
         }
 
-        void populateGroupPipelineIds(const std::string& pipelineId, model::PrimitiveFrame* frame) {
-            frame->context.groupPipelineIds.clear();
-            if (pipelineId.empty()) {
+        void populateGroupPluginIds(const std::string& pluginId, model::PrimitiveFrame* frame) {
+            frame->context.groupPluginIds.clear();
+            if (pluginId.empty()) {
                 return;
             }
 
-            assignGroupPipelines(frame->poses, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->twists, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->jointStates, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->jointCommands, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->scalars, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->booleans, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->modes, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->planarMotions, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->skeletons, pipelineId, &frame->context.groupPipelineIds);
-            assignGroupPipelines(frame->landmarkSets, pipelineId, &frame->context.groupPipelineIds);
+            assignGroupPlugins(frame->poses, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->twists, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->jointStates, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->jointCommands, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->scalars, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->booleans, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->modes, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->planarMotions, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->skeletons, pluginId, &frame->context.groupPluginIds);
+            assignGroupPlugins(frame->landmarkSets, pluginId, &frame->context.groupPluginIds);
         }
     }  // namespace
 
@@ -64,8 +64,10 @@ namespace puppet::device {
         if (configNode["mode"]) {
             mode_ = configNode["mode"].as<std::string>();
         }
-        if (configNode["pipeline_id"]) {
-            pipelineId_ = configNode["pipeline_id"].as<std::string>();
+        if (configNode["plugin_id"]) {
+            pluginId_ = configNode["plugin_id"].as<std::string>();
+        } else if (configNode["pipeline_id"]) {
+            pluginId_ = configNode["pipeline_id"].as<std::string>();
         }
         if (configNode["robot_id"]) {
             robotId_ = configNode["robot_id"].as<std::string>();
@@ -90,7 +92,7 @@ namespace puppet::device {
         frame->context.sourceType       = model::SourceType::kExternal;
         frame->context.semanticContext  = semantic_;
         frame->context.mode             = mode_;
-        frame->context.pipelineId       = pipelineId_;
+        frame->context.pluginId         = pluginId_;
         frame->context.robotId          = robotId_;
         frame->poses.clear();
         frame->twists.clear();
@@ -213,7 +215,7 @@ namespace puppet::device {
         frame->jointStates.push_back(std::move(leftSeed));
 
         frame->tags["demo"] = "single_chain_ik";
-        populateGroupPipelineIds(pipelineId_, frame);
+        populateGroupPluginIds(pluginId_, frame);
         return true;
     }
 

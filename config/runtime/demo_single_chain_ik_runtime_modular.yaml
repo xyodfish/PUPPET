@@ -4,7 +4,7 @@ enable_mock_source: false
 module_configs:
   sources: modules/demo_single_chain_ik/sources.yaml
   group_routing: modules/demo_single_chain_ik/group_routing.yaml
-  pipelines: modules/demo_single_chain_ik/pipelines.yaml
+  plugins: modules/demo_single_chain_ik/plugins.yaml
   backends: modules/demo_single_chain_ik/backends.yaml
   gmr_plugin: modules/demo_single_chain_ik/gmr_plugin.yaml
   single_chain_ik: modules/demo_single_chain_ik/single_chain_ik.yaml

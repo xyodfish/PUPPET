@@ -43,7 +43,7 @@ PUPPET 的目标是做一套**清晰、统一、可扩展、可工程落地**的
 
 PUPPET 最关键的一层是：`PrimitiveFrame`。
 
-设备不直接输出某台机器人的 target，而是先输出“带控制语义的一帧输入”。后续 runtime 再按配置把它路由到对应 pipeline 和 backend。
+设备不直接输出某台机器人的 target，而是先输出“带控制语义的一帧输入”。后续 runtime 再按配置把 body group 路由到对应 retargeting plugin 和 backend。
 
 ```text
 Device / Source
@@ -168,6 +168,13 @@ Retargeting 三节点 demo：
 ./scripts/start_retargeting_3nodes_zmq.sh
 ```
 
+混合左右臂 demo：
+
+```bash
+./scripts/start_mixed_arm_split_demo.sh
+./scripts/start_dual_source_split_demo.sh
+```
+
 **演示动图：** [查看演示动图](docs/demo_gifs.md)
 
 脚本通常会拉起 runtime、sender/device service 和 visualizer，日志输出到 `bin/log/`。运行前请确认相关配置文件、端口和三方动态库路径可用。
@@ -193,16 +200,38 @@ Retargeting 三节点 demo：
 
 - 核心 runtime、device、transport、retargeting、backend 边界不要混放。
 - 新设备优先接入 `DeviceService` provider，只在 channel 层处理 protobuf/通信封装。
-- 新 retargeting 能力优先实现为 pipeline plugin，并通过 YAML 配置挂接。
+- 新 retargeting 能力优先实现为 plugin，并通过 YAML `plugins` / `group_routing` 配置挂接。
 - 公共接口放 `include/puppet/`，实现放 `src/cpp/puppet/`，应用拼装放 `app/cpp/`。
 - 修改 C++ 后使用仓库 `.clang-format` 格式化，可参考 `format_cpp.sh`。
 - 更完整的命名、分层和风格约束见 `AGENTS.md`。
+
+### PrimitiveFrame plugin 选择语义
+
+- 输入消息层使用 `FrameContext.plugin_id` 表示整帧默认 plugin，使用 `FrameContext.group_plugin_ids` 表示 `body_group -> plugin_id` 覆盖映射。
+- provider 侧如果一帧里包含多个 body group，应该优先填 `group_plugin_ids`，避免 direct pass / IK 等不同 plugin 互相污染输入。
+- runtime 配置中使用 `plugins:` 定义可用 plugin，`group_routing[].plugin` 定义默认 plugin，`group_routing[].active_plugins[].plugin_id` 定义该 group 可被输入帧选择的 plugin。
+- `RetargetingPipeline` 仍是执行组件名；不要把输入消息里的 `plugin_id` 再命名回 `pipeline_id`。
 
 ---
 
 ## 🧪 测试状态
 
 `test/unit` 和 `test/integration` 目前主要是结构占位，仓库内尚未接入实际 `add_test` / gtest 用例。当前更可靠的回归方式是构建主工程和 proto，并运行 `test/demos/cpp` 中的通信/retargeting demo 或对应脚本。
+
+Push 前建议至少跑：
+
+```bash
+./auto_build.sh --proto-only --install-proto
+./build.sh
+timeout 12s ./scripts/start_mixed_arm_split_demo.sh
+timeout 12s ./scripts/start_dual_source_split_demo.sh
+```
+
+如果改过 proto 或 provider 配置，额外确认运行时加载的是仓库本地 proto 库：
+
+```bash
+ldd build/app/cpp/runtime/teleop_runtime_embosa_main | rg "puppet_proto"
+```
 
 ---
 

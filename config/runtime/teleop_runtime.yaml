@@ -12,15 +12,15 @@ group_routing:
   - body_group: right_arm
     owner_source: mock_source
     mode: direct
-    pipeline: direct_pipeline
+    plugin: direct_plugin
     backend: direct_backend
     active_plugins:
       - enabled: true
         type: direct_pass
-        pipeline_id: direct_pass_pipeline
+        plugin_id: direct_pass_plugin
 
-pipelines:
-  - pipeline_id: direct_pipeline
+plugins:
+  - plugin_id: direct_plugin
     plugin: direct_pass
 
 backends:

@@ -63,7 +63,7 @@ namespace {
         return eeFrame;
     }
 
-    void fillHeaderAndContext(PrimitiveFramePb* frame, uint64_t sequence_id, const char* mode, const char* pipelineId) {
+    void fillHeaderAndContext(PrimitiveFramePb* frame, uint64_t sequence_id, const char* mode, const char* pluginId) {
         const auto now  = std::chrono::system_clock::now().time_since_epoch();
         const auto sec  = std::chrono::duration_cast<std::chrono::seconds>(now).count();
         const auto nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(now).count() - sec * 1000000000LL;
@@ -78,12 +78,12 @@ namespace {
         frame->mutable_context()->set_semantic_context("dual_source_mixed_demo");
         frame->mutable_context()->set_mode(mode);
         frame->mutable_context()->set_robot_id("unitree_g1");
-        frame->mutable_context()->set_pipeline_id(pipelineId);
+        frame->mutable_context()->set_plugin_id(pluginId);
     }
 
     std::shared_ptr<PrimitiveFramePb> buildDirectPassFrame(uint64_t sequence_id, const ArmFkContext& ctx, double t_sec) {
         auto frame = std::make_shared<PrimitiveFramePb>();
-        fillHeaderAndContext(frame.get(), sequence_id, "direct_joint_command", "direct_pass_pipeline");
+        fillHeaderAndContext(frame.get(), sequence_id, "direct_joint_command", "direct_pass_plugin");
 
         auto* joint_cmd = frame->add_joint_commands();
         joint_cmd->mutable_meta()->set_name("right_arm_joint_command_demo");
@@ -122,7 +122,7 @@ namespace {
 
     std::shared_ptr<PrimitiveFramePb> buildSingleChainIkFrame(uint64_t sequence_id, const ArmFkContext& ctx, double t_sec) {
         auto frame = std::make_shared<PrimitiveFramePb>();
-        fillHeaderAndContext(frame.get(), sequence_id, "cart_pose_to_joint", "single_chain_ik_pipeline");
+        fillHeaderAndContext(frame.get(), sequence_id, "cart_pose_to_joint", "single_chain_ik_plugin");
         const auto jointPositions = makeRightArmJointPositions(t_sec);
         const auto eeFrame        = computeEndEffectorFrame(ctx, jointPositions);
 
@@ -206,7 +206,7 @@ int main() {
         writer->Publish(frame);
 
         if ((seq % 25U) == 0U) {
-            std::cout << "[direct_pass_sender] seq=" << seq << " strategy=" << frame->context().pipeline_id();
+            std::cout << "[direct_pass_sender] seq=" << seq << " strategy=" << frame->context().plugin_id();
             if (frame->joint_commands_size() > 0) {
                 std::cout << " right_elbow=" << frame->joint_commands(0).position(3);
             } else if (frame->poses_size() > 0) {

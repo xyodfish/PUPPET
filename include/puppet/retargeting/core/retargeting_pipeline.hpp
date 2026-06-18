@@ -23,7 +23,7 @@ namespace puppet::retargeting {
 
        private:
         std::unordered_map<std::string, RetargetingPluginPtr> plugins_;
-        std::unordered_map<std::string, std::string> pipelineTypes_;
+        std::unordered_map<std::string, std::string> pluginTypes_;
     };
 
 }  // namespace puppet::retargeting

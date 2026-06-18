@@ -28,15 +28,15 @@ group_routing:
   - body_group: whole_body
     owner_source: static_file_device
     mode: gmr
-    pipeline: gmr_pipeline
+    plugin: gmr_plugin
     backend: direct_backend
     active_plugins:
       - enabled: true
         type: gmr
-        pipeline_id: gmr_pipeline
+        plugin_id: gmr_plugin
 
-pipelines:
-  - pipeline_id: gmr_pipeline
+plugins:
+  - plugin_id: gmr_plugin
     plugin: gmr
 
 backends:

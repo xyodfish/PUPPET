@@ -58,8 +58,8 @@ message FrameContext {
                           // teleop/manual/assist/replay/handover/calibration/
   string mode = 4;        // 当前模式名，如 direct_pose、clutch。
   string robot_id = 5;    // 目标机器人 ID。
-  string pipeline_id = 6; // 匹配到的 retargeting pipeline ID。 整帧默认 pipeline id
-  map<string, string> group_pipeline_ids = 7; // 按 body_group 覆盖默认值
+  string plugin_id = 6; // 整帧默认 retargeting plugin id。
+  map<string, string> group_plugin_ids = 7; // 按 body_group 覆盖默认 plugin id。
   map<string, string> tags = 20; // 扩展信息（调试/实验标签）。
 }
 

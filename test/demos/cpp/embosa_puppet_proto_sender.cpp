@@ -31,7 +31,7 @@ namespace {
         frame->mutable_context()->set_semantic_context("teleop");
         frame->mutable_context()->set_mode("direct_pose");
         frame->mutable_context()->set_robot_id("puppet_demo_robot");
-        frame->mutable_context()->set_pipeline_id("demo_pipeline");
+        frame->mutable_context()->set_plugin_id("demo_plugin");
 
         auto* pose = frame->add_poses();
         pose->mutable_meta()->set_name("left_hand_pose");

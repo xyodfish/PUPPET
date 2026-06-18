@@ -20,13 +20,13 @@ namespace puppet::device {
             frame->tags.clear();
         }
 
-        void populateGroupPipelineIds(const std::string& leftPipelineId, const std::string& rightPipelineId, model::PrimitiveFrame* frame) {
-            frame->context.groupPipelineIds.clear();
-            if (!leftPipelineId.empty()) {
-                frame->context.groupPipelineIds.emplace("left_arm", leftPipelineId);
+        void populateGroupPluginIds(const std::string& leftPluginId, const std::string& rightPluginId, model::PrimitiveFrame* frame) {
+            frame->context.groupPluginIds.clear();
+            if (!leftPluginId.empty()) {
+                frame->context.groupPluginIds.emplace("left_arm", leftPluginId);
             }
-            if (!rightPipelineId.empty()) {
-                frame->context.groupPipelineIds.emplace("right_arm", rightPipelineId);
+            if (!rightPluginId.empty()) {
+                frame->context.groupPluginIds.emplace("right_arm", rightPluginId);
             }
         }
     }  // namespace
@@ -46,11 +46,15 @@ namespace puppet::device {
         if (configNode["mode"]) {
             mode_ = configNode["mode"].as<std::string>();
         }
-        if (configNode["left_pipeline_id"]) {
-            leftPipelineId_ = configNode["left_pipeline_id"].as<std::string>();
+        if (configNode["left_plugin_id"]) {
+            leftPluginId_ = configNode["left_plugin_id"].as<std::string>();
+        } else if (configNode["left_pipeline_id"]) {
+            leftPluginId_ = configNode["left_pipeline_id"].as<std::string>();
         }
-        if (configNode["right_pipeline_id"]) {
-            rightPipelineId_ = configNode["right_pipeline_id"].as<std::string>();
+        if (configNode["right_plugin_id"]) {
+            rightPluginId_ = configNode["right_plugin_id"].as<std::string>();
+        } else if (configNode["right_pipeline_id"]) {
+            rightPluginId_ = configNode["right_pipeline_id"].as<std::string>();
         }
         if (configNode["robot_id"]) {
             robotId_ = configNode["robot_id"].as<std::string>();
@@ -76,7 +80,7 @@ namespace puppet::device {
         frame->context.semanticContext  = semantic_;
         frame->context.mode             = mode_;
         frame->context.robotId          = robotId_;
-        frame->context.pipelineId.clear();
+        frame->context.pluginId.clear();
         resetFrame(frame);
 
         const double dt    = 1.0 / static_cast<double>(loopHz_);
@@ -139,7 +143,7 @@ namespace puppet::device {
         frame->jointStates.push_back(std::move(rightSeed));
 
         frame->tags["demo"] = "mixed_arm_split";
-        populateGroupPipelineIds(leftPipelineId_, rightPipelineId_, frame);
+        populateGroupPluginIds(leftPluginId_, rightPluginId_, frame);
         return true;
     }
 

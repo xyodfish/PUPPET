@@ -106,11 +106,11 @@ namespace puppet::device {
         void updateGripperFromTrigger(const RemoteOperate::Pole& triggerInfo, bool isLeft);
         void tryReconnect();
 
-        std::string frameId_    = "torso_link";
-        std::string sourceId_   = "scaled_device";
-        std::string semantic_   = "scaled_device_joint_state";
-        std::string mode_       = "joint_state_sync";
-        std::string pipelineId_ = "scaled_device_pipeline";
+        std::string frameId_  = "torso_link";
+        std::string sourceId_ = "scaled_device";
+        std::string semantic_ = "scaled_device_joint_state";
+        std::string mode_     = "joint_state_sync";
+        std::string pluginId_ = "scaled_device_plugin";
 
         std::string busName_                     = "can0";
         int loopHz_                              = 100;

@@ -13,6 +13,7 @@ PUPPET documentation is organized around quick start, developer extension, commu
 - [Device Service 接入与迁移记录](device_service_三方库接入与源码迁移记录.md)：统一 device service、provider 和 scaled device SDK 接入。
 - [Retargeting 3-Nodes Demo](retargeting_3nodes_demo.md)：runtime、sender、visualizer 三节点示例。
 - [Runtime Dispatch Capability-first Design](runtime_dispatch_capability_first_design.md)：runtime dispatch 设计记录。
+- [架构与算法缺口分析](architecture_algorithm_gap_analysis.md)：当前 runtime、routing、plugin、IK、全身控制和测试体系的主要缺口与优先级。
 - [遥操作框架设计总结](遥操作框架设计总结_中文.md)：PUPPET 早期架构设计背景。
 
 ## English Documentation

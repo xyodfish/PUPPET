@@ -25,11 +25,16 @@ namespace puppet::runtime {
         const model::ControlIntent& lastControlIntent() const { return lastControlIntent_; }
 
        private:
-        bool preparePlanFrame(const routing::GroupRoutingPlan& routingPlan, routing::GroupRoutingPlan* resolvedPlan,
-                              model::PrimitiveFrame* runtimeFrame) const;
+        struct PlanInput {
+            routing::GroupRoutingPlan resolvedPlan;
+            model::PrimitiveFrame runtimeFrame;
+        };
+
+        bool preparePlanFrame(const routing::GroupRoutingPlan& routingPlan, PlanInput* planInput) const;
         bool appendRobotStateIfNeeded(const routing::GroupRoutingPlan& plan, model::PrimitiveFrame* runtimeFrame) const;
-        bool runPlanOnce(const routing::GroupRoutingPlan& routingPlan, model::ControlIntent* controlIntent, bool* hasAnyInputFrame,
-                         std::string& error);
+        std::vector<PlanInput> collectPlanInputs(bool* hasAnyInputFrame) const;
+        bool executePlans(const std::vector<PlanInput>& planInputs, model::ControlIntent* controlIntent, std::string& error);
+        void finalizeControlIntent(model::ControlIntent controlIntent, bool hasAnyInputFrame);
 
         RuntimeConfig config_;
         source::SourceManager sourceManager_;

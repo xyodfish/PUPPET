@@ -16,14 +16,14 @@ namespace puppet::device {
         int suggestedLoopHz() const override;
 
        private:
-        std::string frameId_    = "world";
-        std::string sourceId_   = "static_file_device";
-        std::string semantic_   = "human_frame_replay";
-        std::string mode_       = "gmr";
-        std::string pipelineId_ = "gmr_pipeline";
-        bool loopPlayback_      = true;
-        int loopHz_             = 30;
-        size_t frameIndex_      = 0;
+        std::string frameId_  = "world";
+        std::string sourceId_ = "static_file_device";
+        std::string semantic_ = "human_frame_replay";
+        std::string mode_     = "gmr";
+        std::string pluginId_ = "gmr_plugin";
+        bool loopPlayback_    = true;
+        int loopHz_           = 30;
+        size_t frameIndex_    = 0;
         gmr::HumanFrameSequence sequence_;
     };
 

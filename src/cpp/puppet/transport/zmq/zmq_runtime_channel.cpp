@@ -463,7 +463,7 @@ namespace puppet::runtime {
         dst.mutable_context()->set_source_id(src.context.sourceId);
         dst.mutable_context()->set_mode(src.context.mode);
         dst.mutable_context()->set_semantic_context(src.context.semanticContext);
-        dst.mutable_context()->set_pipeline_id(src.context.pipelineId);
+        dst.mutable_context()->set_plugin_id(src.context.pluginId);
 
         for (const auto& group : src.groupIntents) {
             auto* groupPb = dst.add_group_intents();

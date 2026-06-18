@@ -108,8 +108,8 @@ namespace puppet::model {
         std::string semanticContext;
         std::string mode;
         std::string robotId;
-        std::string pipelineId;
-        std::unordered_map<std::string, std::string> groupPipelineIds;  // group_name -> pipeline_id
+        std::string pluginId;
+        std::unordered_map<std::string, std::string> groupPluginIds;  // group_name -> plugin_id
         TagMap tags;
     };
 

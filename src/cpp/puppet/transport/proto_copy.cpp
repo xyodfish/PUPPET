@@ -77,8 +77,8 @@ namespace puppet::transport {
             dst->set_semantic_context(src.semanticContext);
             dst->set_mode(src.mode);
             dst->set_robot_id(src.robotId);
-            dst->set_pipeline_id(src.pipelineId);
-            CopyToProtoMap(src.groupPipelineIds, dst->mutable_group_pipeline_ids());
+            dst->set_plugin_id(src.pluginId);
+            CopyToProtoMap(src.groupPluginIds, dst->mutable_group_plugin_ids());
             CopyToProtoMap(src.tags, dst->mutable_tags());
         }
 
@@ -397,8 +397,8 @@ namespace puppet::transport {
         dst->semanticContext = src.semantic_context();
         dst->mode            = src.mode();
         dst->robotId         = src.robot_id();
-        dst->pipelineId      = src.pipeline_id();
-        CopyMap(src.group_pipeline_ids(), &dst->groupPipelineIds);
+        dst->pluginId        = src.plugin_id();
+        CopyMap(src.group_plugin_ids(), &dst->groupPluginIds);
         CopyMap(src.tags(), &dst->tags);
         return true;
     }

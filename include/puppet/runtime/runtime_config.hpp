@@ -15,8 +15,8 @@ namespace puppet::runtime {
         int32_t historySize        = 5;
     };
 
-    struct PipelineConfig {
-        std::string pipelineId;
+    struct PluginConfig {
+        std::string pluginId;
         std::string pluginType;
         bool enabled = true;
     };
@@ -25,10 +25,10 @@ namespace puppet::runtime {
         std::string bodyGroup;
         std::string ownerSourceId;
         std::string mode;
-        std::string pipelineId;
+        std::string pluginId;
         std::string backendId;
         std::string controlSemantics = "cartesian_absolute";
-        std::vector<PipelineConfig> activedPlugins;  // 当前 group 有可以被激活的 retargeting plugin type
+        std::vector<PluginConfig> activedPlugins;  // 当前 group 有可以被激活的 retargeting plugin type
         int32_t priority = 0;
         bool enabled     = true;
     };
@@ -90,13 +90,13 @@ namespace puppet::runtime {
 
         std::vector<SourceConfig> sources;
         std::vector<GroupRoutingConfig> groupRouting;
-        std::vector<PipelineConfig> pipelines;
+        std::vector<PluginConfig> plugins;
         std::vector<BackendConfig> backends;
         GmrPluginConfig gmr;
         SingleChainIkConfig singleChainIk;
         RobotStateConfig robotState;
 
-        std::unordered_map<std::string, PipelineConfig> pipelineMap;
+        std::unordered_map<std::string, PluginConfig> pluginMap;
         std::unordered_map<std::string, BackendConfig> backendMap;
     };
 

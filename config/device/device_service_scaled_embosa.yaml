@@ -16,7 +16,7 @@ device:
   reconnect_interval_sec: 0.05
   semantic_context: scaled_device_joint_state
   mode: joint_state_sync
-  pipeline_id: scaled_device_pipeline
+  plugin_id: scaled_device_plugin
 
   threshold:
     joy_left_x_axis_threshold: 0.2

@@ -46,25 +46,24 @@ namespace puppet::runtime {
             return filtered;
         }
 
-        std::string selectRequestedPipelineId(const routing::GroupRoutingPlan& routingPlan, const model::PrimitiveFrame& frame) {
-            const auto it = frame.context.groupPipelineIds.find(routingPlan.bodyGroup);
-            if (it != frame.context.groupPipelineIds.end() && !it->second.empty()) {
+        std::string selectRequestedPluginId(const routing::GroupRoutingPlan& routingPlan, const model::PrimitiveFrame& frame) {
+            const auto it = frame.context.groupPluginIds.find(routingPlan.bodyGroup);
+            if (it != frame.context.groupPluginIds.end() && !it->second.empty()) {
                 return it->second;
             }
-            return frame.context.pipelineId;
+            return frame.context.pluginId;
         }
 
-        const runtime::PipelineConfig* selectActivePlugin(const routing::GroupRoutingPlan& routingPlan,
-                                                          const model::PrimitiveFrame& frame) {
+        const runtime::PluginConfig* selectActivePlugin(const routing::GroupRoutingPlan& routingPlan, const model::PrimitiveFrame& frame) {
             const auto& activePlugins = routingPlan.activedPlugins_;
             if (activePlugins.empty()) {
                 return nullptr;
             }
 
-            const std::string requestedPipelineId = selectRequestedPipelineId(routingPlan, frame);
-            if (!requestedPipelineId.empty()) {
+            const std::string requestedPluginId = selectRequestedPluginId(routingPlan, frame);
+            if (!requestedPluginId.empty()) {
                 for (const auto& plugin : activePlugins) {
-                    if (plugin.enabled && plugin.pipelineId == requestedPipelineId) {
+                    if (plugin.enabled && plugin.pluginId == requestedPluginId) {
                         return &plugin;
                     }
                 }
@@ -105,22 +104,21 @@ namespace puppet::runtime {
         sourceManager_.configure(config_.sources);
         groupRouteSolver_.updateGroupRouting(config_.groupRouting);
 
-        std::string pplErr;
-        if (!pipeline_.configure(config_, pplErr)) {
-            error = pplErr;
+        std::string pluginErr;
+        if (!pipeline_.configure(config_, pluginErr)) {
+            error = pluginErr;
             return common::WrapError(error, "configure retargeting pipeline failed: ");
         }
 
         common::ClearError(error);
         PUPPET_LOG(INFO, "runtime_configured", "teleop_runtime", "init")
-            << " sources=" << config_.sources.size() << " routes=" << config_.groupRouting.size()
-            << " pipelines=" << config_.pipelines.size() << " backends=" << config_.backends.size();
+            << " sources=" << config_.sources.size() << " routes=" << config_.groupRouting.size() << " plugins=" << config_.plugins.size()
+            << " backends=" << config_.backends.size();
         return true;
     }
 
-    bool TeleopRuntime::preparePlanFrame(const routing::GroupRoutingPlan& routingPlan, routing::GroupRoutingPlan* resolvedPlan,
-                                         model::PrimitiveFrame* runtimeFrame) const {
-        if (resolvedPlan == nullptr || runtimeFrame == nullptr) {
+    bool TeleopRuntime::preparePlanFrame(const routing::GroupRoutingPlan& routingPlan, PlanInput* planInput) const {
+        if (planInput == nullptr) {
             return false;
         }
 
@@ -129,12 +127,13 @@ namespace puppet::runtime {
             return false;
         }
 
-        *resolvedPlan = routingPlan;
-        *runtimeFrame = buildRuntimeFrameForPlan(*frame, routingPlan.bodyGroup);
-        if (const auto* activePlugin = selectActivePlugin(*resolvedPlan, *frame); activePlugin != nullptr) {
-            resolvedPlan->pipelineId       = activePlugin->pipelineId;
-            resolvedPlan->mode             = activePlugin->pluginType;
-            resolvedPlan->controlSemantics = inferControlSemantics(activePlugin->pluginType, *runtimeFrame, resolvedPlan->controlSemantics);
+        planInput->resolvedPlan = routingPlan;
+        planInput->runtimeFrame = buildRuntimeFrameForPlan(*frame, routingPlan.bodyGroup);
+        if (const auto* activePlugin = selectActivePlugin(planInput->resolvedPlan, *frame); activePlugin != nullptr) {
+            planInput->resolvedPlan.pluginId = activePlugin->pluginId;
+            planInput->resolvedPlan.mode     = activePlugin->pluginType;
+            planInput->resolvedPlan.controlSemantics =
+                inferControlSemantics(activePlugin->pluginType, planInput->runtimeFrame, planInput->resolvedPlan.controlSemantics);
         }
         return true;
     }
@@ -151,7 +150,7 @@ namespace puppet::runtime {
             ++noRobotStateWarnCount;
             if ((noRobotStateWarnCount % 100ULL) == 1ULL) {
                 PUPPET_LOG(WARNING, "plan_skipped_stale_robot_state", "teleop_runtime", "run_once")
-                    << " pipeline_id=" << plan.pipelineId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId
+                    << " plugin_id=" << plan.pluginId << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId
                     << " timeout_ms=" << config_.robotState.freshnessTimeoutMs;
             }
             return false;
@@ -163,41 +162,72 @@ namespace puppet::runtime {
         return true;
     }
 
-    bool TeleopRuntime::runPlanOnce(const routing::GroupRoutingPlan& routingPlan, model::ControlIntent* controlIntent,
-                                    bool* hasAnyInputFrame, std::string& error) {
-        if (controlIntent == nullptr || hasAnyInputFrame == nullptr) {
-            error = "runPlanOnce output pointer is null";
+    std::vector<TeleopRuntime::PlanInput> TeleopRuntime::collectPlanInputs(bool* hasAnyInputFrame) const {
+        std::vector<PlanInput> planInputs;
+        if (hasAnyInputFrame == nullptr) {
+            return planInputs;
+        }
+
+        *hasAnyInputFrame = false;
+        const auto& plans = groupRouteSolver_.getPlans();
+        planInputs.reserve(plans.size());
+        for (const auto& routingPlan : plans) {
+            PlanInput planInput;
+            if (!preparePlanFrame(routingPlan, &planInput)) {
+                continue;
+            }
+            *hasAnyInputFrame = true;
+            planInputs.push_back(std::move(planInput));
+        }
+        return planInputs;
+    }
+
+    bool TeleopRuntime::executePlans(const std::vector<PlanInput>& planInputs, model::ControlIntent* controlIntent, std::string& error) {
+        if (controlIntent == nullptr) {
+            error = "executePlans output pointer is null";
             return false;
         }
 
-        routing::GroupRoutingPlan resolvedPlan;
-        model::PrimitiveFrame runtimeFrame;
-        if (!preparePlanFrame(routingPlan, &resolvedPlan, &runtimeFrame)) {
-            return true;
-        }
-        *hasAnyInputFrame = true;
+        for (const auto& planInput : planInputs) {
+            model::PrimitiveFrame runtimeFrame = planInput.runtimeFrame;
+            if (!appendRobotStateIfNeeded(planInput.resolvedPlan, &runtimeFrame)) {
+                continue;
+            }
 
-        model::GroupControlIntent groupIntent;
-        groupIntent.mode        = resolvedPlan.mode;
-        groupIntent.backendHint = resolvedPlan.backendId;
-        if (!appendRobotStateIfNeeded(resolvedPlan, &runtimeFrame)) {
-            return true;
-        }
+            model::GroupControlIntent groupIntent;
+            groupIntent.mode        = planInput.resolvedPlan.mode;
+            groupIntent.backendHint = planInput.resolvedPlan.backendId;
 
-        std::string pplErr;
-        PUPPET_VLOG(2, "pipeline_dispatch", "teleop_runtime", "run_once")
-            << " pipeline_id=" << resolvedPlan.pipelineId << " body_group=" << resolvedPlan.bodyGroup
-            << " source_id=" << resolvedPlan.ownerSourceId << " seq=" << controlIntent->sequenceId;
-        if (!pipeline_.run(resolvedPlan, runtimeFrame, &groupIntent, pplErr)) {
-            error = pplErr;
-            PUPPET_LOG(ERROR, "pipeline_run_failed", "teleop_runtime", "run_once")
-                << " pipeline_id=" << resolvedPlan.pipelineId << " body_group=" << resolvedPlan.bodyGroup
-                << " source_id=" << resolvedPlan.ownerSourceId << " seq=" << controlIntent->sequenceId << " error=" << error;
-            return common::WrapError(error, "pipeline run failed: ");
-        }
+            std::string pluginErr;
+            PUPPET_VLOG(2, "plugin_dispatch", "teleop_runtime", "run_once")
+                << " plugin_id=" << planInput.resolvedPlan.pluginId << " body_group=" << planInput.resolvedPlan.bodyGroup
+                << " source_id=" << planInput.resolvedPlan.ownerSourceId << " seq=" << controlIntent->sequenceId;
+            if (!pipeline_.run(planInput.resolvedPlan, runtimeFrame, &groupIntent, pluginErr)) {
+                error = pluginErr;
+                PUPPET_LOG(ERROR, "plugin_run_failed", "teleop_runtime", "run_once")
+                    << " plugin_id=" << planInput.resolvedPlan.pluginId << " body_group=" << planInput.resolvedPlan.bodyGroup
+                    << " source_id=" << planInput.resolvedPlan.ownerSourceId << " seq=" << controlIntent->sequenceId << " error=" << error;
+                return common::WrapError(error, "plugin run failed: ");
+            }
 
-        controlIntent->groupIntents.push_back(std::move(groupIntent));
+            controlIntent->groupIntents.push_back(std::move(groupIntent));
+        }
         return true;
+    }
+
+    void TeleopRuntime::finalizeControlIntent(model::ControlIntent controlIntent, bool hasAnyInputFrame) {
+        lastControlIntent_     = std::move(controlIntent);
+        const auto finalTarget = backend_.buildTarget(lastControlIntent_);
+        if (hasAnyInputFrame) {
+            return;
+        }
+
+        static uint64_t noInputCount = 0;
+        ++noInputCount;
+        if ((noInputCount % 200ULL) == 1ULL) {
+            PUPPET_LOG(WARNING, "source_frame_missing", "teleop_runtime", "run_once")
+                << " plan_count=" << groupRouteSolver_.getPlans().size() << " control_intent_groups=" << finalTarget.groups.size();
+        }
     }
 
     bool TeleopRuntime::runOnce(std::string& error) {
@@ -205,23 +235,11 @@ namespace puppet::runtime {
         controlIntent.sequenceId = ++sequenceId_;
         bool hasAnyInputFrame    = false;
 
-        const auto& plans = groupRouteSolver_.getPlans();
-        for (const auto& routingPlan : plans) {
-            if (!runPlanOnce(routingPlan, &controlIntent, &hasAnyInputFrame, error)) {
-                return false;
-            }
+        const auto planInputs = collectPlanInputs(&hasAnyInputFrame);
+        if (!executePlans(planInputs, &controlIntent, error)) {
+            return false;
         }
-
-        lastControlIntent_     = controlIntent;
-        const auto finalTarget = backend_.buildTarget(lastControlIntent_);
-        if (!hasAnyInputFrame) {
-            static uint64_t noInputCount = 0;
-            ++noInputCount;
-            if ((noInputCount % 200ULL) == 1ULL) {
-                PUPPET_LOG(WARNING, "source_frame_missing", "teleop_runtime", "run_once")
-                    << " plan_count=" << plans.size() << " control_intent_groups=" << finalTarget.groups.size();
-            }
-        }
+        finalizeControlIntent(std::move(controlIntent), hasAnyInputFrame);
 
         common::ClearError(error);
         return true;

@@ -144,7 +144,7 @@ namespace puppet::runtime {
         if (!runtime_->runOnce(error)) {
             report_->recordRunOnceFailure(error);
             PUPPET_LOG_EVERY_N(ERROR, 100, "run_once_failed", "puppet_manager", "process_one_loop")
-                << " source_id=" << frame.context.sourceId << " pipeline_id=" << frame.context.pipelineId
+                << " source_id=" << frame.context.sourceId << " plugin_id=" << frame.context.pluginId
                 << " seq=" << runtime_->lastControlIntent().sequenceId << " error=" << error;
             return true;
         }

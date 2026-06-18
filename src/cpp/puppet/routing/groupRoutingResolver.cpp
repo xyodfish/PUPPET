@@ -13,11 +13,16 @@ namespace puppet::routing {
     }
 
     void GroupRoutingResolver::updatePlans() {
+        static_cast<const GroupRoutingResolver*>(this)->updatePlans();
+    }
+
+    void GroupRoutingResolver::updatePlans() const {
         std::unique_lock<std::mutex> lock(planMtx_);
         if (!plansChanged()) {
             return;
         }
-        curPlans_ = resolvePlans();
+        auto* self      = const_cast<GroupRoutingResolver*>(this);
+        self->curPlans_ = self->resolvePlans();
         clearPlansChanged();
     }
 
@@ -33,7 +38,7 @@ namespace puppet::routing {
             GroupRoutingPlan candidate;
             candidate.bodyGroup        = route.bodyGroup;
             candidate.ownerSourceId    = route.ownerSourceId;
-            candidate.pipelineId       = route.pipelineId;
+            candidate.pluginId         = route.pluginId;
             candidate.backendId        = route.backendId;
             candidate.mode             = route.mode;
             candidate.controlSemantics = route.controlSemantics;
@@ -54,7 +59,7 @@ namespace puppet::routing {
         for (auto& kv : routingPlans) {
             const auto& plan = kv.second;
             PUPPET_VLOG(1, "plan_resolved", "group_routing_resolver", "resolve_plans")
-                << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId << " pipeline_id=" << plan.pipelineId
+                << " body_group=" << plan.bodyGroup << " source_id=" << plan.ownerSourceId << " plugin_id=" << plan.pluginId
                 << " backend=" << plan.backendId << " priority=" << plan.priority << " mode=" << plan.mode
                 << " control_semantics=" << plan.controlSemantics;
             plans.push_back(std::move(kv.second));
@@ -67,10 +72,19 @@ namespace puppet::routing {
     }
 
     void GroupRoutingResolver::clearPlansChanged() {
+        static_cast<const GroupRoutingResolver*>(this)->clearPlansChanged();
+    }
+
+    void GroupRoutingResolver::clearPlansChanged() const {
         plansChanged_.store(false, std::memory_order_release);
     }
 
     const std::vector<GroupRoutingPlan>& GroupRoutingResolver::getPlans() {
+        updatePlans();
+        return curPlans_;
+    }
+
+    const std::vector<GroupRoutingPlan>& GroupRoutingResolver::getPlans() const {
         updatePlans();
         return curPlans_;
     }

@@ -56,7 +56,7 @@ namespace puppet::test::zmq_single_chain_ik_sender_detail {
         frame.mutable_context()->set_semantic_context("single_chain_ik_demo");
         frame.mutable_context()->set_mode("cart_pose_to_joint");
         frame.mutable_context()->set_robot_id("unitree_g1");
-        frame.mutable_context()->set_pipeline_id("single_chain_ik_pipeline");
+        frame.mutable_context()->set_plugin_id("single_chain_ik_plugin");
 
         const double omega = 0.8;
         const double cx    = 0.26;

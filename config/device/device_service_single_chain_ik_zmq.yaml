@@ -13,5 +13,5 @@ device:
   loop_hz: 50
   semantic_context: single_chain_ik_demo
   mode: cart_pose_to_joint
-  pipeline_id: single_chain_ik_pipeline
+  plugin_id: single_chain_ik_plugin
   robot_id: unitree_g1

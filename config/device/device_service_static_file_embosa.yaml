@@ -15,4 +15,4 @@ device:
   loop_playback: true
   semantic_context: human_frame_replay
   mode: gmr
-  pipeline_id: gmr_pipeline
+  plugin_id: gmr_plugin

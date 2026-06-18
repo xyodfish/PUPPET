@@ -12,6 +12,6 @@ device:
   loop_hz: 50
   semantic_context: mixed_arm_split_demo
   mode: mixed_arm_split
-  left_pipeline_id: direct_pass_pipeline
-  right_pipeline_id: single_chain_ik_pipeline
+  left_plugin_id: direct_pass_plugin
+  right_plugin_id: single_chain_ik_plugin
   robot_id: unitree_g1

@@ -54,55 +54,55 @@ namespace puppet::retargeting {
 
     bool RetargetingPipeline::configure(const runtime::RuntimeConfig& config, std::string& error) {
         plugins_.clear();
-        pipelineTypes_.clear();
+        pluginTypes_.clear();
 
         for (const auto& route : config.groupRouting) {
-            const auto pipelineIt = config.pipelineMap.find(route.pipelineId);
-            if (pipelineIt == config.pipelineMap.end()) {
-                return common::Fail(error, "group_routing references missing pipeline: " + route.pipelineId);
+            const auto pluginIt = config.pluginMap.find(route.pluginId);
+            if (pluginIt == config.pluginMap.end()) {
+                return common::Fail(error, "group_routing references missing plugin: " + route.pluginId);
             }
-            if (!pipelineIt->second.enabled) {
-                return common::Fail(error, "group_routing references disabled pipeline: " + route.pipelineId);
+            if (!pluginIt->second.enabled) {
+                return common::Fail(error, "group_routing references disabled plugin: " + route.pluginId);
             }
         }
 
-        for (const auto& pipelineConfig : config.pipelines) {
-            if (!pipelineConfig.enabled) {
-                PUPPET_LOG(INFO, "pipeline_skipped_disabled", "retargeting_pipeline", "configure")
-                    << " pipeline_id=" << pipelineConfig.pipelineId << " plugin_type=" << pipelineConfig.pluginType;
+        for (const auto& pluginConfig : config.plugins) {
+            if (!pluginConfig.enabled) {
+                PUPPET_LOG(INFO, "plugin_skipped_disabled", "retargeting_pipeline", "configure")
+                    << " plugin_id=" << pluginConfig.pluginId << " plugin_type=" << pluginConfig.pluginType;
                 continue;
             }
 
-            if (!isPluginEnabled(config, pipelineConfig.pluginType)) {
-                return common::Fail(
-                    error, "pipeline " + pipelineConfig.pipelineId + " references disabled plugin type: " + pipelineConfig.pluginType);
+            if (!isPluginEnabled(config, pluginConfig.pluginType)) {
+                return common::Fail(error,
+                                    "plugin " + pluginConfig.pluginId + " references disabled plugin type: " + pluginConfig.pluginType);
             }
 
             RetargetingPluginPtr plugin;
-            if (pipelineConfig.pluginType == "direct_pass") {
+            if (pluginConfig.pluginType == "direct_pass") {
                 plugin = std::make_shared<DirectPassThroughPlugin>();
-            } else if (pipelineConfig.pluginType == "gmr") {
+            } else if (pluginConfig.pluginType == "gmr") {
                 plugin = std::make_shared<GmrRetargetingPlugin>();
-            } else if (pipelineConfig.pluginType == "single_chain_ik_velocity") {
+            } else if (pluginConfig.pluginType == "single_chain_ik_velocity") {
                 PUPPET_LOG(WARNING, "deprecated_plugin_type", "retargeting_pipeline", "configure")
-                    << " pipeline_id=" << pipelineConfig.pipelineId << " plugin_type=single_chain_ik_velocity"
+                    << " plugin_id=" << pluginConfig.pluginId << " plugin_type=single_chain_ik_velocity"
                     << " fallback=single_chain_ik";
                 plugin = std::make_shared<SingleChainIkRetargetingPlugin>();
-            } else if (pipelineConfig.pluginType == "single_chain_ik") {
+            } else if (pluginConfig.pluginType == "single_chain_ik") {
                 plugin = std::make_shared<SingleChainIkRetargetingPlugin>();
             } else {
-                return common::Fail(error, "unknown plugin type: " + pipelineConfig.pluginType);
+                return common::Fail(error, "unknown plugin type: " + pluginConfig.pluginType);
             }
 
             std::string pluginError;
             if (!plugin->configure(config, pluginError)) {
                 error = pluginError;
-                return common::WrapError(error, "configure plugin " + pipelineConfig.pluginType + " failed: ");
+                return common::WrapError(error, "configure plugin " + pluginConfig.pluginType + " failed: ");
             }
-            plugins_[pipelineConfig.pipelineId]       = std::move(plugin);
-            pipelineTypes_[pipelineConfig.pipelineId] = pipelineConfig.pluginType;
-            PUPPET_LOG(INFO, "pipeline_configured", "retargeting_pipeline", "configure")
-                << " pipeline_id=" << pipelineConfig.pipelineId << " plugin_type=" << pipelineConfig.pluginType;
+            plugins_[pluginConfig.pluginId]     = std::move(plugin);
+            pluginTypes_[pluginConfig.pluginId] = pluginConfig.pluginType;
+            PUPPET_LOG(INFO, "plugin_configured", "retargeting_pipeline", "configure")
+                << " plugin_id=" << pluginConfig.pluginId << " plugin_type=" << pluginConfig.pluginType;
         }
 
         common::ClearError(error);
@@ -110,8 +110,8 @@ namespace puppet::retargeting {
     }
 
     bool RetargetingPipeline::requiresRobotState(const routing::GroupRoutingPlan& plan) const {
-        const auto it = pipelineTypes_.find(plan.pipelineId);
-        if (it == pipelineTypes_.end()) {
+        const auto it = pluginTypes_.find(plan.pluginId);
+        if (it == pluginTypes_.end()) {
             return false;
         }
         const std::string& pluginType = it->second;
@@ -121,7 +121,7 @@ namespace puppet::retargeting {
         if (pluginType == "single_chain_ik" && plan.controlSemantics == "cartesian_velocity") {
             return true;
         }
-        const auto pluginIt = plugins_.find(plan.pipelineId);
+        const auto pluginIt = plugins_.find(plan.pluginId);
         if (pluginIt == plugins_.end()) {
             return false;
         }
@@ -130,29 +130,29 @@ namespace puppet::retargeting {
 
     bool RetargetingPipeline::run(const routing::GroupRoutingPlan& plan, const model::PrimitiveFrame& frame,
                                   model::GroupControlIntent* output, std::string& error) const {
-        const auto pluginIt = plugins_.find(plan.pipelineId);
+        const auto pluginIt = plugins_.find(plan.pluginId);
         if (pluginIt == plugins_.end()) {
-            return common::Fail(error, "pipeline not found: " + plan.pipelineId);
+            return common::Fail(error, "plugin not found: " + plan.pluginId);
         }
 
-        const auto typeIt = pipelineTypes_.find(plan.pipelineId);
-        if (typeIt == pipelineTypes_.end()) {
-            return common::Fail(error, "pipeline type not found: " + plan.pipelineId);
+        const auto typeIt = pluginTypes_.find(plan.pluginId);
+        if (typeIt == pluginTypes_.end()) {
+            return common::Fail(error, "plugin type not found: " + plan.pluginId);
         }
 
         const std::string& pluginType = typeIt->second;
         PUPPET_VLOG(2, "plugin_dispatch", "retargeting_pipeline", "run")
-            << " pipeline_id=" << plan.pipelineId << " plugin_type=" << pluginType << " body_group=" << plan.bodyGroup
+            << " plugin_id=" << plan.pluginId << " plugin_type=" << pluginType << " body_group=" << plan.bodyGroup
             << " control_semantics=" << plan.controlSemantics;
 
         if (!supportsGroup(pluginType, plan.bodyGroup)) {
-            return common::Fail(
-                error, "pipeline " + plan.pipelineId + " plugin " + pluginType + " does not support body_group: " + plan.bodyGroup);
+            return common::Fail(error,
+                                "plugin " + plan.pluginId + " type " + pluginType + " does not support body_group: " + plan.bodyGroup);
         }
 
         if (!supportsSemantics(pluginType, plan.controlSemantics)) {
-            return common::Fail(error, "pipeline " + plan.pipelineId + " plugin " + pluginType +
-                                           " does not support control_semantics: " + plan.controlSemantics);
+            return common::Fail(
+                error, "plugin " + plan.pluginId + " type " + pluginType + " does not support control_semantics: " + plan.controlSemantics);
         }
 
         return pluginIt->second->process(frame, plan.bodyGroup, output, error);

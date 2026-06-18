@@ -36,6 +36,7 @@ add_executable(static_file_replay_device
   static_file_replay_device.cpp)
 target_include_directories(static_file_replay_device
   PRIVATE
+    ${PUPPET_DEFAULT_DEVEL_PREFIX}/include
     ${CMAKE_SOURCE_DIR}/include
     ${EMBOSA_INCLUDE_DIR})
 target_link_directories(static_file_replay_device
@@ -53,6 +54,7 @@ add_executable(static_file_replay_device_zmq
   static_file_replay_device_zmq.cpp)
 target_include_directories(static_file_replay_device_zmq
   PRIVATE
+    ${PUPPET_DEFAULT_DEVEL_PREFIX}/include
     ${CMAKE_SOURCE_DIR}/include
     ${ZMQ_INCLUDE_DIR})
 target_link_directories(static_file_replay_device_zmq
@@ -70,6 +72,7 @@ add_executable(device_service
   device_service_main.cpp)
 target_include_directories(device_service
   PRIVATE
+    ${PUPPET_DEFAULT_DEVEL_PREFIX}/include
     ${CMAKE_SOURCE_DIR}/include
     ${EMBOSA_INCLUDE_DIR}
     ${ZMQ_INCLUDE_DIR})

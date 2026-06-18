@@ -4,7 +4,7 @@
 - `sourceA` 固定负责 `right_arm`
 - `sourceB` 固定负责 `left_arm`
 - 两个 sender 都会随机切换 `direct_pass` 和 `single_chain_ik`
-- runtime 根据每帧的 `context.pipeline_id` 从 `active_plugins` 中选择当前策略
+- runtime 根据每帧的 `context.plugin_id` 从 `active_plugins` 中选择当前策略
 
 ## 依赖
 - `teleop_runtime_embosa_main`
@@ -44,5 +44,5 @@
 
 ## 观测点
 - 右臂和左臂都会间歇性切换策略
-- sender 日志里的 `strategy=direct_pass_pipeline` 表示当前发关节命令
-- sender 日志里的 `strategy=single_chain_ik_pipeline` 表示当前发末端位姿目标
+- sender 日志里的 `strategy=direct_pass_plugin` 表示当前发关节命令
+- sender 日志里的 `strategy=single_chain_ik_plugin` 表示当前发末端位姿目标

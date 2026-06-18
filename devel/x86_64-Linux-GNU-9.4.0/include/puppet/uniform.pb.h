@@ -63,9 +63,9 @@ namespace puppet_proto {
 class FrameContext;
 class FrameContextDefaultTypeInternal;
 extern FrameContextDefaultTypeInternal _FrameContext_default_instance_;
-class FrameContext_GroupPipelineIdsEntry_DoNotUse;
-class FrameContext_GroupPipelineIdsEntry_DoNotUseDefaultTypeInternal;
-extern FrameContext_GroupPipelineIdsEntry_DoNotUseDefaultTypeInternal _FrameContext_GroupPipelineIdsEntry_DoNotUse_default_instance_;
+class FrameContext_GroupPluginIdsEntry_DoNotUse;
+class FrameContext_GroupPluginIdsEntry_DoNotUseDefaultTypeInternal;
+extern FrameContext_GroupPluginIdsEntry_DoNotUseDefaultTypeInternal _FrameContext_GroupPluginIdsEntry_DoNotUse_default_instance_;
 class FrameContext_TagsEntry_DoNotUse;
 class FrameContext_TagsEntry_DoNotUseDefaultTypeInternal;
 extern FrameContext_TagsEntry_DoNotUseDefaultTypeInternal _FrameContext_TagsEntry_DoNotUse_default_instance_;
@@ -79,7 +79,7 @@ extern PrimitiveMeta_TagsEntry_DoNotUseDefaultTypeInternal _PrimitiveMeta_TagsEn
 }  // namespace puppet
 PROTOBUF_NAMESPACE_OPEN
 template<> ::puppet::puppet_proto::FrameContext* Arena::CreateMaybeMessage<::puppet::puppet_proto::FrameContext>(Arena*);
-template<> ::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse* Arena::CreateMaybeMessage<::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse>(Arena*);
+template<> ::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse* Arena::CreateMaybeMessage<::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse>(Arena*);
 template<> ::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse* Arena::CreateMaybeMessage<::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse>(Arena*);
 template<> ::puppet::puppet_proto::PrimitiveMeta* Arena::CreateMaybeMessage<::puppet::puppet_proto::PrimitiveMeta>(Arena*);
 template<> ::puppet::puppet_proto::PrimitiveMeta_TagsEntry_DoNotUse* Arena::CreateMaybeMessage<::puppet::puppet_proto::PrimitiveMeta_TagsEntry_DoNotUse>(Arena*);
@@ -154,24 +154,24 @@ inline bool SourceType_Parse(
 }
 // ===================================================================
 
-class FrameContext_GroupPipelineIdsEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<FrameContext_GroupPipelineIdsEntry_DoNotUse, 
+class FrameContext_GroupPluginIdsEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<FrameContext_GroupPluginIdsEntry_DoNotUse, 
     std::string, std::string,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING> {
 public:
-  typedef ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<FrameContext_GroupPipelineIdsEntry_DoNotUse, 
+  typedef ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<FrameContext_GroupPluginIdsEntry_DoNotUse, 
     std::string, std::string,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING> SuperType;
-  FrameContext_GroupPipelineIdsEntry_DoNotUse();
-  explicit FrameContext_GroupPipelineIdsEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  void MergeFrom(const FrameContext_GroupPipelineIdsEntry_DoNotUse& other);
-  static const FrameContext_GroupPipelineIdsEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const FrameContext_GroupPipelineIdsEntry_DoNotUse*>(&_FrameContext_GroupPipelineIdsEntry_DoNotUse_default_instance_); }
+  FrameContext_GroupPluginIdsEntry_DoNotUse();
+  explicit FrameContext_GroupPluginIdsEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  void MergeFrom(const FrameContext_GroupPluginIdsEntry_DoNotUse& other);
+  static const FrameContext_GroupPluginIdsEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const FrameContext_GroupPluginIdsEntry_DoNotUse*>(&_FrameContext_GroupPluginIdsEntry_DoNotUse_default_instance_); }
   static bool ValidateKey(std::string* s) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "puppet.puppet_proto.FrameContext.GroupPipelineIdsEntry.key");
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "puppet.puppet_proto.FrameContext.GroupPluginIdsEntry.key");
  }
   static bool ValidateValue(std::string* s) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "puppet.puppet_proto.FrameContext.GroupPipelineIdsEntry.value");
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "puppet.puppet_proto.FrameContext.GroupPluginIdsEntry.value");
  }
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -331,31 +331,31 @@ class FrameContext PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kGroupPipelineIdsFieldNumber = 7,
+    kGroupPluginIdsFieldNumber = 7,
     kTagsFieldNumber = 20,
     kSourceIdFieldNumber = 1,
     kSemanticContextFieldNumber = 3,
     kModeFieldNumber = 4,
     kRobotIdFieldNumber = 5,
-    kPipelineIdFieldNumber = 6,
+    kPluginIdFieldNumber = 6,
     kSourceTypeFieldNumber = 2,
   };
-  // map<string, string> group_pipeline_ids = 7;
-  int group_pipeline_ids_size() const;
+  // map<string, string> group_plugin_ids = 7;
+  int group_plugin_ids_size() const;
   private:
-  int _internal_group_pipeline_ids_size() const;
+  int _internal_group_plugin_ids_size() const;
   public:
-  void clear_group_pipeline_ids();
+  void clear_group_plugin_ids();
   private:
   const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
-      _internal_group_pipeline_ids() const;
+      _internal_group_plugin_ids() const;
   ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
-      _internal_mutable_group_pipeline_ids();
+      _internal_mutable_group_plugin_ids();
   public:
   const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
-      group_pipeline_ids() const;
+      group_plugin_ids() const;
   ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
-      mutable_group_pipeline_ids();
+      mutable_group_plugin_ids();
 
   // map<string, string> tags = 20;
   int tags_size() const;
@@ -438,20 +438,20 @@ class FrameContext PROTOBUF_FINAL :
   std::string* _internal_mutable_robot_id();
   public:
 
-  // string pipeline_id = 6;
-  void clear_pipeline_id();
-  const std::string& pipeline_id() const;
-  void set_pipeline_id(const std::string& value);
-  void set_pipeline_id(std::string&& value);
-  void set_pipeline_id(const char* value);
-  void set_pipeline_id(const char* value, size_t size);
-  std::string* mutable_pipeline_id();
-  std::string* release_pipeline_id();
-  void set_allocated_pipeline_id(std::string* pipeline_id);
+  // string plugin_id = 6;
+  void clear_plugin_id();
+  const std::string& plugin_id() const;
+  void set_plugin_id(const std::string& value);
+  void set_plugin_id(std::string&& value);
+  void set_plugin_id(const char* value);
+  void set_plugin_id(const char* value, size_t size);
+  std::string* mutable_plugin_id();
+  std::string* release_plugin_id();
+  void set_allocated_plugin_id(std::string* plugin_id);
   private:
-  const std::string& _internal_pipeline_id() const;
-  void _internal_set_pipeline_id(const std::string& value);
-  std::string* _internal_mutable_pipeline_id();
+  const std::string& _internal_plugin_id() const;
+  void _internal_set_plugin_id(const std::string& value);
+  std::string* _internal_mutable_plugin_id();
   public:
 
   // .puppet.puppet_proto.SourceType source_type = 2;
@@ -471,10 +471,10 @@ class FrameContext PROTOBUF_FINAL :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::MapField<
-      FrameContext_GroupPipelineIdsEntry_DoNotUse,
+      FrameContext_GroupPluginIdsEntry_DoNotUse,
       std::string, std::string,
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING> group_pipeline_ids_;
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING> group_plugin_ids_;
   ::PROTOBUF_NAMESPACE_ID::internal::MapField<
       FrameContext_TagsEntry_DoNotUse,
       std::string, std::string,
@@ -484,7 +484,7 @@ class FrameContext PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr semantic_context_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr mode_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr robot_id_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pipeline_id_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr plugin_id_;
   int source_type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_puppet_2funiform_2eproto;
@@ -1081,94 +1081,94 @@ inline void FrameContext::set_allocated_robot_id(std::string* robot_id) {
   // @@protoc_insertion_point(field_set_allocated:puppet.puppet_proto.FrameContext.robot_id)
 }
 
-// string pipeline_id = 6;
-inline void FrameContext::clear_pipeline_id() {
-  pipeline_id_.ClearToEmpty();
+// string plugin_id = 6;
+inline void FrameContext::clear_plugin_id() {
+  plugin_id_.ClearToEmpty();
 }
-inline const std::string& FrameContext::pipeline_id() const {
-  // @@protoc_insertion_point(field_get:puppet.puppet_proto.FrameContext.pipeline_id)
-  return _internal_pipeline_id();
+inline const std::string& FrameContext::plugin_id() const {
+  // @@protoc_insertion_point(field_get:puppet.puppet_proto.FrameContext.plugin_id)
+  return _internal_plugin_id();
 }
-inline void FrameContext::set_pipeline_id(const std::string& value) {
-  _internal_set_pipeline_id(value);
-  // @@protoc_insertion_point(field_set:puppet.puppet_proto.FrameContext.pipeline_id)
+inline void FrameContext::set_plugin_id(const std::string& value) {
+  _internal_set_plugin_id(value);
+  // @@protoc_insertion_point(field_set:puppet.puppet_proto.FrameContext.plugin_id)
 }
-inline std::string* FrameContext::mutable_pipeline_id() {
-  // @@protoc_insertion_point(field_mutable:puppet.puppet_proto.FrameContext.pipeline_id)
-  return _internal_mutable_pipeline_id();
+inline std::string* FrameContext::mutable_plugin_id() {
+  // @@protoc_insertion_point(field_mutable:puppet.puppet_proto.FrameContext.plugin_id)
+  return _internal_mutable_plugin_id();
 }
-inline const std::string& FrameContext::_internal_pipeline_id() const {
-  return pipeline_id_.Get();
+inline const std::string& FrameContext::_internal_plugin_id() const {
+  return plugin_id_.Get();
 }
-inline void FrameContext::_internal_set_pipeline_id(const std::string& value) {
+inline void FrameContext::_internal_set_plugin_id(const std::string& value) {
   
-  pipeline_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
+  plugin_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
-inline void FrameContext::set_pipeline_id(std::string&& value) {
+inline void FrameContext::set_plugin_id(std::string&& value) {
   
-  pipeline_id_.Set(
+  plugin_id_.Set(
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:puppet.puppet_proto.FrameContext.pipeline_id)
+  // @@protoc_insertion_point(field_set_rvalue:puppet.puppet_proto.FrameContext.plugin_id)
 }
-inline void FrameContext::set_pipeline_id(const char* value) {
+inline void FrameContext::set_plugin_id(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  pipeline_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:puppet.puppet_proto.FrameContext.pipeline_id)
+  plugin_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
+  // @@protoc_insertion_point(field_set_char:puppet.puppet_proto.FrameContext.plugin_id)
 }
-inline void FrameContext::set_pipeline_id(const char* value,
+inline void FrameContext::set_plugin_id(const char* value,
     size_t size) {
   
-  pipeline_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
+  plugin_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:puppet.puppet_proto.FrameContext.pipeline_id)
+  // @@protoc_insertion_point(field_set_pointer:puppet.puppet_proto.FrameContext.plugin_id)
 }
-inline std::string* FrameContext::_internal_mutable_pipeline_id() {
+inline std::string* FrameContext::_internal_mutable_plugin_id() {
   
-  return pipeline_id_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+  return plugin_id_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
-inline std::string* FrameContext::release_pipeline_id() {
-  // @@protoc_insertion_point(field_release:puppet.puppet_proto.FrameContext.pipeline_id)
-  return pipeline_id_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+inline std::string* FrameContext::release_plugin_id() {
+  // @@protoc_insertion_point(field_release:puppet.puppet_proto.FrameContext.plugin_id)
+  return plugin_id_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline void FrameContext::set_allocated_pipeline_id(std::string* pipeline_id) {
-  if (pipeline_id != nullptr) {
+inline void FrameContext::set_allocated_plugin_id(std::string* plugin_id) {
+  if (plugin_id != nullptr) {
     
   } else {
     
   }
-  pipeline_id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), pipeline_id,
+  plugin_id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), plugin_id,
       GetArena());
-  // @@protoc_insertion_point(field_set_allocated:puppet.puppet_proto.FrameContext.pipeline_id)
+  // @@protoc_insertion_point(field_set_allocated:puppet.puppet_proto.FrameContext.plugin_id)
 }
 
-// map<string, string> group_pipeline_ids = 7;
-inline int FrameContext::_internal_group_pipeline_ids_size() const {
-  return group_pipeline_ids_.size();
+// map<string, string> group_plugin_ids = 7;
+inline int FrameContext::_internal_group_plugin_ids_size() const {
+  return group_plugin_ids_.size();
 }
-inline int FrameContext::group_pipeline_ids_size() const {
-  return _internal_group_pipeline_ids_size();
+inline int FrameContext::group_plugin_ids_size() const {
+  return _internal_group_plugin_ids_size();
 }
-inline void FrameContext::clear_group_pipeline_ids() {
-  group_pipeline_ids_.Clear();
-}
-inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
-FrameContext::_internal_group_pipeline_ids() const {
-  return group_pipeline_ids_.GetMap();
+inline void FrameContext::clear_group_plugin_ids() {
+  group_plugin_ids_.Clear();
 }
 inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
-FrameContext::group_pipeline_ids() const {
-  // @@protoc_insertion_point(field_map:puppet.puppet_proto.FrameContext.group_pipeline_ids)
-  return _internal_group_pipeline_ids();
+FrameContext::_internal_group_plugin_ids() const {
+  return group_plugin_ids_.GetMap();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+FrameContext::group_plugin_ids() const {
+  // @@protoc_insertion_point(field_map:puppet.puppet_proto.FrameContext.group_plugin_ids)
+  return _internal_group_plugin_ids();
 }
 inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
-FrameContext::_internal_mutable_group_pipeline_ids() {
-  return group_pipeline_ids_.MutableMap();
+FrameContext::_internal_mutable_group_plugin_ids() {
+  return group_plugin_ids_.MutableMap();
 }
 inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
-FrameContext::mutable_group_pipeline_ids() {
-  // @@protoc_insertion_point(field_mutable_map:puppet.puppet_proto.FrameContext.group_pipeline_ids)
-  return _internal_mutable_group_pipeline_ids();
+FrameContext::mutable_group_plugin_ids() {
+  // @@protoc_insertion_point(field_mutable_map:puppet.puppet_proto.FrameContext.group_plugin_ids)
+  return _internal_mutable_group_plugin_ids();
 }
 
 // map<string, string> tags = 20;

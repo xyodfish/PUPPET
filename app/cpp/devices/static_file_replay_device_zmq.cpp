@@ -69,7 +69,7 @@ namespace static_file_replay_device_zmq_detail {
         frame.mutable_context()->set_source_type(::puppet::puppet_proto::SourceType::SOURCE_TYPE_EXTERNAL);
         frame.mutable_context()->set_semantic_context("human_frame_replay");
         frame.mutable_context()->set_mode("gmr");
-        frame.mutable_context()->set_pipeline_id("gmr_pipeline");
+        frame.mutable_context()->set_plugin_id("gmr_plugin");
 
         for (const auto& kv : humanFrame) {
             const auto& name = kv.first;

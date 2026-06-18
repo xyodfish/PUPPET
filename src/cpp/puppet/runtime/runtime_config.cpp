@@ -15,6 +15,16 @@ namespace puppet::runtime {
             return node[key].as<T>();
         }
 
+        std::string readStringOr(const YAML::Node& node, const char* key, const char* legacyKey, const std::string& fallback) {
+            if (node[key]) {
+                return node[key].as<std::string>();
+            }
+            if (legacyKey != nullptr && node[legacyKey]) {
+                return node[legacyKey].as<std::string>();
+            }
+            return fallback;
+        }
+
         std::string resolveYamlPath(const std::string& baseYamlPath, const std::string& maybeRelativePath) {
             namespace fs = std::filesystem;
             const fs::path rawPath(maybeRelativePath);
@@ -40,7 +50,7 @@ namespace puppet::runtime {
             return root[sectionName];
         }
 
-        void parseActivePlugins(const YAML::Node& routeNode, std::vector<PipelineConfig>* activePlugins) {
+        void parseActivePlugins(const YAML::Node& routeNode, std::vector<PluginConfig>* activePlugins) {
             if (activePlugins == nullptr) {
                 return;
             }
@@ -53,11 +63,11 @@ namespace puppet::runtime {
             }
 
             auto appendPlugin = [&](const YAML::Node& pluginNode) {
-                PipelineConfig pplCfg;
-                pplCfg.pipelineId = readOr<std::string>(pluginNode, "pipeline_id", "");
-                pplCfg.pluginType = readOr<std::string>(pluginNode, "type", "direct_pass");
-                pplCfg.enabled    = readOr<bool>(pluginNode, "enabled", true);
-                activePlugins->push_back(std::move(pplCfg));
+                PluginConfig pluginCfg;
+                pluginCfg.pluginId   = readStringOr(pluginNode, "plugin_id", "pipeline_id", "");
+                pluginCfg.pluginType = readOr<std::string>(pluginNode, "type", "direct_pass");
+                pluginCfg.enabled    = readOr<bool>(pluginNode, "enabled", true);
+                activePlugins->push_back(std::move(pluginCfg));
             };
 
             if (pluginsNode.IsSequence()) {
@@ -108,7 +118,7 @@ namespace puppet::runtime {
                     route.bodyGroup        = readOr<std::string>(routeNode, "body_group", "");
                     route.ownerSourceId    = readOr<std::string>(routeNode, "owner_source", "");
                     route.mode             = readOr<std::string>(routeNode, "mode", "direct");
-                    route.pipelineId       = readOr<std::string>(routeNode, "pipeline", "direct_pipeline");
+                    route.pluginId         = readStringOr(routeNode, "plugin", "pipeline", "direct_plugin");
                     route.backendId        = readOr<std::string>(routeNode, "backend", "direct_backend");
                     route.controlSemantics = readOr<std::string>(routeNode, "control_semantics", "cartesian_absolute");
                     route.priority         = readOr<int32_t>(routeNode, "priority", 0);
@@ -120,18 +130,21 @@ namespace puppet::runtime {
                 }
             }
 
-            config.pipelines.clear();
-            config.pipelineMap.clear();
-            const YAML::Node pipelinesNode = loadSectionNode(yaml, "pipelines", path);
-            if (pipelinesNode) {
-                for (const auto& pipelineNode : pipelinesNode) {
-                    PipelineConfig pipeline;
-                    pipeline.pipelineId = readOr<std::string>(pipelineNode, "pipeline_id", "");
-                    pipeline.pluginType = readOr<std::string>(pipelineNode, "plugin", "direct_pass");
-                    pipeline.enabled    = readOr<bool>(pipelineNode, "enabled", true);
-                    if (!pipeline.pipelineId.empty()) {
-                        config.pipelineMap[pipeline.pipelineId] = pipeline;
-                        config.pipelines.push_back(std::move(pipeline));
+            config.plugins.clear();
+            config.pluginMap.clear();
+            YAML::Node pluginsNode = loadSectionNode(yaml, "plugins", path);
+            if (!pluginsNode) {
+                pluginsNode = loadSectionNode(yaml, "pipelines", path);
+            }
+            if (pluginsNode) {
+                for (const auto& pluginNode : pluginsNode) {
+                    PluginConfig plugin;
+                    plugin.pluginId   = readStringOr(pluginNode, "plugin_id", "pipeline_id", "");
+                    plugin.pluginType = readOr<std::string>(pluginNode, "plugin", "direct_pass");
+                    plugin.enabled    = readOr<bool>(pluginNode, "enabled", true);
+                    if (!plugin.pluginId.empty()) {
+                        config.pluginMap[plugin.pluginId] = plugin;
+                        config.plugins.push_back(std::move(plugin));
                     }
                 }
             }

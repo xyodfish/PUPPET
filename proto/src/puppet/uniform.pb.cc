@@ -14,16 +14,16 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-extern PROTOBUF_INTERNAL_EXPORT_puppet_2funiform_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FrameContext_GroupPipelineIdsEntry_DoNotUse_puppet_2funiform_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_puppet_2funiform_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FrameContext_GroupPluginIdsEntry_DoNotUse_puppet_2funiform_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_puppet_2funiform_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FrameContext_TagsEntry_DoNotUse_puppet_2funiform_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_puppet_2funiform_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PrimitiveMeta_TagsEntry_DoNotUse_puppet_2funiform_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_puppet_2fcommon_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Timestamp_puppet_2fcommon_2eproto;
 namespace puppet {
 namespace puppet_proto {
-class FrameContext_GroupPipelineIdsEntry_DoNotUseDefaultTypeInternal {
+class FrameContext_GroupPluginIdsEntry_DoNotUseDefaultTypeInternal {
  public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<FrameContext_GroupPipelineIdsEntry_DoNotUse> _instance;
-} _FrameContext_GroupPipelineIdsEntry_DoNotUse_default_instance_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<FrameContext_GroupPluginIdsEntry_DoNotUse> _instance;
+} _FrameContext_GroupPluginIdsEntry_DoNotUse_default_instance_;
 class FrameContext_TagsEntry_DoNotUseDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<FrameContext_TagsEntry_DoNotUse> _instance;
@@ -54,20 +54,20 @@ static void InitDefaultsscc_info_FrameContext_puppet_2funiform_2eproto() {
 
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_FrameContext_puppet_2funiform_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, 0, InitDefaultsscc_info_FrameContext_puppet_2funiform_2eproto}, {
-      &scc_info_FrameContext_GroupPipelineIdsEntry_DoNotUse_puppet_2funiform_2eproto.base,
+      &scc_info_FrameContext_GroupPluginIdsEntry_DoNotUse_puppet_2funiform_2eproto.base,
       &scc_info_FrameContext_TagsEntry_DoNotUse_puppet_2funiform_2eproto.base,}};
 
-static void InitDefaultsscc_info_FrameContext_GroupPipelineIdsEntry_DoNotUse_puppet_2funiform_2eproto() {
+static void InitDefaultsscc_info_FrameContext_GroupPluginIdsEntry_DoNotUse_puppet_2funiform_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::puppet::puppet_proto::_FrameContext_GroupPipelineIdsEntry_DoNotUse_default_instance_;
-    new (ptr) ::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse();
+    void* ptr = &::puppet::puppet_proto::_FrameContext_GroupPluginIdsEntry_DoNotUse_default_instance_;
+    new (ptr) ::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse();
   }
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FrameContext_GroupPipelineIdsEntry_DoNotUse_puppet_2funiform_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_FrameContext_GroupPipelineIdsEntry_DoNotUse_puppet_2funiform_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FrameContext_GroupPluginIdsEntry_DoNotUse_puppet_2funiform_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_FrameContext_GroupPluginIdsEntry_DoNotUse_puppet_2funiform_2eproto}, {}};
 
 static void InitDefaultsscc_info_FrameContext_TagsEntry_DoNotUse_puppet_2funiform_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -113,13 +113,13 @@ static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptor
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_puppet_2funiform_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_puppet_2funiform_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse, key_),
-  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse, value_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse, key_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse, value_),
   0,
   1,
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse, _has_bits_),
@@ -141,8 +141,8 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_puppet_2funiform_2eproto::offs
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext, semantic_context_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext, mode_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext, robot_id_),
-  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext, pipeline_id_),
-  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext, group_pipeline_ids_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext, plugin_id_),
+  PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext, group_plugin_ids_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::FrameContext, tags_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::PrimitiveMeta_TagsEntry_DoNotUse, _has_bits_),
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::PrimitiveMeta_TagsEntry_DoNotUse, _internal_metadata_),
@@ -169,7 +169,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_puppet_2funiform_2eproto::offs
   PROTOBUF_FIELD_OFFSET(::puppet::puppet_proto::PrimitiveMeta, tags_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 7, sizeof(::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse)},
+  { 0, 7, sizeof(::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse)},
   { 9, 16, sizeof(::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse)},
   { 18, -1, sizeof(::puppet::puppet_proto::FrameContext)},
   { 31, 38, sizeof(::puppet::puppet_proto::PrimitiveMeta_TagsEntry_DoNotUse)},
@@ -177,7 +177,7 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::puppet::puppet_proto::_FrameContext_GroupPipelineIdsEntry_DoNotUse_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::puppet::puppet_proto::_FrameContext_GroupPluginIdsEntry_DoNotUse_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::puppet::puppet_proto::_FrameContext_TagsEntry_DoNotUse_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::puppet::puppet_proto::_FrameContext_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::puppet::puppet_proto::_PrimitiveMeta_TagsEntry_DoNotUse_default_instance_),
@@ -186,52 +186,52 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 
 const char descriptor_table_protodef_puppet_2funiform_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\024puppet/uniform.proto\022\023puppet.puppet_pr"
-  "oto\032\023puppet/common.proto\"\234\003\n\014FrameContex"
+  "oto\032\023puppet/common.proto\"\224\003\n\014FrameContex"
   "t\022\021\n\tsource_id\030\001 \001(\t\0224\n\013source_type\030\002 \001("
   "\0162\037.puppet.puppet_proto.SourceType\022\030\n\020se"
   "mantic_context\030\003 \001(\t\022\014\n\004mode\030\004 \001(\t\022\020\n\010ro"
-  "bot_id\030\005 \001(\t\022\023\n\013pipeline_id\030\006 \001(\t\022S\n\022gro"
-  "up_pipeline_ids\030\007 \003(\01327.puppet.puppet_pr"
-  "oto.FrameContext.GroupPipelineIdsEntry\0229"
-  "\n\004tags\030\024 \003(\0132+.puppet.puppet_proto.Frame"
-  "Context.TagsEntry\0327\n\025GroupPipelineIdsEnt"
-  "ry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\032+\n\tTa"
-  "gsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\""
-  "\256\002\n\rPrimitiveMeta\022\014\n\004name\030\001 \001(\t\022\016\n\006entit"
-  "y\030\002 \001(\t\022\022\n\nbody_group\030\003 \001(\t\022\020\n\010frame_id\030"
-  "\004 \001(\t\022\032\n\022reference_frame_id\030\005 \001(\t\0221\n\ttim"
-  "estamp\030\006 \001(\0132\036.puppet.puppet_proto.Times"
-  "tamp\022\022\n\nconfidence\030\007 \001(\002\022\r\n\005valid\030\010 \001(\010\022"
-  ":\n\004tags\030\024 \003(\0132,.puppet.puppet_proto.Prim"
-  "itiveMeta.TagsEntry\032+\n\tTagsEntry\022\013\n\003key\030"
-  "\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001*\274\002\n\tBodyGroup\022\032"
-  "\n\026BODY_GROUP_UNSPECIFIED\020\000\022\023\n\017BODY_GROUP"
-  "_HEAD\020\001\022\027\n\023BODY_GROUP_LEFT_ARM\020\002\022\030\n\024BODY"
-  "_GROUP_RIGHT_ARM\020\003\022\030\n\024BODY_GROUP_BI_MANU"
-  "AL\020\004\022\024\n\020BODY_GROUP_TORSO\020\005\022\023\n\017BODY_GROUP"
-  "_BASE\020\006\022\031\n\025BODY_GROUP_LOWER_BODY\020\007\022\031\n\025BO"
-  "DY_GROUP_WHOLE_BODY\020\010\022\033\n\027BODY_GROUP_LEFT"
-  "_GRIPPER\020\t\022\034\n\030BODY_GROUP_RIGHT_GRIPPER\020\n"
-  "\022\025\n\021BODY_GROUP_CUSTOM\020d*\274\001\n\nSourceType\022\033"
-  "\n\027SOURCE_TYPE_UNSPECIFIED\020\000\022\022\n\016SOURCE_TY"
-  "PE_VR\020\001\022\032\n\026SOURCE_TYPE_MASTER_ARM\020\002\022\025\n\021S"
-  "OURCE_TYPE_MOCAP\020\003\022\026\n\022SOURCE_TYPE_VISION"
-  "\020\004\022\030\n\024SOURCE_TYPE_JOYSTICK\020\005\022\030\n\024SOURCE_T"
-  "YPE_EXTERNAL\020db\006proto3"
+  "bot_id\030\005 \001(\t\022\021\n\tplugin_id\030\006 \001(\t\022O\n\020group"
+  "_plugin_ids\030\007 \003(\01325.puppet.puppet_proto."
+  "FrameContext.GroupPluginIdsEntry\0229\n\004tags"
+  "\030\024 \003(\0132+.puppet.puppet_proto.FrameContex"
+  "t.TagsEntry\0325\n\023GroupPluginIdsEntry\022\013\n\003ke"
+  "y\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\032+\n\tTagsEntry\022"
+  "\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\256\002\n\rPrim"
+  "itiveMeta\022\014\n\004name\030\001 \001(\t\022\016\n\006entity\030\002 \001(\t\022"
+  "\022\n\nbody_group\030\003 \001(\t\022\020\n\010frame_id\030\004 \001(\t\022\032\n"
+  "\022reference_frame_id\030\005 \001(\t\0221\n\ttimestamp\030\006"
+  " \001(\0132\036.puppet.puppet_proto.Timestamp\022\022\n\n"
+  "confidence\030\007 \001(\002\022\r\n\005valid\030\010 \001(\010\022:\n\004tags\030"
+  "\024 \003(\0132,.puppet.puppet_proto.PrimitiveMet"
+  "a.TagsEntry\032+\n\tTagsEntry\022\013\n\003key\030\001 \001(\t\022\r\n"
+  "\005value\030\002 \001(\t:\0028\001*\274\002\n\tBodyGroup\022\032\n\026BODY_G"
+  "ROUP_UNSPECIFIED\020\000\022\023\n\017BODY_GROUP_HEAD\020\001\022"
+  "\027\n\023BODY_GROUP_LEFT_ARM\020\002\022\030\n\024BODY_GROUP_R"
+  "IGHT_ARM\020\003\022\030\n\024BODY_GROUP_BI_MANUAL\020\004\022\024\n\020"
+  "BODY_GROUP_TORSO\020\005\022\023\n\017BODY_GROUP_BASE\020\006\022"
+  "\031\n\025BODY_GROUP_LOWER_BODY\020\007\022\031\n\025BODY_GROUP"
+  "_WHOLE_BODY\020\010\022\033\n\027BODY_GROUP_LEFT_GRIPPER"
+  "\020\t\022\034\n\030BODY_GROUP_RIGHT_GRIPPER\020\n\022\025\n\021BODY"
+  "_GROUP_CUSTOM\020d*\274\001\n\nSourceType\022\033\n\027SOURCE"
+  "_TYPE_UNSPECIFIED\020\000\022\022\n\016SOURCE_TYPE_VR\020\001\022"
+  "\032\n\026SOURCE_TYPE_MASTER_ARM\020\002\022\025\n\021SOURCE_TY"
+  "PE_MOCAP\020\003\022\026\n\022SOURCE_TYPE_VISION\020\004\022\030\n\024SO"
+  "URCE_TYPE_JOYSTICK\020\005\022\030\n\024SOURCE_TYPE_EXTE"
+  "RNAL\020db\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_puppet_2funiform_2eproto_deps[1] = {
   &::descriptor_table_puppet_2fcommon_2eproto,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_puppet_2funiform_2eproto_sccs[5] = {
   &scc_info_FrameContext_puppet_2funiform_2eproto.base,
-  &scc_info_FrameContext_GroupPipelineIdsEntry_DoNotUse_puppet_2funiform_2eproto.base,
+  &scc_info_FrameContext_GroupPluginIdsEntry_DoNotUse_puppet_2funiform_2eproto.base,
   &scc_info_FrameContext_TagsEntry_DoNotUse_puppet_2funiform_2eproto.base,
   &scc_info_PrimitiveMeta_puppet_2funiform_2eproto.base,
   &scc_info_PrimitiveMeta_TagsEntry_DoNotUse_puppet_2funiform_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_puppet_2funiform_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_puppet_2funiform_2eproto = {
-  false, false, descriptor_table_protodef_puppet_2funiform_2eproto, "puppet/uniform.proto", 1302,
+  false, false, descriptor_table_protodef_puppet_2funiform_2eproto, "puppet/uniform.proto", 1294,
   &descriptor_table_puppet_2funiform_2eproto_once, descriptor_table_puppet_2funiform_2eproto_sccs, descriptor_table_puppet_2funiform_2eproto_deps, 5, 1,
   schemas, file_default_instances, TableStruct_puppet_2funiform_2eproto::offsets,
   file_level_metadata_puppet_2funiform_2eproto, 5, file_level_enum_descriptors_puppet_2funiform_2eproto, file_level_service_descriptors_puppet_2funiform_2eproto,
@@ -287,16 +287,16 @@ bool SourceType_IsValid(int value) {
 
 // ===================================================================
 
-FrameContext_GroupPipelineIdsEntry_DoNotUse::FrameContext_GroupPipelineIdsEntry_DoNotUse() {}
-FrameContext_GroupPipelineIdsEntry_DoNotUse::FrameContext_GroupPipelineIdsEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+FrameContext_GroupPluginIdsEntry_DoNotUse::FrameContext_GroupPluginIdsEntry_DoNotUse() {}
+FrameContext_GroupPluginIdsEntry_DoNotUse::FrameContext_GroupPluginIdsEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
     : SuperType(arena) {}
-void FrameContext_GroupPipelineIdsEntry_DoNotUse::MergeFrom(const FrameContext_GroupPipelineIdsEntry_DoNotUse& other) {
+void FrameContext_GroupPluginIdsEntry_DoNotUse::MergeFrom(const FrameContext_GroupPluginIdsEntry_DoNotUse& other) {
   MergeFromInternal(other);
 }
-::PROTOBUF_NAMESPACE_ID::Metadata FrameContext_GroupPipelineIdsEntry_DoNotUse::GetMetadata() const {
+::PROTOBUF_NAMESPACE_ID::Metadata FrameContext_GroupPluginIdsEntry_DoNotUse::GetMetadata() const {
   return GetMetadataStatic();
 }
-void FrameContext_GroupPipelineIdsEntry_DoNotUse::MergeFrom(
+void FrameContext_GroupPluginIdsEntry_DoNotUse::MergeFrom(
     const ::PROTOBUF_NAMESPACE_ID::Message& other) {
   ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom(other);
 }
@@ -327,7 +327,7 @@ class FrameContext::_Internal {
 
 FrameContext::FrameContext(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena),
-  group_pipeline_ids_(arena),
+  group_plugin_ids_(arena),
   tags_(arena) {
   SharedCtor();
   RegisterArenaDtor(arena);
@@ -336,7 +336,7 @@ FrameContext::FrameContext(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 FrameContext::FrameContext(const FrameContext& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  group_pipeline_ids_.MergeFrom(from.group_pipeline_ids_);
+  group_plugin_ids_.MergeFrom(from.group_plugin_ids_);
   tags_.MergeFrom(from.tags_);
   source_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_source_id().empty()) {
@@ -358,9 +358,9 @@ FrameContext::FrameContext(const FrameContext& from)
     robot_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_robot_id(), 
       GetArena());
   }
-  pipeline_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_pipeline_id().empty()) {
-    pipeline_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_pipeline_id(), 
+  plugin_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_plugin_id().empty()) {
+    plugin_id_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_plugin_id(), 
       GetArena());
   }
   source_type_ = from.source_type_;
@@ -373,7 +373,7 @@ void FrameContext::SharedCtor() {
   semantic_context_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   mode_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   robot_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  pipeline_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  plugin_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   source_type_ = 0;
 }
 
@@ -389,7 +389,7 @@ void FrameContext::SharedDtor() {
   semantic_context_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   mode_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   robot_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  pipeline_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  plugin_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void FrameContext::ArenaDtor(void* object) {
@@ -413,13 +413,13 @@ void FrameContext::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  group_pipeline_ids_.Clear();
+  group_plugin_ids_.Clear();
   tags_.Clear();
   source_id_.ClearToEmpty();
   semantic_context_.ClearToEmpty();
   mode_.ClearToEmpty();
   robot_id_.ClearToEmpty();
-  pipeline_id_.ClearToEmpty();
+  plugin_id_.ClearToEmpty();
   source_type_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -475,22 +475,22 @@ const char* FrameContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // string pipeline_id = 6;
+      // string plugin_id = 6;
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
-          auto str = _internal_mutable_pipeline_id();
+          auto str = _internal_mutable_plugin_id();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "puppet.puppet_proto.FrameContext.pipeline_id"));
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "puppet.puppet_proto.FrameContext.plugin_id"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // map<string, string> group_pipeline_ids = 7;
+      // map<string, string> group_plugin_ids = 7;
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
           ptr -= 1;
           do {
             ptr += 1;
-            ptr = ctx->ParseMessage(&group_pipeline_ids_, ptr);
+            ptr = ctx->ParseMessage(&group_plugin_ids_, ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<58>(ptr));
@@ -583,18 +583,18 @@ failure:
         5, this->_internal_robot_id(), target);
   }
 
-  // string pipeline_id = 6;
-  if (this->pipeline_id().size() > 0) {
+  // string plugin_id = 6;
+  if (this->plugin_id().size() > 0) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_pipeline_id().data(), static_cast<int>(this->_internal_pipeline_id().length()),
+      this->_internal_plugin_id().data(), static_cast<int>(this->_internal_plugin_id().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "puppet.puppet_proto.FrameContext.pipeline_id");
+      "puppet.puppet_proto.FrameContext.plugin_id");
     target = stream->WriteStringMaybeAliased(
-        6, this->_internal_pipeline_id(), target);
+        6, this->_internal_plugin_id(), target);
   }
 
-  // map<string, string> group_pipeline_ids = 7;
-  if (!this->_internal_group_pipeline_ids().empty()) {
+  // map<string, string> group_plugin_ids = 7;
+  if (!this->_internal_group_plugin_ids().empty()) {
     typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::const_pointer
         ConstPtr;
     typedef ConstPtr SortItem;
@@ -604,35 +604,35 @@ failure:
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
           p->first.data(), static_cast<int>(p->first.length()),
           ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-          "puppet.puppet_proto.FrameContext.GroupPipelineIdsEntry.key");
+          "puppet.puppet_proto.FrameContext.GroupPluginIdsEntry.key");
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
           p->second.data(), static_cast<int>(p->second.length()),
           ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-          "puppet.puppet_proto.FrameContext.GroupPipelineIdsEntry.value");
+          "puppet.puppet_proto.FrameContext.GroupPluginIdsEntry.value");
       }
     };
 
     if (stream->IsSerializationDeterministic() &&
-        this->_internal_group_pipeline_ids().size() > 1) {
+        this->_internal_group_plugin_ids().size() > 1) {
       ::std::unique_ptr<SortItem[]> items(
-          new SortItem[this->_internal_group_pipeline_ids().size()]);
+          new SortItem[this->_internal_group_plugin_ids().size()]);
       typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::size_type size_type;
       size_type n = 0;
       for (::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::const_iterator
-          it = this->_internal_group_pipeline_ids().begin();
-          it != this->_internal_group_pipeline_ids().end(); ++it, ++n) {
+          it = this->_internal_group_plugin_ids().begin();
+          it != this->_internal_group_plugin_ids().end(); ++it, ++n) {
         items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
       }
       ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
       for (size_type i = 0; i < n; i++) {
-        target = FrameContext_GroupPipelineIdsEntry_DoNotUse::Funcs::InternalSerialize(7, items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second, target, stream);
+        target = FrameContext_GroupPluginIdsEntry_DoNotUse::Funcs::InternalSerialize(7, items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second, target, stream);
         Utf8Check::Check(&(*items[static_cast<ptrdiff_t>(i)]));
       }
     } else {
       for (::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::const_iterator
-          it = this->_internal_group_pipeline_ids().begin();
-          it != this->_internal_group_pipeline_ids().end(); ++it) {
-        target = FrameContext_GroupPipelineIdsEntry_DoNotUse::Funcs::InternalSerialize(7, it->first, it->second, target, stream);
+          it = this->_internal_group_plugin_ids().begin();
+          it != this->_internal_group_plugin_ids().end(); ++it) {
+        target = FrameContext_GroupPluginIdsEntry_DoNotUse::Funcs::InternalSerialize(7, it->first, it->second, target, stream);
         Utf8Check::Check(&(*it));
       }
     }
@@ -699,13 +699,13 @@ size_t FrameContext::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // map<string, string> group_pipeline_ids = 7;
+  // map<string, string> group_plugin_ids = 7;
   total_size += 1 *
-      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(this->_internal_group_pipeline_ids_size());
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(this->_internal_group_plugin_ids_size());
   for (::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::const_iterator
-      it = this->_internal_group_pipeline_ids().begin();
-      it != this->_internal_group_pipeline_ids().end(); ++it) {
-    total_size += FrameContext_GroupPipelineIdsEntry_DoNotUse::Funcs::ByteSizeLong(it->first, it->second);
+      it = this->_internal_group_plugin_ids().begin();
+      it != this->_internal_group_plugin_ids().end(); ++it) {
+    total_size += FrameContext_GroupPluginIdsEntry_DoNotUse::Funcs::ByteSizeLong(it->first, it->second);
   }
 
   // map<string, string> tags = 20;
@@ -745,11 +745,11 @@ size_t FrameContext::ByteSizeLong() const {
         this->_internal_robot_id());
   }
 
-  // string pipeline_id = 6;
-  if (this->pipeline_id().size() > 0) {
+  // string plugin_id = 6;
+  if (this->plugin_id().size() > 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_pipeline_id());
+        this->_internal_plugin_id());
   }
 
   // .puppet.puppet_proto.SourceType source_type = 2;
@@ -789,7 +789,7 @@ void FrameContext::MergeFrom(const FrameContext& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  group_pipeline_ids_.MergeFrom(from.group_pipeline_ids_);
+  group_plugin_ids_.MergeFrom(from.group_plugin_ids_);
   tags_.MergeFrom(from.tags_);
   if (from.source_id().size() > 0) {
     _internal_set_source_id(from._internal_source_id());
@@ -803,8 +803,8 @@ void FrameContext::MergeFrom(const FrameContext& from) {
   if (from.robot_id().size() > 0) {
     _internal_set_robot_id(from._internal_robot_id());
   }
-  if (from.pipeline_id().size() > 0) {
-    _internal_set_pipeline_id(from._internal_pipeline_id());
+  if (from.plugin_id().size() > 0) {
+    _internal_set_plugin_id(from._internal_plugin_id());
   }
   if (from.source_type() != 0) {
     _internal_set_source_type(from._internal_source_type());
@@ -832,13 +832,13 @@ bool FrameContext::IsInitialized() const {
 void FrameContext::InternalSwap(FrameContext* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  group_pipeline_ids_.Swap(&other->group_pipeline_ids_);
+  group_plugin_ids_.Swap(&other->group_plugin_ids_);
   tags_.Swap(&other->tags_);
   source_id_.Swap(&other->source_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   semantic_context_.Swap(&other->semantic_context_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   mode_.Swap(&other->mode_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   robot_id_.Swap(&other->robot_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  pipeline_id_.Swap(&other->pipeline_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  plugin_id_.Swap(&other->plugin_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   swap(source_type_, other->source_type_);
 }
 
@@ -1401,8 +1401,8 @@ void PrimitiveMeta::InternalSwap(PrimitiveMeta* other) {
 }  // namespace puppet_proto
 }  // namespace puppet
 PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE ::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse* Arena::CreateMaybeMessage< ::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::puppet::puppet_proto::FrameContext_GroupPipelineIdsEntry_DoNotUse >(arena);
+template<> PROTOBUF_NOINLINE ::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse* Arena::CreateMaybeMessage< ::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::puppet::puppet_proto::FrameContext_GroupPluginIdsEntry_DoNotUse >(arena);
 }
 template<> PROTOBUF_NOINLINE ::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse* Arena::CreateMaybeMessage< ::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse >(Arena* arena) {
   return Arena::CreateMessageInternal< ::puppet::puppet_proto::FrameContext_TagsEntry_DoNotUse >(arena);
