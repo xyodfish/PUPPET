@@ -3,8 +3,8 @@
 #include <glog/logging.h>
 
 #include "puppet/common/logging.hpp"
-#include "puppet/retargeting/native/gmr_retargeting_plugin.hpp"
-#include "puppet/retargeting/native/single_chain_ik_retargeting_plugin.hpp"
+#include "puppet/retargeting/native/gmr/gmr_retargeting_plugin.hpp"
+#include "puppet/retargeting/native/single_chain_ik/single_chain_ik_retargeting_plugin.hpp"
 
 namespace puppet::retargeting {
     namespace {

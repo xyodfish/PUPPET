@@ -1,4 +1,4 @@
-#include "puppet/retargeting/native/gmr_retargeting_plugin.hpp"
+#include "puppet/retargeting/native/gmr/gmr_retargeting_plugin.hpp"
 
 #include <gmr/retarget/ik_config.h>
 #include <gmr/retarget/retargeter.h>

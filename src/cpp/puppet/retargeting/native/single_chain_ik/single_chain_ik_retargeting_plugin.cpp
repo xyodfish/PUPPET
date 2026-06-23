@@ -1,4 +1,4 @@
-#include "puppet/retargeting/native/single_chain_ik_retargeting_plugin.hpp"
+#include "puppet/retargeting/native/single_chain_ik/single_chain_ik_retargeting_plugin.hpp"
 
 #include <glog/logging.h>
 #include <kdl/chainfksolverpos_recursive.hpp>
