@@ -34,6 +34,10 @@ namespace gmr {
             return vec / vecNorm * angle;
         }
 
+        // human_data_local to human_data_globl计算
+        // result[bodyName].pos = localPos + scaledRootPos = localPos + rootScale * rootPos
+        // = (bodyFrame.pos - rootPos) * scale + rootScale * rootPos  = bodyFrame.pos * scale - rootPos * scale + rootScale * rootPos
+        // 次数rootScale和scale不是一个值 rootScale为一个确定的值 例如 bvh_lafan1_to_g1.json中的 human_root_name 对应的scale
         inline HumanFrame scaleAndOffsetHumanFrameImpl(const HumanFrame& frame, const IkConfig& ikConfig,
                                                        const std::unordered_map<std::string, Eigen::Vector3d>& table1PosOffsets,
                                                        const std::unordered_map<std::string, Eigen::Quaterniond>& table1RotOffsets,
@@ -73,6 +77,9 @@ namespace gmr {
                     continue;
                 }
 
+                // body 中的 position和 orientation 是世界系下的平移和旋转
+                // 先给人体 body 的姿态叠加一个局部旋转偏置。
+                // 用更新后的姿态，把局部坐标系下的位置偏置转到世界, 再把这个世界系偏移加到 body 原始位置上。
                 body.orientation = body.orientation * rotIt->second;
                 body.position += body.orientation * posIt->second;
             }

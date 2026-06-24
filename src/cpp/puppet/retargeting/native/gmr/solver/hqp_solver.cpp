@@ -1,8 +1,5 @@
 #include "gmr/solver/hqp_solver.h"
 
-// HQP layering adapted from:
-// ~/Workspace/SingoriX/Experimental/whole_body_control/src/solver/hqp_solver.cpp
-
 namespace gmr::solver {
 
     const QPOutput& HQPSolver::solve(HQPData& hqpData) {

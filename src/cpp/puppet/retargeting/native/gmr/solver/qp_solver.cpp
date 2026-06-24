@@ -1,8 +1,5 @@
 #include "gmr/solver/qp_solver.h"
 
-// QP solver implementation adapted from:
-// ~/Workspace/SingoriX/Experimental/whole_body_control/src/solver/qp_solver.cpp
-
 namespace gmr::solver {
 
     QPSolver::QPSolver() {
